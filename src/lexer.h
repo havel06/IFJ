@@ -2,6 +2,7 @@
 #define LEXER_H
 
 typedef enum {
+	TOKEN_EOF
 	// TODO
 } tokenType;
 
@@ -10,8 +11,12 @@ typedef struct {
 	char* content;
 } token;
 
-int tokenCreate(tokenType type, const char* str, int strLength);
+// Returns 0 on success
+int tokenCreate(token*, tokenType type, const char* str, int strLength);
+void tokenDestroy(token*);
 
-token getNextToken();
+// Returns 0 on success
+int getNextToken(token*);
+void printToken(const token*);
 
 #endif

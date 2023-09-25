@@ -7,7 +7,7 @@ typedef enum {
 	ANALYSIS_OK,
 	ANALYSIS_UNDEFINED_FUNC,
 	// TODO
-	ANALYSIS_OTHER
+	ANALYSIS_OTHER_ERROR
 } analysisResult;
 
 analysisResult analyseProgram(const astProgram*);
