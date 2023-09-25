@@ -163,17 +163,17 @@ typedef struct
 	int count;
 } astProgram;
 
-astProgram astProgramCreate();
+int astProgramCreate(astProgram*);
 void astProgramDestroy(astProgram*);
-void astProgramAdd(astTopLevelStatement);
+int astProgramAdd(astTopLevelStatement);
 
-astBinaryExpression astBinaryExprCreate(astExpression lhs, astExpression rhs, astBinaryOperator);
+int astBinaryExprCreate(astBinaryExpression*, astExpression lhs, astExpression rhs, astBinaryOperator);
 void astBinaryExprDestroy(astBinaryExpression*);
 
-astIdentificator astIdentCreate(const char* str, int length);
+int astIdentCreate(astIdentificator*, const char* str, int length);
 void astIdentDestroy(astIdentificator*);
 
-astStringLiteral astStringCreate(const char* str, int length);
+int astStringCreate(astStringLiteral*, const char* str, int length);
 void astStringDestroy(astStringLiteral*);
 
 void astPrint(const astProgram*);
