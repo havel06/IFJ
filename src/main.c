@@ -6,6 +6,8 @@
 #include "lexer.h"
 #include "parser.h"
 
+#define TEST_LEXER
+
 #define END(value)                   \
 	do {                             \
 		astProgramDestroy(&program); \
@@ -13,6 +15,17 @@
 	} while (0)
 
 int main() {
+#ifdef TEST_LEXER
+	while (1) {
+		token tok;
+		getNextToken(&tok);
+		printToken(&tok);
+		if (tok.type == TOKEN_EOF) {
+			return 1;
+		}
+	}
+#endif
+
 	astProgram program;
 	astProgramCreate(&program);
 

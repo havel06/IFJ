@@ -134,7 +134,7 @@ typedef struct {
 void astProgramCreate(astProgram*);
 void astProgramDestroy(astProgram*);
 // Returns 0 on success
-// int astProgramAdd(astProgram*, astTopLevelStatement);
+int astProgramAdd(astProgram*, astTopLevelStatement);
 
 // Returns 0 on success
 int astBinaryExprCreate(astBinaryExpression*, astExpression lhs, astExpression rhs, astBinaryOperator);
