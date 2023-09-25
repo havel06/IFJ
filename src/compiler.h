@@ -3,6 +3,6 @@
 
 #include "ast.h"
 
-void compileProgram(astProgram *);
+void compileProgram(astProgram*);
 
 #endif

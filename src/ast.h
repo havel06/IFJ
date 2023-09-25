@@ -2,7 +2,7 @@
 #define AST_H
 
 typedef struct {
-	char *name;
+	char* name;
 } astIdentificator;
 
 typedef struct {
@@ -14,7 +14,7 @@ typedef struct {
 } astDecimalLiteral;
 
 typedef struct {
-	char *content;
+	char* content;
 } astStringLiteral;
 
 typedef enum {
@@ -48,19 +48,15 @@ typedef enum {
 	AST_BINARY_NIL_COAL
 } astBinaryOperator;
 
-typedef struct astExpression astExpression; // fwd
+typedef struct astExpression astExpression;	 // fwd
 
 typedef struct {
 	astBinaryOperator op;
-	astExpression *lhs;
-	astExpression *rhs;
+	astExpression* lhs;
+	astExpression* rhs;
 } astBinaryExpression;
 
-typedef enum {
-	AST_EXPR_TERM,
-	AST_EXPR_BINARY,
-	AST_EXPR_UNWRAP
-} astExpressionType;
+typedef enum { AST_EXPR_TERM, AST_EXPR_BINARY, AST_EXPR_UNWRAP } astExpressionType;
 
 struct astExpression {
 	astExpressionType type;
@@ -131,24 +127,23 @@ typedef struct {
 } astTopLevelStatement;
 
 typedef struct {
-	astTopLevelStatement *statements;
+	astTopLevelStatement* statements;
 	int count;
 } astProgram;
 
-int astProgramCreate(astProgram *);
-void astProgramDestroy(astProgram *);
+int astProgramCreate(astProgram*);
+void astProgramDestroy(astProgram*);
 int astProgramAdd(astTopLevelStatement);
 
-int astBinaryExprCreate(astBinaryExpression *, astExpression lhs,
-						astExpression rhs, astBinaryOperator);
-void astBinaryExprDestroy(astBinaryExpression *);
+int astBinaryExprCreate(astBinaryExpression*, astExpression lhs, astExpression rhs, astBinaryOperator);
+void astBinaryExprDestroy(astBinaryExpression*);
 
-int astIdentCreate(astIdentificator *, const char *str, int length);
-void astIdentDestroy(astIdentificator *);
+int astIdentCreate(astIdentificator*, const char* str, int length);
+void astIdentDestroy(astIdentificator*);
 
-int astStringCreate(astStringLiteral *, const char *str, int length);
-void astStringDestroy(astStringLiteral *);
+int astStringCreate(astStringLiteral*, const char* str, int length);
+void astStringDestroy(astStringLiteral*);
 
-void astPrint(const astProgram *);
+void astPrint(const astProgram*);
 
 #endif

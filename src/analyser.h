@@ -10,6 +10,6 @@ typedef enum {
 	ANALYSIS_OTHER
 } analysisResult;
 
-analysisResult analyseProgram(const astProgram *);
+analysisResult analyseProgram(const astProgram*);
 
 #endif

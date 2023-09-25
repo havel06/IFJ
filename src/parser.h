@@ -3,6 +3,6 @@
 
 #include "ast.h"
 
-int parseProgram(const astProgram *);
+int parseProgram(const astProgram*);
 
 #endif
