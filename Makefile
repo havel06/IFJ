@@ -1,20 +1,18 @@
 BIN=bin
 SRC=src
 
-CFLAGS=-std=c99 -Wall -Wextra -Werror
+CFLAGS=-std=c99 -Wall -Wextra -Werror -std=c11
 CC=gcc $(CFLAGS)
 
 OBJS=$(patsubst $(SRC)/%.c,$(BIN)/%.o,$(wildcard $(SRC)/*.c))
 
 .PHONY: all clean
 
-all: $(BIN)/compiler
-
 $(BIN)/compiler: $(OBJS)
-	$(CC) -o $@ $(OBJS)
+	$(CC) -o $@ $^
 
 $(BIN)/%.o: $(SRC)/%.c
-	$(CC) $@ $<
+	$(CC) -o $@ -c $<
 
 format:
 	clang-format -i $(SRC)/*
