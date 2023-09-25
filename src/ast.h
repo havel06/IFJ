@@ -3,22 +3,22 @@
 
 typedef struct
 {
-	//TODO
+	char* name;
 } astIdentificator;
 
 typedef struct
 {
-	//TODO
+	int value;
 } astIntLiteral;
 
 typedef struct
 {
-	//TODO
+	double value;
 } astDecimalLiteral;
 
 typedef struct
 {
-	//TODO
+	char* content;
 } astStringLiteral;
 
 typedef enum
@@ -56,9 +56,13 @@ typedef enum
 	AST_BINARY_NIL_COAL
 } astBinaryOperator;
 
+typedef struct astExpression astExpression; // fwd
+
 typedef struct
 {
-	
+	astBinaryOperator op;
+	astExpression* lhs;
+	astExpression* rhs;
 } astBinaryExpression;
 
 typedef enum
@@ -68,7 +72,7 @@ typedef enum
 	AST_EXPR_UNWRAP
 } astExpressionType;
 
-typedef struct
+struct astExpression
 {
 	astExpressionType type;
 	union
@@ -76,7 +80,7 @@ typedef struct
 		astTerm term;
 		astBinaryExpression binary;
 	};
-} astExpression;
+};
 
 typedef enum
 {
@@ -156,6 +160,22 @@ typedef struct
 typedef struct
 {
 	astTopLevelStatement* statements;
+	int count;
 } astProgram;
+
+astProgram astProgramCreate();
+void astProgramDestroy(astProgram*);
+void astProgramAdd(astTopLevelStatement);
+
+astBinaryExpression astBinaryExprCreate(astExpression lhs, astExpression rhs, astBinaryOperator);
+void astBinaryExprDestroy(astBinaryExpression*);
+
+astIdentificator astIdentCreate(const char* str, int length);
+void astIdentDestroy(astIdentificator*);
+
+astStringLiteral astStringCreate(const char* str, int length);
+void astStringDestroy(astStringLiteral*);
+
+void astPrint(const astProgram*);
 
 #endif
