@@ -7,7 +7,7 @@ int tokenCreate(token* newToken, tokenType type, const char* str, int strLength)
 
 	if (!str && strLength == 0) {
 		newToken->content = malloc(strLength * sizeof(char));
-		if (!newToken) {
+		if (!(newToken->content)) {
 			return 1;
 		}
 	} else {
