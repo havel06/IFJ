@@ -1,39 +1,32 @@
 #ifndef AST_H
 #define AST_H
 
-typedef struct
-{
-	char* name;
+typedef struct {
+	char *name;
 } astIdentificator;
 
-typedef struct
-{
+typedef struct {
 	int value;
 } astIntLiteral;
 
-typedef struct
-{
+typedef struct {
 	double value;
 } astDecimalLiteral;
 
-typedef struct
-{
-	char* content;
+typedef struct {
+	char *content;
 } astStringLiteral;
 
-typedef enum
-{
+typedef enum {
 	AST_TERM_ID,
 	AST_TERM_INT,
 	AST_TERM_DECIMAL,
 	AST_TERM_STRING,
 } astTermType;
 
-typedef struct
-{
+typedef struct {
 	astTermType type;
-	union
-	{
+	union {
 		astIdentificator identificator;
 		astIntLiteral integer;
 		astDecimalLiteral decimal;
@@ -41,8 +34,7 @@ typedef struct
 	};
 } astTerm;
 
-typedef enum
-{
+typedef enum {
 	AST_BINARY_MUL,
 	AST_BINARY_DIV,
 	AST_BINARY_PLUS,
@@ -58,32 +50,27 @@ typedef enum
 
 typedef struct astExpression astExpression; // fwd
 
-typedef struct
-{
+typedef struct {
 	astBinaryOperator op;
-	astExpression* lhs;
-	astExpression* rhs;
+	astExpression *lhs;
+	astExpression *rhs;
 } astBinaryExpression;
 
-typedef enum
-{
+typedef enum {
 	AST_EXPR_TERM,
 	AST_EXPR_BINARY,
 	AST_EXPR_UNWRAP
 } astExpressionType;
 
-struct astExpression
-{
+struct astExpression {
 	astExpressionType type;
-	union
-	{
+	union {
 		astTerm term;
 		astBinaryExpression binary;
 	};
 };
 
-typedef enum
-{
+typedef enum {
 	AST_STATEMENT_VAR_DEF,
 	AST_STATEMENT_ASSIGN,
 	AST_STATEMENT_COND,
@@ -93,38 +80,31 @@ typedef enum
 	AST_STATEMENT_RETURN,
 } astStatementType;
 
-typedef struct 
-{
-	//TODO
-} astVariableDefinition ;
+typedef struct {
+	// TODO
+} astVariableDefinition;
 
-typedef struct
-{
-	//TODO
+typedef struct {
+	// TODO
 } astAssignment;
 
-typedef struct
-{
-	//TODO
+typedef struct {
+	// TODO
 } astConditional;
 
-typedef struct
-{
-	//TODO
+typedef struct {
+	// TODO
 } astIteration;
 
-typedef struct
-{
-	//TODO
+typedef struct {
+	// TODO
 } astFunctionCall;
 
-typedef struct
-{
-	//TODO
+typedef struct {
+	// TODO
 } astVoidFunctionCall;
 
-typedef struct
-{
+typedef struct {
 	astStatementType type;
 	union {
 		astVariableDefinition variableDef;
@@ -136,46 +116,39 @@ typedef struct
 	};
 } astStatement;
 
-typedef struct
-{
-	//TODO
+typedef struct {
+	// TODO
 } astFunctionDefinition;
 
-typedef enum
-{
-	AST_TOP_FUNCTION,
-	AST_TOP_STATEMENT
-} astTopLevelStatementType;
+typedef enum { AST_TOP_FUNCTION, AST_TOP_STATEMENT } astTopLevelStatementType;
 
-typedef struct
-{
+typedef struct {
 	astTopLevelStatementType type;
-	union
-	{
+	union {
 		astStatement statement;
 		astFunctionDefinition functionDef;
 	};
 } astTopLevelStatement;
 
-typedef struct
-{
-	astTopLevelStatement* statements;
+typedef struct {
+	astTopLevelStatement *statements;
 	int count;
 } astProgram;
 
-int astProgramCreate(astProgram*);
-void astProgramDestroy(astProgram*);
+int astProgramCreate(astProgram *);
+void astProgramDestroy(astProgram *);
 int astProgramAdd(astTopLevelStatement);
 
-int astBinaryExprCreate(astBinaryExpression*, astExpression lhs, astExpression rhs, astBinaryOperator);
-void astBinaryExprDestroy(astBinaryExpression*);
+int astBinaryExprCreate(astBinaryExpression *, astExpression lhs,
+						astExpression rhs, astBinaryOperator);
+void astBinaryExprDestroy(astBinaryExpression *);
 
-int astIdentCreate(astIdentificator*, const char* str, int length);
-void astIdentDestroy(astIdentificator*);
+int astIdentCreate(astIdentificator *, const char *str, int length);
+void astIdentDestroy(astIdentificator *);
 
-int astStringCreate(astStringLiteral*, const char* str, int length);
-void astStringDestroy(astStringLiteral*);
+int astStringCreate(astStringLiteral *, const char *str, int length);
+void astStringDestroy(astStringLiteral *);
 
-void astPrint(const astProgram*);
+void astPrint(const astProgram *);
 
 #endif

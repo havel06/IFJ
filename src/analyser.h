@@ -3,14 +3,13 @@
 
 #include "ast.h"
 
-typedef enum
-{
+typedef enum {
 	ANALYSIS_OK,
 	ANALYSIS_UNDEFINED_FUNC,
-	//TODO
+	// TODO
 	ANALYSIS_OTHER
 } analysisResult;
 
-analysisResult analyseProgram(const astProgram*);
+analysisResult analyseProgram(const astProgram *);
 
 #endif
