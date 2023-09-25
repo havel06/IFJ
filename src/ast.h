@@ -1,6 +1,83 @@
 #ifndef AST_H
 #define AST_H
 
+typedef struct
+{
+	//TODO
+} astIdentificator;
+
+typedef struct
+{
+	//TODO
+} astIntLiteral;
+
+typedef struct
+{
+	//TODO
+} astDecimalLiteral;
+
+typedef struct
+{
+	//TODO
+} astStringLiteral;
+
+typedef enum
+{
+	AST_TERM_ID,
+	AST_TERM_INT,
+	AST_TERM_DECIMAL,
+	AST_TERM_STRING,
+} astTermType;
+
+typedef struct
+{
+	astTermType type;
+	union
+	{
+		astIdentificator identificator;
+		astIntLiteral integer;
+		astDecimalLiteral decimal;
+		astStringLiteral string;
+	};
+} astTerm;
+
+typedef enum
+{
+	AST_BINARY_MUL,
+	AST_BINARY_DIV,
+	AST_BINARY_PLUS,
+	AST_BINARY_MINUS,
+	AST_BINARY_EQ,
+	AST_BINARY_NEQ,
+	AST_BINARY_LESS,
+	AST_BINARY_GREATER,
+	AST_BINARY_LESS_EQ,
+	AST_BINARY_GREATER_EQ,
+	AST_BINARY_NIL_COAL
+} astBinaryOperator;
+
+typedef struct
+{
+	
+} astBinaryExpression;
+
+typedef enum
+{
+	AST_EXPR_TERM,
+	AST_EXPR_BINARY,
+	AST_EXPR_UNWRAP
+} astExpressionType;
+
+typedef struct
+{
+	astExpressionType type;
+	union
+	{
+		astTerm term;
+		astBinaryExpression binary;
+	};
+} astExpression;
+
 typedef enum
 {
 	AST_STATEMENT_VAR_DEF,
