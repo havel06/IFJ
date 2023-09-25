@@ -1,19 +1,22 @@
 #include "parser.h"
+
 #include "lexer.h"
 
-#define GET_TOKEN(tokenVar) \
-	do { \
+#define GET_TOKEN(tokenVar)                  \
+	do {                                     \
 		if (getNextToken(&nextToken) != 0) { \
-			return PARSE_LEXER_ERROR; \
-		} \
+			return PARSE_LEXER_ERROR;        \
+		}                                    \
 	} while (0)
 
-parseResult parseProgram(const astProgram *program) {
+parseResult parseProgram(astProgram *program) {
 	token nextToken;
 
 	GET_TOKEN(nextToken);
-	//TODO
+	// TODO
 	(void)program;
+
+	tokenDestroy(&nextToken);
 
 	return PARSE_OK;
 }

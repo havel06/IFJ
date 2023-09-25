@@ -131,11 +131,10 @@ typedef struct {
 	int count;
 } astProgram;
 
-// Returns 0 on success
-int astProgramCreate(astProgram*);
+void astProgramCreate(astProgram*);
 void astProgramDestroy(astProgram*);
 // Returns 0 on success
-int astProgramAdd(astTopLevelStatement);
+// int astProgramAdd(astProgram*, astTopLevelStatement);
 
 // Returns 0 on success
 int astBinaryExprCreate(astBinaryExpression*, astExpression lhs, astExpression rhs, astBinaryOperator);

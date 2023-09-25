@@ -3,12 +3,8 @@
 
 #include "ast.h"
 
-typedef enum {
-	PARSE_OK,
-	PARSE_LEXER_ERROR,
-	PARSE_ERROR
-} parseResult;
+typedef enum { PARSE_OK, PARSE_LEXER_ERROR, PARSE_ERROR } parseResult;
 
-parseResult parseProgram(const astProgram*);
+parseResult parseProgram(astProgram*);
 
 #endif
