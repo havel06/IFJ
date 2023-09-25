@@ -16,8 +16,11 @@ $(BIN)/compiler: $(OBJS)
 $(BIN)/%.o: $(SRC)/%.c
 	$(CC) $@ $<
 
-test:
-	cppcheck ./src/
+testCppcheck:
+	cppcheck --std=c11 --enable=all --suppress=missingIncludeSystem $(SRC)
+
+testClang:
+	clang-format --dry-run -Werror $(SRC)/*.c
 
 clean:
 	rm -rf $(BIN)/*
