@@ -79,7 +79,7 @@ int skipWhiteSpace() {
 void checkForKeyword(token* newToken) {
 	assert(newToken);
 	assert(newToken->content);
-	
+
 	if (strcmp(newToken->content, "Double") == 0) {
 		newToken->type = TOKEN_KEYWORD_DOUBLE;
 	} else if (strcmp(newToken->content, "else") == 0) {
@@ -105,7 +105,7 @@ void checkForKeyword(token* newToken) {
 	}
 }
 
-int lexIdentifierToken(token* newToken) {
+lexerResult lexIdentifierToken(token* newToken) {
 	assert(newToken);
 	newToken->type = TOKEN_IDENTIFIER;
 	while (1) {
@@ -119,21 +119,21 @@ int lexIdentifierToken(token* newToken) {
 		if (newToken->content == NULL) {
 			newToken->content = calloc(64, sizeof(char));
 			if (newToken->content == NULL) {
-				return 1;
+				return LEXER_INTERNAL_ERROR;
 			}
 			newToken->content[0] = c;
 		} else {
 			int len = strlen(newToken->content);
 			if (len >= 63) {
 				// TODO - log warning
-				return 1;
+				return LEXER_INTERNAL_ERROR;
 			}
 			newToken->content[len] = c;
 		}
 	}
 
 	checkForKeyword(newToken);
-	return 0;
+	return LEXER_OK;
 }
 
 int lexNumberToken(token* newToken) {
@@ -168,7 +168,7 @@ int lexNumberToken(token* newToken) {
 	return 0;
 }
 
-int getNextToken(token* newToken) {
+lexerResult getNextToken(token* newToken) {
 	assert(newToken);
 	while (skipWhiteSpace() || skipComments()) {
 	}
@@ -177,38 +177,38 @@ int getNextToken(token* newToken) {
 	switch (c) {
 		case EOF:
 			newToken->type = TOKEN_EOF;
-			return 0;
+			return LEXER_OK;
 		case '*':
 			newToken->type = TOKEN_MUL;
-			return 0;
+			return LEXER_OK;
 		case '/':
 			newToken->type = TOKEN_DIV;
-			return 0;
+			return LEXER_OK;
 		case '+':
 			newToken->type = TOKEN_PLUS;
-			return 0;
+			return LEXER_OK;
 		case ':':
 			newToken->type = TOKEN_COLON;
-			return 0;
+			return LEXER_OK;
 		case '!':
 			newToken->type = TOKEN_UNWRAP;
-			return 0;
+			return LEXER_OK;
 		case '(':
 			newToken->type = TOKEN_BRACKET_ROUND_LEFT;
-			return 0;
+			return LEXER_OK;
 		case ')':
 			newToken->type = TOKEN_BRACKET_ROUND_RIGHT;
-			return 0;
+			return LEXER_OK;
 		case '{':
 			newToken->type = TOKEN_BRACKET_CURLY_LEFT;
-			return 0;
+			return LEXER_OK;
 		case '}':
 			newToken->type = TOKEN_BRACKET_CURLY_RIGHT;
-			return 0;
+			return LEXER_OK;
 		case '_':
 			// TODO - identifiers starting with underscore
 			newToken->type = TOKEN_UNDERSCORE;
-			return 0;
+			return LEXER_OK;
 		case '=': {
 			int c2 = getchar();
 			if (c2 == '=') {
@@ -217,7 +217,7 @@ int getNextToken(token* newToken) {
 				ungetc(c2, stdin);
 				newToken->type = TOKEN_ASSIGN;
 			}
-			return 0;
+			return LEXER_OK;
 		}
 		// TODO - other token types
 		default:
@@ -227,6 +227,8 @@ int getNextToken(token* newToken) {
 			} else if (isdigit(c)) {
 				ungetc(c, stdin);
 				return lexNumberToken(newToken);
+			} else {
+				return LEXER_ERROR;
 			}
 	}
 

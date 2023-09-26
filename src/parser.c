@@ -5,11 +5,16 @@
 #include "ast.h"
 #include "lexer.h"
 
-#define GET_TOKEN(tokenVar)                 \
-	do {                                    \
-		if (getNextToken(&tokenVar) != 0) { \
-			return PARSE_LEXER_ERROR;       \
-		}                                   \
+#define GET_TOKEN(tokenVar)                  \
+	do {                                     \
+		switch (getNextToken(&tokenVar)) {   \
+			case LEXER_ERROR:                \
+				return PARSE_LEXER_ERROR;    \
+			case LEXER_INTERNAL_ERROR:       \
+				return PARSE_INTERNAL_ERROR; \
+			case LEXER_OK:                   \
+				break;                       \
+		}                                    \
 	} while (0)
 
 #define GET_TOKEN_ASSUME_TYPE(tokenVar, assumedType) \
@@ -106,10 +111,10 @@ parseResult parseStatement(astStatement* statement, const token* firstToken) {
 			// TODO - parse variable assignment or function call
 			break;
 		default:
-			return 1;
+			return PARSE_ERROR;
 	}
 
-	return 0;
+	return PARSE_OK;
 }
 
 parseResult parseProgram(astProgram* program) {

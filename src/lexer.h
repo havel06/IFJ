@@ -51,8 +51,9 @@ typedef struct {
 void tokenDestroy(token*);
 
 // Returns 0 on success
-// TODO - separate internal errors from lexing errors
-int getNextToken(token*);
+typedef enum { LEXER_OK, LEXER_ERROR, LEXER_INTERNAL_ERROR } lexerResult;
+
+lexerResult getNextToken(token*);
 void printToken(const token*);
 
 #endif
