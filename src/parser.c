@@ -5,6 +5,8 @@
 #include "ast.h"
 #include "lexer.h"
 
+// TODO - destroy tokens when any macro returns error
+
 #define GET_TOKEN(tokenVar)                  \
 	do {                                     \
 		switch (getNextToken(&tokenVar)) {   \
@@ -47,7 +49,7 @@
 		}                      \
 	} while (0)
 
-astDataType keywordToDataType(tokenType type) {
+astBasicDataType keywordToDataType(tokenType type) {
 	switch (type) {
 		case TOKEN_KEYWORD_INT:
 			return AST_TYPE_INT;
@@ -82,8 +84,11 @@ parseResult parseVarDef(astStatement* statement, bool immutable) {
 	astExpression initExpression;
 	TRY_PARSE(parseExpression(&initExpression));
 
-	if (astVarDefCreate(&statement->variableDef, variableNameToken.content, keywordToDataType(variableTypeToken.type),
-						initExpression, immutable) == 0) {
+	astDataType dataType;
+	dataType.type = keywordToDataType(variableTypeToken.type);
+	dataType.nullable = false;
+	// TODO - parse nullable types
+	if (astVarDefCreate(&statement->variableDef, variableNameToken.content, dataType, initExpression, immutable) == 0) {
 		return PARSE_OK;
 	} else {
 		return PARSE_INTERNAL_ERROR;

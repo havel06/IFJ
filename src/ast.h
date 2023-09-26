@@ -83,6 +83,11 @@ typedef enum {
 	AST_TYPE_INT,
 	AST_TYPE_DOUBLE,
 	AST_TYPE_STRING,
+} astBasicDataType;
+
+typedef struct {
+	astBasicDataType type;
+	bool nullable;
 } astDataType;
 
 typedef struct {

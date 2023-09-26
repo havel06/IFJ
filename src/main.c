@@ -5,8 +5,15 @@
 #include "compiler.h"
 #include "lexer.h"
 #include "parser.h"
+#include "printToken.h"
 
+// edit these two
 #define TEST_LEXER
+#define TEST_PARSER
+
+#ifdef TEST_PARSER
+#undef TEST_LEXER
+#endif
 
 #define END(value)                   \
 	do {                             \
@@ -44,6 +51,10 @@ int main() {
 		case PARSE_OK:
 			break;
 	}
+
+#ifdef TEST_PARSER
+	astPrint(&program);
+#endif
 
 	switch (analyseProgram(&program)) {
 		case ANALYSIS_UNDEFINED_FUNC:
