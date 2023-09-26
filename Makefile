@@ -18,7 +18,7 @@ format:
 	clang-format -i $(SRC)/*
 
 testCppcheck:
-	cppcheck --std=c11 --enable=all --suppress=missingIncludeSystem --error-exitcode=1 $(SRC)
+	cppcheck --std=c99 --enable=all --suppress=missingInclude --error-exitcode=1 $(SRC)
 
 testClang:
 	clang-format --dry-run -Werror $(SRC)/*

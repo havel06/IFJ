@@ -5,41 +5,41 @@
 #include "ast.h"
 #include "lexer.h"
 
-#define GET_TOKEN(tokenVar)                  \
-	do {                                     \
+#define GET_TOKEN(tokenVar)                 \
+	do {                                    \
 		if (getNextToken(&tokenVar) != 0) { \
-			return PARSE_LEXER_ERROR;        \
-		}                                    \
+			return PARSE_LEXER_ERROR;       \
+		}                                   \
 	} while (0)
 
 #define GET_TOKEN_ASSUME_TYPE(tokenVar, assumedType) \
-	do { \
-		GET_TOKEN(tokenVar); \
-		if (tokenVar.type != assumedType) { \
-			return PARSE_ERROR; \
-		} \
+	do {                                             \
+		GET_TOKEN(tokenVar);                         \
+		if (tokenVar.type != assumedType) {          \
+			return PARSE_ERROR;                      \
+		}                                            \
 	} while (0)
 
-#define CONSUME_TOKEN()                  \
-	do {                                     \
-		token consumedToken; \
-		GET_TOKEN(consumedToken); \
+#define CONSUME_TOKEN()               \
+	do {                              \
+		token consumedToken;          \
+		GET_TOKEN(consumedToken);     \
 		tokenDestroy(&consumedToken); \
 	} while (0)
 
-#define CONSUME_TOKEN_ASSUME_TYPE(assumedType)                  \
-	do {                                     \
-		token consumedToken; \
+#define CONSUME_TOKEN_ASSUME_TYPE(assumedType)             \
+	do {                                                   \
+		token consumedToken;                               \
 		GET_TOKEN_ASSUME_TYPE(consumedToken, assumedType); \
-		tokenDestroy(&consumedToken); \
+		tokenDestroy(&consumedToken);                      \
 	} while (0)
 
-#define TRY_PARSE(function)     \
-	do {                        \
+#define TRY_PARSE(function)    \
+	do {                       \
 		int retval = function; \
-		if (retval != 0) {    \
-			return retval; \
-		}                       \
+		if (retval != 0) {     \
+			return retval;     \
+		}                      \
 	} while (0)
 
 astDataType keywordToDataType(tokenType type) {
@@ -51,12 +51,13 @@ astDataType keywordToDataType(tokenType type) {
 		case TOKEN_KEYWORD_STRING:
 			return AST_TYPE_STRING;
 		default:
-			assert(false); //TODO - propagate error
+			assert(false);	// TODO - propagate error
 	}
 }
 
-parseResult parseExpression() {
-	//TODO
+parseResult parseExpression(astExpression* expression) {
+	// TODO
+	(void)expression;
 	return PARSE_OK;
 }
 
@@ -66,7 +67,7 @@ parseResult parseVarDef(astStatement* statement, bool immutable) {
 	token variableNameToken;
 	GET_TOKEN_ASSUME_TYPE(variableNameToken, TOKEN_IDENTIFIER);
 
-	//TODO - omit variable type
+	// TODO - omit variable type
 	CONSUME_TOKEN_ASSUME_TYPE(TOKEN_COLON);
 
 	token variableTypeToken;
@@ -74,15 +75,15 @@ parseResult parseVarDef(astStatement* statement, bool immutable) {
 
 	CONSUME_TOKEN_ASSUME_TYPE(TOKEN_ASSIGN);
 	astExpression initExpression;
-	TRY_PARSE(parseExpression());
+	TRY_PARSE(parseExpression(&initExpression));
 
-	if (astVarDefCreate(&statement->variableDef, variableNameToken.content, keywordToDataType(variableTypeToken.type), initExpression, immutable) == 0) {
+	if (astVarDefCreate(&statement->variableDef, variableNameToken.content, keywordToDataType(variableTypeToken.type),
+						initExpression, immutable) == 0) {
 		return PARSE_OK;
 	} else {
 		return PARSE_INTERNAL_ERROR;
 	}
 }
-
 
 parseResult parseStatement(astStatement* statement, const token* firstToken) {
 	assert(statement);

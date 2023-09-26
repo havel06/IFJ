@@ -34,6 +34,8 @@ int main() {
 			END(1);
 		case PARSE_ERROR:
 			END(2);
+		case PARSE_INTERNAL_ERROR:
+			END(99);
 		case PARSE_OK:
 			break;
 	}
@@ -54,7 +56,6 @@ int main() {
 		case ANALYSIS_OTHER_ERROR:
 			END(9);
 		case ANALYSIS_OK:
-			END(99);
 			break;
 	}
 

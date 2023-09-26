@@ -1,6 +1,7 @@
 #include "ast.h"
 
 #include <stdlib.h>
+#include <string.h>
 
 void astProgramCreate(astProgram *program) {
 	program->statements = NULL;
@@ -37,3 +38,24 @@ void astProgramDestroy(astProgram *program) {
 	}
 	program->count = 0;
 }
+
+int astVarDefCreate(astVariableDefinition *varDef, const char *str, astDataType type, astExpression expr,
+					bool immutable) {
+	varDef->variableName = malloc(strlen(str) * sizeof(char));
+	if (varDef->variableName == NULL) {
+		return 1;
+	}
+
+	varDef->variableType = type;
+	varDef->value = expr;
+	varDef->immutable = immutable;
+	return 0;
+}
+
+/*
+void astVarDefDestroy(astVariableDefinition* varDef) {
+	if (varDef->variableName) {
+		free(varDef->variableName);
+	}
+}
+*/
