@@ -158,7 +158,7 @@ lexerResult lexIdentifierToken(token* newToken) {
 	return LEXER_OK;
 }
 
-int lexNumberToken(token* newToken) {
+lexerResult lexNumberToken(token* newToken) {
 	assert(newToken);
 
 	enum { INT_PART, DEC_PART, EXP_PART } numberPart;
@@ -197,7 +197,7 @@ int lexNumberToken(token* newToken) {
 		if (newToken->content == NULL) {
 			newToken->content = calloc(1024, sizeof(char));
 			if (newToken->content == NULL) {
-				return LEXER_ERROR;
+				return LEXER_INTERNAL_ERROR;
 			}
 		}
 
@@ -205,9 +205,38 @@ int lexNumberToken(token* newToken) {
 		int len = strlen(newToken->content);
 		if (len >= 1023) {
 			// TODO - log warning
-			return LEXER_ERROR;
+			return LEXER_INTERNAL_ERROR;
 		}
 		newToken->content[len] = c;
+	}
+
+	return LEXER_OK;
+}
+
+// Returns 0 on success
+lexerResult lexStringToken(token* newToken) {
+	// TODO - escape sequences
+	newToken->type = TOKEN_STR_LITERAL;
+	newToken->content = calloc(2048, sizeof(char));
+	if (!newToken->content) {
+		return 1;
+	}
+
+	int len = 0;
+	while (1) {
+		if (len >= 2047) {
+			// TODO - emit warning
+			return LEXER_INTERNAL_ERROR;
+		}
+		int c = getchar();
+		if (c == EOF) {
+			// TODO - emit warning
+			return LEXER_ERROR;
+		} else if (c == '"') {
+			break;
+		} else {
+			newToken->content[len++] = c;
+		}
 	}
 
 	return LEXER_OK;
@@ -319,6 +348,9 @@ lexerResult getNextToken(token* newToken) {
 			}
 			return LEXER_OK;
 		}
+		case '"':
+			return lexStringToken(newToken);
+
 		default:
 			if (isalpha(c)) {
 				ungetc(c, stdin);

@@ -89,6 +89,7 @@ parseResult parseStringLiteral(const token* tok, astExpression* expr) {
 	if (!expr->term.string.content) {
 		return PARSE_INTERNAL_ERROR;
 	}
+	strcpy(expr->term.string.content, tok->content);
 
 	return PARSE_OK;
 }
