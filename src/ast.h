@@ -1,6 +1,8 @@
 #ifndef AST_H
 #define AST_H
 
+#include "stdbool.h"
+
 typedef struct {
 	char* name;
 } astIdentificator;
@@ -76,8 +78,18 @@ typedef enum {
 	AST_STATEMENT_RETURN,
 } astStatementType;
 
+typedef enum {
+	AST_TYPE_UNSPECIFIED,
+	AST_TYPE_INT,
+	AST_TYPE_DOUBLE,
+	AST_TYPE_STRING,
+} astDataType;
+
 typedef struct {
-	// TODO
+	char* variableName;
+	astDataType variableType;
+	astExpression value;
+	bool immutable;
 } astVariableDefinition;
 
 typedef struct {
@@ -141,11 +153,15 @@ int astBinaryExprCreate(astBinaryExpression*, astExpression lhs, astExpression r
 void astBinaryExprDestroy(astBinaryExpression*);
 
 // Returns 0 on success
-int astIdentCreate(astIdentificator*, const char* str, int length);
+int astIdentCreate(astIdentificator*, const char* str);
 void astIdentDestroy(astIdentificator*);
 
 // Returns 0 on success
-int astStringCreate(astStringLiteral*, const char* str, int length);
+int astVarDefCreate(astVariableDefinition*, const char* str, astDataType, astExpression, bool immutable);
+void astVarDefDestroy(astVariableDefinition*);
+
+// Returns 0 on success
+int astStringCreate(astStringLiteral*, const char* str);
 void astStringDestroy(astStringLiteral*);
 
 void astPrint(const astProgram*);

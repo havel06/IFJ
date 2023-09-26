@@ -7,25 +7,93 @@
 
 #define GET_TOKEN(tokenVar)                  \
 	do {                                     \
-		if (getNextToken(&nextToken) != 0) { \
+		if (getNextToken(&tokenVar) != 0) { \
 			return PARSE_LEXER_ERROR;        \
 		}                                    \
 	} while (0)
 
+#define GET_TOKEN_ASSUME_TYPE(tokenVar, assumedType) \
+	do { \
+		GET_TOKEN(tokenVar); \
+		if (tokenVar.type != assumedType) { \
+			return PARSE_ERROR; \
+		} \
+	} while (0)
+
+#define CONSUME_TOKEN()                  \
+	do {                                     \
+		token consumedToken; \
+		GET_TOKEN(consumedToken); \
+		tokenDestroy(&consumedToken); \
+	} while (0)
+
+#define CONSUME_TOKEN_ASSUME_TYPE(assumedType)                  \
+	do {                                     \
+		token consumedToken; \
+		GET_TOKEN_ASSUME_TYPE(consumedToken, assumedType); \
+		tokenDestroy(&consumedToken); \
+	} while (0)
+
 #define TRY_PARSE(function)     \
 	do {                        \
-		if (function != 0) {    \
-			return PARSE_ERROR; \
+		int retval = function; \
+		if (retval != 0) {    \
+			return retval; \
 		}                       \
 	} while (0)
 
-int parseStatement(astStatement* statement, const token* firstToken) {
+astDataType keywordToDataType(tokenType type) {
+	switch (type) {
+		case TOKEN_KEYWORD_INT:
+			return AST_TYPE_INT;
+		case TOKEN_KEYWORD_DOUBLE:
+			return AST_TYPE_DOUBLE;
+		case TOKEN_KEYWORD_STRING:
+			return AST_TYPE_STRING;
+		default:
+			assert(false); //TODO - propagate error
+	}
+}
+
+parseResult parseExpression() {
+	//TODO
+	return PARSE_OK;
+}
+
+parseResult parseVarDef(astStatement* statement, bool immutable) {
+	statement->type = AST_STATEMENT_VAR_DEF;
+
+	token variableNameToken;
+	GET_TOKEN_ASSUME_TYPE(variableNameToken, TOKEN_IDENTIFIER);
+
+	//TODO - omit variable type
+	CONSUME_TOKEN_ASSUME_TYPE(TOKEN_COLON);
+
+	token variableTypeToken;
+	GET_TOKEN(variableTypeToken);
+
+	CONSUME_TOKEN_ASSUME_TYPE(TOKEN_ASSIGN);
+	astExpression initExpression;
+	TRY_PARSE(parseExpression());
+
+	if (astVarDefCreate(&statement->variableDef, variableNameToken.content, keywordToDataType(variableTypeToken.type), initExpression, immutable) == 0) {
+		return PARSE_OK;
+	} else {
+		return PARSE_INTERNAL_ERROR;
+	}
+}
+
+
+parseResult parseStatement(astStatement* statement, const token* firstToken) {
 	assert(statement);
 	assert(firstToken);
 
 	switch (firstToken->type) {
 		case TOKEN_KEYWORD_VAR:
-			// TODO - parse variable definition
+			TRY_PARSE(parseVarDef(statement, false));
+			break;
+		case TOKEN_KEYWORD_LET:
+			TRY_PARSE(parseVarDef(statement, true));
 			break;
 		case TOKEN_KEYWORD_IF:
 			// TODO - parse conditional
@@ -60,7 +128,10 @@ parseResult parseProgram(astProgram* program) {
 			TRY_PARSE(parseStatement(&topStatement.statement, &nextToken));
 		}
 
-		astProgramAdd(program, topStatement);
+		if (astProgramAdd(program, topStatement) != 0) {
+			return PARSE_INTERNAL_ERROR;
+		}
+
 		tokenDestroy(&nextToken);
 	}
 
