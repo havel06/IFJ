@@ -215,6 +215,7 @@ int lexNumberToken(token* newToken) {
 
 lexerResult getNextToken(token* newToken) {
 	assert(newToken);
+	newToken->content = NULL;
 	while (skipWhiteSpace() || skipComments()) {
 	}
 

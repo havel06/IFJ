@@ -1,5 +1,6 @@
 #include "ast.h"
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -14,6 +15,7 @@ int astProgramAdd(astProgram *program, astTopLevelStatement statement) {
 		program->statements = malloc(sizeof(statement));
 		if (program->statements != NULL) {
 			program->count = 1;
+			program->statements[0] = statement;
 			return 0;
 		} else {
 			return 1;

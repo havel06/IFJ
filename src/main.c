@@ -26,12 +26,11 @@ int main() {
 #ifdef TEST_LEXER
 	while (1) {
 		token tok;
-		tok.content = NULL;
 		int status = getNextToken(&tok);
-		if (status) {
+		if (status != LEXER_OK) {
 			fprintf(stderr, "Unexpected symbol: %c\n", getchar());
 		}
-		printToken(&tok);
+		printToken(&tok, stdout);
 		if (tok.type == TOKEN_EOF) {
 			return 0;
 		}

@@ -3,119 +3,119 @@
 #include "assert.h"
 #include "stdio.h"
 
-void printToken(const token* tok) {
+void printToken(const token* tok, FILE* file) {
 	assert(tok);
 	switch (tok->type) {
 		case TOKEN_EOF:
-			puts("EOF");
+			fputs("EOF\n", file);
 			break;
 		case TOKEN_ASSIGN:
-			puts("=");
+			fputs("=\n", file);
 			break;
 		case TOKEN_EQ:
-			puts("==");
+			fputs("==\n", file);
 			break;
 		case TOKEN_NEQ:
-			puts("!=");
+			fputs("!=\n", file);
 			break;
 		case TOKEN_LESS:
-			puts("<");
+			fputs("<\n", file);
 			break;
 		case TOKEN_GREATER:
-			puts(">");
+			fputs(">\n", file);
 			break;
 		case TOKEN_LESS_EQ:
-			puts("<=");
+			fputs("<=\n", file);
 			break;
 		case TOKEN_GREATER_EQ:
-			puts(">=");
+			fputs(">=\n", file);
 			break;
 		case TOKEN_MUL:
-			puts("*");
+			fputs("*\n", file);
 			break;
 		case TOKEN_DIV:
-			puts("/");
+			fputs("/\n", file);
 			break;
 		case TOKEN_PLUS:
-			puts("+");
+			fputs("+\n", file);
 			break;
 		case TOKEN_MINUS:
-			puts("-");
+			fputs("-\n", file);
 			break;
 		case TOKEN_UNWRAP:
-			puts("!");
+			fputs("!\n", file);
 			break;
 		case TOKEN_COALESCE:
-			puts("??");
+			fputs("??\n", file);
 			break;
 		case TOKEN_ARROW:
-			puts("->");
+			fputs("->\n", file);
 			break;
 		case TOKEN_BRACKET_ROUND_LEFT:
-			puts("(");
+			fputs("(\n", file);
 			break;
 		case TOKEN_BRACKET_ROUND_RIGHT:
-			puts(")");
+			fputs(")\n", file);
 			break;
 		case TOKEN_BRACKET_CURLY_LEFT:
-			puts("{");
+			fputs("{\n", file);
 			break;
 		case TOKEN_BRACKET_CURLY_RIGHT:
-			puts("}");
+			fputs("}\n", file);
 			break;
 		case TOKEN_COLON:
-			puts(":");
+			fputs(":\n", file);
 			break;
 		case TOKEN_UNDERSCORE:
-			puts("_");
+			fputs("_\n", file);
 			break;
 		case TOKEN_QUESTION_MARK:
-			puts("?");
+			fputs("?\n", file);
 			break;
 		case TOKEN_KEYWORD_DOUBLE:
-			puts("Double");
+			fputs("Double\n", file);
 			break;
 		case TOKEN_KEYWORD_ELSE:
-			puts("else");
+			fputs("else\n", file);
 			break;
 		case TOKEN_KEYWORD_FUNC:
-			puts("func");
+			fputs("func\n", file);
 			break;
 		case TOKEN_KEYWORD_IF:
-			puts("if");
+			fputs("if\n", file);
 			break;
 		case TOKEN_KEYWORD_INT:
-			puts("Int");
+			fputs("Int\n", file);
 			break;
 		case TOKEN_KEYWORD_LET:
-			puts("let");
+			fputs("let\n", file);
 			break;
 		case TOKEN_KEYWORD_NIL:
-			puts("nil");
+			fputs("nil\n", file);
 			break;
 		case TOKEN_KEYWORD_RETURN:
-			puts("return");
+			fputs("return\n", file);
 			break;
 		case TOKEN_KEYWORD_STRING:
-			puts("String");
+			fputs("String\n", file);
 			break;
 		case TOKEN_KEYWORD_VAR:
-			puts("var");
+			fputs("var\n", file);
 			break;
 		case TOKEN_KEYWORD_WHILE:
-			puts("while");
+			fputs("while\n", file);
 			break;
 		case TOKEN_IDENTIFIER:
-			printf("IDENTIFIER: %s\n", tok->content);
+			fprintf(file, "IDENTIFIER: %s\n", tok->content);
 			break;
 		case TOKEN_INT_LITERAL:
-			printf("INTEGER LITERAL: %s\n", tok->content);
+			fprintf(file, "INTEGER LITERAL: %s\n", tok->content);
 			break;
 		case TOKEN_DEC_LITERAL:
-			printf("DECIMAL LITERAL: %s\n", tok->content);
+			fprintf(file, "DECIMAL LITERAL: %s\n", tok->content);
 			break;
 		case TOKEN_STR_LITERAL:
-			printf("STRING LITERAL: %s\n", tok->content);
+			fprintf(file, "STRING LITERAL: %s\n", tok->content);
 			break;
 	}
 }

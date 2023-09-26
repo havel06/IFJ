@@ -1,9 +1,11 @@
 #include "parser.h"
 
 #include <assert.h>
+#include <stdio.h>
 
 #include "ast.h"
 #include "lexer.h"
+#include "printToken.h"
 
 // TODO - destroy tokens when any macro returns error
 
@@ -116,6 +118,9 @@ parseResult parseStatement(astStatement* statement, const token* firstToken) {
 			// TODO - parse variable assignment or function call
 			break;
 		default:
+			fprintf(stderr, "Unexpected token ");
+			printToken(firstToken, stderr);
+			fprintf(stderr, "on start of statement.\n");
 			return PARSE_ERROR;
 	}
 
