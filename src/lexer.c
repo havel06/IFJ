@@ -139,37 +139,61 @@ lexerResult lexIdentifierToken(token* newToken) {
 int lexNumberToken(token* newToken) {
 	assert(newToken);
 
-	// TODO - decimal numbers
+	enum {INT_PART, DEC_PART, EXP_PART} numberPart;
+	numberPart = INT_PART;
 	newToken->type = TOKEN_INT_LITERAL;
+
 	while (1) {
 		int c = getchar();
-		if (!isdigit(c)) {
-			ungetc(c, stdin);
-			break;
+
+		switch (c) {
+			case '.':
+				if (numberPart != INT_PART) {
+					ungetc(c, stdin);
+					printf("dot\n");
+					return LEXER_ERROR;
+				}
+				numberPart = DEC_PART;
+				newToken->type = TOKEN_DEC_LITERAL;
+				break;
+			case 'e':
+			case 'E':
+				if (numberPart == EXP_PART) {
+					ungetc(c, stdin);
+					return LEXER_ERROR;
+				}
+				numberPart = EXP_PART;
+				break;
+			default:
+				if (!isdigit(c)) {
+					ungetc(c, stdin);
+					return 0;
+				}
 		}
 
-		// add char to token
+		// init token content if empty
 		if (newToken->content == NULL) {
 			newToken->content = calloc(1024, sizeof(char));
 			if (newToken->content == NULL) {
-				return 1;
+				return LEXER_ERROR;
 			}
-			newToken->content[0] = c;
-		} else {
-			int len = strlen(newToken->content);
-			if (len >= 1023) {
-				// TODO - log warning
-				return 1;
-			}
-			newToken->content[len] = c;
 		}
+
+		// add char to token
+		int len = strlen(newToken->content);
+		if (len >= 1023) {
+			// TODO - log warning
+			return LEXER_ERROR;
+		}
+		newToken->content[len] = c;
 	}
 
-	return 0;
+	return LEXER_OK;
 }
 
 lexerResult getNextToken(token* newToken) {
 	assert(newToken);
+	newToken->content = NULL;
 	while (skipWhiteSpace() || skipComments()) {
 	}
 
