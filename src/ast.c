@@ -44,10 +44,11 @@ void astProgramDestroy(astProgram *program) {
 
 int astVarDefCreate(astVariableDefinition *varDef, const char *str, astDataType type, astExpression expr,
 					bool immutable) {
-	varDef->variableName = malloc(strlen(str) * sizeof(char));
+	varDef->variableName = malloc(strlen(str) * sizeof(char) + 1);
 	if (varDef->variableName == NULL) {
 		return 1;
 	}
+	strcpy(varDef->variableName, str);
 
 	varDef->variableType = type;
 	varDef->value = expr;

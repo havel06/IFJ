@@ -2,6 +2,7 @@
 
 #include <assert.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "ast.h"
 #include "lexer.h"
@@ -68,9 +69,36 @@ astBasicDataType keywordToDataType(tokenType type) {
 	}
 }
 
+void parseIntLiteral(const token* tok, astExpression* expr) {
+	expr->type = AST_EXPR_TERM;
+	expr->term.type = AST_TERM_INT;
+	expr->term.integer.value = atoi(tok->content);
+}
+
 parseResult parseExpression(astExpression* expression) {
-	// TODO
-	(void)expression;
+	token firstToken;
+	GET_TOKEN(firstToken, {});
+
+	switch (firstToken.type) {
+		case TOKEN_INT_LITERAL:
+			parseIntLiteral(&firstToken, expression);
+			break;
+		// TODO - decimal literal
+		// TODO - string literal
+		// TODO - bracket expression
+		// TODO - double expression
+		// TODO - string expression
+		// TODO - binary expression
+		// TODO - unwrap expression
+		default:
+			fprintf(stderr, "Unexpected token ");
+			printToken(&firstToken, stderr);
+			fprintf(stderr, "on start of expression.\n");
+			tokenDestroy(&firstToken);
+			return PARSE_ERROR;
+	}
+
+	tokenDestroy(&firstToken);
 	return PARSE_OK;
 }
 

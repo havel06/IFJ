@@ -10,7 +10,7 @@
 
 // edit these two
 #define TEST_LEXER
-// #define TEST_PARSER
+#define TEST_PARSER
 
 #ifdef TEST_PARSER
 #undef TEST_LEXER
