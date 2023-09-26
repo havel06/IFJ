@@ -1,6 +1,8 @@
 #include "printAST.h"
-#include "ast.h"
+
 #include <stdio.h>
+
+#include "ast.h"
 
 void printIndent(int level) {
 	for (int i = 0; i < level * 2; i++) {
@@ -9,7 +11,7 @@ void printIndent(int level) {
 }
 
 void printDataType(const astDataType* type) {
-	switch(type->type) {
+	switch (type->type) {
 		case AST_TYPE_INT:
 			printf("Int");
 			break;
@@ -60,7 +62,8 @@ void printExpression(const astExpression* expression, int indent) {
 }
 
 void printVariableDefinition(const astVariableDefinition* definition, int indent) {
-	printIndent(indent);;
+	printIndent(indent);
+	;
 	printf("VARIABLE DEF: ");
 	if (definition->immutable) {
 		puts("(immutable)");
@@ -79,37 +82,37 @@ void printVariableDefinition(const astVariableDefinition* definition, int indent
 void printAssignment(const astAssignment* assignment, int indent) {
 	(void)assignment;
 	(void)indent;
-	//TODO
+	// TODO
 }
 
 void printConditional(const astConditional* conditional, int indent) {
 	(void)conditional;
 	(void)indent;
-	//TODO
+	// TODO
 }
 
 void printIteration(const astIteration* iteration, int indent) {
 	(void)iteration;
 	(void)indent;
-	//TODO
+	// TODO
 }
 
 void printFunctionCall(const astFunctionCall* call, int indent) {
 	(void)call;
 	(void)indent;
-	//TODO
+	// TODO
 }
 
 void printVoidFunctionCall(const astVoidFunctionCall* call, int indent) {
 	(void)call;
 	(void)indent;
-	//TODO
+	// TODO
 }
 
 void printReturn(const astReturnStatement* ret, int indent) {
 	(void)ret;
 	(void)indent;
-	//TODO
+	// TODO
 }
 
 void printStatement(const astStatement* statement, int indent) {
@@ -142,7 +145,7 @@ void printTopLeveStatement(const astTopLevelStatement* statement) {
 	if (statement->type == AST_TOP_STATEMENT) {
 		printStatement(&statement->statement, 0);
 	} else {
-		//printFunctionDef(&statement->functionDef);
+		// printFunctionDef(&statement->functionDef);
 	}
 }
 

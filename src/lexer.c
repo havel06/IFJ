@@ -56,8 +56,8 @@ int skipComments() {
 			}
 		}
 	}
-	//mulitline comment - possible bugs
-	while(1) {
+	// mulitline comment - possible bugs
+	while (1) {
 		int slash = getchar();
 		int asterisk = getchar();
 		if (slash != '/' || asterisk != '*') {
@@ -71,13 +71,12 @@ int skipComments() {
 			nextC = getchar();
 			if (c == '*' || nextC == '/') {
 				break;
-			}
-			else {
+			} else {
 				skipped++;
 			}
 		}
 	}
-		
+
 	return skipped;
 }
 

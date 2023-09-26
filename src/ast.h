@@ -29,7 +29,7 @@ typedef enum {
 typedef struct {
 	astTermType type;
 	union {
-		astIdentificator identificator; // TODO - rename to identifier
+		astIdentificator identificator;	 // TODO - rename to identifier
 		astIntLiteral integer;
 		astDecimalLiteral decimal;
 		astStringLiteral string;
@@ -65,7 +65,7 @@ struct astExpression {
 	union {
 		astTerm term;
 		astBinaryExpression binary;
-		//TODO - unwrap expression
+		// TODO - unwrap expression
 	};
 };
 
