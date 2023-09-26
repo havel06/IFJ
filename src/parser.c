@@ -3,6 +3,7 @@
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "ast.h"
 #include "lexer.h"
@@ -75,6 +76,23 @@ void parseIntLiteral(const token* tok, astExpression* expr) {
 	expr->term.integer.value = atoi(tok->content);
 }
 
+void parseDecimalLiteral(const token* tok, astExpression* expr) {
+	expr->type = AST_EXPR_TERM;
+	expr->term.type = AST_TERM_DECIMAL;
+	expr->term.decimal.value = atof(tok->content);
+}
+
+parseResult parseStringLiteral(const token* tok, astExpression* expr) {
+	expr->type = AST_EXPR_TERM;
+	expr->term.type = AST_TERM_STRING;
+	expr->term.string.content = malloc(strlen(tok->content) * sizeof(char) + 1);
+	if (!expr->term.string.content) {
+		return PARSE_INTERNAL_ERROR;
+	}
+
+	return PARSE_OK;
+}
+
 parseResult parseExpression(astExpression* expression) {
 	token firstToken;
 	GET_TOKEN(firstToken, {});
@@ -83,11 +101,13 @@ parseResult parseExpression(astExpression* expression) {
 		case TOKEN_INT_LITERAL:
 			parseIntLiteral(&firstToken, expression);
 			break;
-		// TODO - decimal literal
-		// TODO - string literal
+		case TOKEN_DEC_LITERAL:
+			parseDecimalLiteral(&firstToken, expression);
+			break;
+		case TOKEN_STR_LITERAL:
+			TRY_PARSE(parseStringLiteral(&firstToken, expression), { tokenDestroy(&firstToken); });
+			break;
 		// TODO - bracket expression
-		// TODO - double expression
-		// TODO - string expression
 		// TODO - binary expression
 		// TODO - unwrap expression
 		default:

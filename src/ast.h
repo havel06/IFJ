@@ -3,7 +3,7 @@
 
 #include <stdbool.h>
 
-typedef struct astStatement astStatement; // fwd
+typedef struct astStatement astStatement;	 // fwd
 typedef struct astExpression astExpression;	 // fwd
 
 typedef struct {
@@ -52,7 +52,6 @@ typedef enum {
 	AST_BINARY_GREATER_EQ,
 	AST_BINARY_NIL_COAL
 } astBinaryOperator;
-
 
 typedef struct {
 	astBinaryOperator op;
