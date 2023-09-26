@@ -18,6 +18,7 @@ int main() {
 #ifdef TEST_LEXER
 	while (1) {
 		token tok;
+		tok.content = NULL;
 		int status = getNextToken(&tok);
 		if (status) {
 			fprintf(stderr, "Unexpected symbol: %c\n", getchar());

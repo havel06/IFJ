@@ -139,7 +139,7 @@ lexerResult lexIdentifierToken(token* newToken) {
 int lexNumberToken(token* newToken) {
 	assert(newToken);
 
-	enum {INT_PART, DEC_PART, EXP_PART} numberPart;
+	enum { INT_PART, DEC_PART, EXP_PART } numberPart;
 	numberPart = INT_PART;
 	newToken->type = TOKEN_INT_LITERAL;
 
@@ -193,7 +193,6 @@ int lexNumberToken(token* newToken) {
 
 lexerResult getNextToken(token* newToken) {
 	assert(newToken);
-	newToken->content = NULL;
 	while (skipWhiteSpace() || skipComments()) {
 	}
 
