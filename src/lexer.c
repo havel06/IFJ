@@ -132,7 +132,7 @@ lexerResult lexIdentifierToken(token* newToken) {
 	newToken->type = TOKEN_IDENTIFIER;
 	while (1) {
 		int c = getchar();
-		if (!isalnum(c)) {
+		if (!isalnum(c) && c != '_') {
 			ungetc(c, stdin);
 			break;
 		}
@@ -236,9 +236,6 @@ lexerResult getNextToken(token* newToken) {
 		case ':':
 			newToken->type = TOKEN_COLON;
 			return LEXER_OK;
-		case '!':
-			newToken->type = TOKEN_UNWRAP;
-			return LEXER_OK;
 		case '(':
 			newToken->type = TOKEN_BRACKET_ROUND_LEFT;
 			return LEXER_OK;
@@ -251,10 +248,6 @@ lexerResult getNextToken(token* newToken) {
 		case '}':
 			newToken->type = TOKEN_BRACKET_CURLY_RIGHT;
 			return LEXER_OK;
-		case '_':
-			// TODO - identifiers starting with underscore
-			newToken->type = TOKEN_UNDERSCORE;
-			return LEXER_OK;
 		case '=': {
 			int c2 = getchar();
 			if (c2 == '=') {
@@ -265,7 +258,67 @@ lexerResult getNextToken(token* newToken) {
 			}
 			return LEXER_OK;
 		}
-		// TODO - other token types
+		case '-': {
+			int c2 = getchar();
+			if (c2 == '>') {
+				newToken->type = TOKEN_ARROW;
+			} else {
+				ungetc(c2, stdin);
+				newToken->type = TOKEN_MINUS;
+			}
+			return LEXER_OK;
+		}
+		case '?': {
+			int c2 = getchar();
+			if (c2 == '?') {
+				newToken->type = TOKEN_COALESCE;
+			} else {
+				ungetc(c2, stdin);
+				newToken->type = TOKEN_QUESTION_MARK;
+			}
+			return LEXER_OK;
+		}
+		case '<': {
+			int c2 = getchar();
+			if (c2 == '=') {
+				newToken->type = TOKEN_LESS_EQ;
+			} else {
+				ungetc(c2, stdin);
+				newToken->type = TOKEN_LESS;
+			}
+			return LEXER_OK;
+		}
+		case '>': {
+			int c2 = getchar();
+			if (c2 == '=') {
+				newToken->type = TOKEN_GREATER_EQ;
+			} else {
+				ungetc(c2, stdin);
+				newToken->type = TOKEN_GREATER;
+			}
+			return LEXER_OK;
+		}
+		case '!': {
+			int c2 = getchar();
+			if (c2 == '=') {
+				newToken->type = TOKEN_NEQ;
+			} else {
+				ungetc(c2, stdin);
+				newToken->type = TOKEN_UNWRAP;
+			}
+			return LEXER_OK;
+		}
+		case '_': {
+			int c2 = getchar();
+			if (!isalnum(c2)) {
+				newToken->type = TOKEN_UNDERSCORE;
+			} else {
+				ungetc(c2, stdin);
+				ungetc(c, stdin);
+				return lexIdentifierToken(newToken);
+			}
+			return LEXER_OK;
+		}
 		default:
 			if (isalpha(c)) {
 				ungetc(c, stdin);
