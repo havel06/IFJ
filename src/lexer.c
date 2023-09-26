@@ -39,6 +39,7 @@ int skipComments() {
 	while (1) {
 		int slash1 = getchar();
 		int slash2 = getchar();
+		// single line comment
 		if (slash1 != '/' || slash2 != '/') {
 			ungetc(slash2, stdin);
 			ungetc(slash1, stdin);
@@ -55,6 +56,28 @@ int skipComments() {
 			}
 		}
 	}
+	//mulitline comment - possible bugs
+	while(1) {
+		int slash = getchar();
+		int asterisk = getchar();
+		if (slash != '/' || asterisk != '*') {
+			ungetc(asterisk, stdin);
+			ungetc(slash, stdin);
+			break;
+		}
+		int nextC = getchar();
+		while (1) {
+			int c = nextC;
+			nextC = getchar();
+			if (c == '*' || nextC == '/') {
+				break;
+			}
+			else {
+				skipped++;
+			}
+		}
+	}
+		
 	return skipped;
 }
 
