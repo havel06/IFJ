@@ -74,6 +74,7 @@ void parseIntLiteral(const token* tok, astExpression* expr) {
 	expr->type = AST_EXPR_TERM;
 	expr->term.type = AST_TERM_INT;
 	expr->term.integer.value = atoi(tok->content);
+	// TODO - parse exponent notation correctly
 }
 
 void parseDecimalLiteral(const token* tok, astExpression* expr) {
@@ -108,7 +109,10 @@ parseResult parseExpression(astExpression* expression) {
 		case TOKEN_STR_LITERAL:
 			TRY_PARSE(parseStringLiteral(&firstToken, expression), { tokenDestroy(&firstToken); });
 			break;
-		// TODO - bracket expression
+		case TOKEN_BRACKET_ROUND_LEFT:
+			TRY_PARSE(parseExpression(expression), { tokenDestroy(&firstToken); });
+			CONSUME_TOKEN_ASSUME_TYPE(TOKEN_BRACKET_ROUND_RIGHT, { tokenDestroy(&firstToken); });
+			break;
 		// TODO - binary expression
 		// TODO - unwrap expression
 		default:
