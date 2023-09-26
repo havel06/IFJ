@@ -29,7 +29,7 @@ typedef enum {
 typedef struct {
 	astTermType type;
 	union {
-		astIdentificator identificator;
+		astIdentificator identificator; // TODO - rename to identifier
 		astIntLiteral integer;
 		astDecimalLiteral decimal;
 		astStringLiteral string;
@@ -65,6 +65,7 @@ struct astExpression {
 	union {
 		astTerm term;
 		astBinaryExpression binary;
+		//TODO - unwrap expression
 	};
 };
 
@@ -118,6 +119,10 @@ typedef struct {
 } astVoidFunctionCall;
 
 typedef struct {
+	// TODO
+} astReturnStatement;
+
+typedef struct {
 	astStatementType type;
 	union {
 		astVariableDefinition variableDef;
@@ -126,6 +131,7 @@ typedef struct {
 		astIteration iteration;
 		astFunctionCall functionCall;
 		astVoidFunctionCall voidFunctionCall;
+		astReturnStatement returnStmt;
 	};
 } astStatement;
 
@@ -168,7 +174,5 @@ void astVarDefDestroy(astVariableDefinition*);
 // Returns 0 on success
 int astStringCreate(astStringLiteral*, const char* str);
 void astStringDestroy(astStringLiteral*);
-
-void astPrint(const astProgram*);
 
 #endif
