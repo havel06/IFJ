@@ -1,7 +1,7 @@
 BIN=bin
 SRC=src
 
-CFLAGS=-std=c99 -Wall -Wextra -Werror -std=c11
+CFLAGS=-std=c99 -Wall -Wextra -Werror -g
 CC=gcc $(CFLAGS)
 
 OBJS=$(patsubst $(SRC)/%.c,$(BIN)/%.o,$(wildcard $(SRC)/*.c))

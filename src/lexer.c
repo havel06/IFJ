@@ -4,13 +4,15 @@
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
-int tokenCreate(token* newToken, tokenType type, const char* str, int strLength) {
+/*
+int tokenCreate(token* newToken, tokenType type, const char* str) {
 	assert(newToken);
 	newToken->type = type;
 
-	if (!str && strLength == 0) {
-		newToken->content = malloc(strLength * sizeof(char));
+	if (str) {
+		newToken->content = malloc(strlen(str) * sizeof(char) + 1);
 		if (!(newToken->content)) {
 			return 1;
 		}
@@ -20,11 +22,13 @@ int tokenCreate(token* newToken, tokenType type, const char* str, int strLength)
 
 	return 0;
 }
+*/
 
 void tokenDestroy(token* tok) {
 	assert(tok);
 	if (tok->content) {
 		free(tok->content);
+		tok->content = NULL;
 	}
 }
 
@@ -72,28 +76,161 @@ int skipWhiteSpace() {
 	return skipped;
 }
 
+void checkForKeyword(token* newToken) {
+	assert(newToken);
+	assert(newToken->content);
+	
+	if (strcmp(newToken->content, "Double") == 0) {
+		newToken->type = TOKEN_KEYWORD_DOUBLE;
+	} else if (strcmp(newToken->content, "else") == 0) {
+		newToken->type = TOKEN_KEYWORD_ELSE;
+	} else if (strcmp(newToken->content, "func") == 0) {
+		newToken->type = TOKEN_KEYWORD_FUNC;
+	} else if (strcmp(newToken->content, "if") == 0) {
+		newToken->type = TOKEN_KEYWORD_IF;
+	} else if (strcmp(newToken->content, "Int") == 0) {
+		newToken->type = TOKEN_KEYWORD_INT;
+	} else if (strcmp(newToken->content, "let") == 0) {
+		newToken->type = TOKEN_KEYWORD_LET;
+	} else if (strcmp(newToken->content, "nil") == 0) {
+		newToken->type = TOKEN_KEYWORD_NIL;
+	} else if (strcmp(newToken->content, "return") == 0) {
+		newToken->type = TOKEN_KEYWORD_RETURN;
+	} else if (strcmp(newToken->content, "String") == 0) {
+		newToken->type = TOKEN_KEYWORD_STRING;
+	} else if (strcmp(newToken->content, "var") == 0) {
+		newToken->type = TOKEN_KEYWORD_VAR;
+	} else if (strcmp(newToken->content, "while") == 0) {
+		newToken->type = TOKEN_KEYWORD_WHILE;
+	}
+}
+
+int lexIdentifierToken(token* newToken) {
+	assert(newToken);
+	newToken->type = TOKEN_IDENTIFIER;
+	while (1) {
+		int c = getchar();
+		if (!isalnum(c)) {
+			ungetc(c, stdin);
+			break;
+		}
+
+		// add char to token
+		if (newToken->content == NULL) {
+			newToken->content = calloc(64, sizeof(char));
+			if (newToken->content == NULL) {
+				return 1;
+			}
+			newToken->content[0] = c;
+		} else {
+			int len = strlen(newToken->content);
+			if (len >= 63) {
+				// TODO - log warning
+				return 1;
+			}
+			newToken->content[len] = c;
+		}
+	}
+
+	checkForKeyword(newToken);
+	return 0;
+}
+
+int lexNumberToken(token* newToken) {
+	assert(newToken);
+
+	// TODO - decimal numbers
+	newToken->type = TOKEN_INT_LITERAL;
+	while (1) {
+		int c = getchar();
+		if (!isdigit(c)) {
+			ungetc(c, stdin);
+			break;
+		}
+
+		// add char to token
+		if (newToken->content == NULL) {
+			newToken->content = calloc(1024, sizeof(char));
+			if (newToken->content == NULL) {
+				return 1;
+			}
+			newToken->content[0] = c;
+		} else {
+			int len = strlen(newToken->content);
+			if (len >= 1023) {
+				// TODO - log warning
+				return 1;
+			}
+			newToken->content[len] = c;
+		}
+	}
+
+	return 0;
+}
+
 int getNextToken(token* newToken) {
 	assert(newToken);
 	while (skipWhiteSpace() || skipComments()) {
 	}
 
-	switch (getchar()) {
+	int c = getchar();
+	switch (c) {
 		case EOF:
-			return tokenCreate(newToken, TOKEN_EOF, NULL, 0);
+			newToken->type = TOKEN_EOF;
+			return 0;
 		case '*':
-			return tokenCreate(newToken, TOKEN_MUL, NULL, 0);
+			newToken->type = TOKEN_MUL;
+			return 0;
 		case '/':
-			return tokenCreate(newToken, TOKEN_DIV, NULL, 0);
+			newToken->type = TOKEN_DIV;
+			return 0;
 		case '+':
-			return tokenCreate(newToken, TOKEN_PLUS, NULL, 0);
+			newToken->type = TOKEN_PLUS;
+			return 0;
 		case ':':
-			return tokenCreate(newToken, TOKEN_COLON, NULL, 0);
+			newToken->type = TOKEN_COLON;
+			return 0;
 		case '!':
-			return tokenCreate(newToken, TOKEN_UNWRAP, NULL, 0);
-			// TODO
+			newToken->type = TOKEN_UNWRAP;
+			return 0;
+		case '(':
+			newToken->type = TOKEN_BRACKET_ROUND_LEFT;
+			return 0;
+		case ')':
+			newToken->type = TOKEN_BRACKET_ROUND_RIGHT;
+			return 0;
+		case '{':
+			newToken->type = TOKEN_BRACKET_CURLY_LEFT;
+			return 0;
+		case '}':
+			newToken->type = TOKEN_BRACKET_CURLY_RIGHT;
+			return 0;
+		case '_':
+			// TODO - identifiers starting with underscore
+			newToken->type = TOKEN_UNDERSCORE;
+			return 0;
+		case '=': {
+			int c2 = getchar();
+			if (c2 == '=') {
+				newToken->type = TOKEN_EQ;
+			} else {
+				ungetc(c2, stdin);
+				newToken->type = TOKEN_ASSIGN;
+			}
+			return 0;
+		}
+		// TODO - other token types
+		default:
+			if (isalpha(c)) {
+				ungetc(c, stdin);
+				return lexIdentifierToken(newToken);
+			} else if (isdigit(c)) {
+				ungetc(c, stdin);
+				return lexNumberToken(newToken);
+			}
 	}
 
-	return 1;
+	assert(0);
 }
 
 void printToken(const token* tok) {
@@ -101,9 +238,6 @@ void printToken(const token* tok) {
 	switch (tok->type) {
 		case TOKEN_EOF:
 			puts("EOF");
-			break;
-		case TOKEN_QUOTE:
-			puts("\"");
 			break;
 		case TOKEN_ASSIGN:
 			puts("=");

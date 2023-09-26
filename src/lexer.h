@@ -7,7 +7,6 @@ typedef enum {
 	TOKEN_INT_LITERAL,
 	TOKEN_DEC_LITERAL,
 	TOKEN_STR_LITERAL,
-	TOKEN_QUOTE,
 	TOKEN_ASSIGN,
 	TOKEN_EQ,
 	TOKEN_NEQ,
@@ -48,10 +47,11 @@ typedef struct {
 } token;
 
 // Returns 0 on success
-int tokenCreate(token*, tokenType type, const char* str, int strLength);
+// int tokenCreate(token*, tokenType type, const char* str);
 void tokenDestroy(token*);
 
 // Returns 0 on success
+// TODO - separate internal errors from lexing errors
 int getNextToken(token*);
 void printToken(const token*);
 

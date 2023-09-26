@@ -35,6 +35,7 @@ void astProgramDestroy(astProgram *program) {
 	// TODO - recurse down the program and clear all nodes
 	if (program->statements) {
 		free(program->statements);
+		program->statements = NULL;
 	}
 	program->count = 0;
 }

@@ -21,8 +21,9 @@ int main() {
 		getNextToken(&tok);
 		printToken(&tok);
 		if (tok.type == TOKEN_EOF) {
-			return 1;
+			return 0;
 		}
+		tokenDestroy(&tok);
 	}
 #endif
 
