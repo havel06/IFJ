@@ -3,6 +3,9 @@
 
 #include <stdbool.h>
 
+typedef struct astStatement astStatement; // fwd
+typedef struct astExpression astExpression;	 // fwd
+
 typedef struct {
 	char* name;
 } astIdentificator;
@@ -50,13 +53,16 @@ typedef enum {
 	AST_BINARY_NIL_COAL
 } astBinaryOperator;
 
-typedef struct astExpression astExpression;	 // fwd
 
 typedef struct {
 	astBinaryOperator op;
 	astExpression* lhs;
 	astExpression* rhs;
 } astBinaryExpression;
+
+typedef struct {
+	astExpression* innerExpr;
+} astUnwrapExpression;
 
 typedef enum { AST_EXPR_TERM, AST_EXPR_BINARY, AST_EXPR_UNWRAP } astExpressionType;
 
@@ -65,7 +71,7 @@ struct astExpression {
 	union {
 		astTerm term;
 		astBinaryExpression binary;
-		// TODO - unwrap expression
+		astUnwrapExpression unwrap;
 	};
 };
 
@@ -99,15 +105,24 @@ typedef struct {
 } astVariableDefinition;
 
 typedef struct {
-	// TODO
+	char* variableName;
+	astExpression value;
 } astAssignment;
 
 typedef struct {
-	// TODO
+	astStatement* statements;
+	int count;
+} astStatementBlock;
+
+typedef struct {
+	astExpression condition;
+	astStatementBlock body;
+	astStatementBlock bodyElse;
 } astConditional;
 
 typedef struct {
-	// TODO
+	astExpression condition;
+	astStatementBlock body;
 } astIteration;
 
 typedef struct {
@@ -119,10 +134,11 @@ typedef struct {
 } astVoidFunctionCall;
 
 typedef struct {
-	// TODO
+	bool has_value;
+	astExpression value;
 } astReturnStatement;
 
-typedef struct {
+struct astStatement {
 	astStatementType type;
 	union {
 		astVariableDefinition variableDef;
@@ -133,7 +149,7 @@ typedef struct {
 		astVoidFunctionCall voidFunctionCall;
 		astReturnStatement returnStmt;
 	};
-} astStatement;
+};
 
 typedef struct {
 	// TODO
@@ -174,5 +190,10 @@ void astVarDefDestroy(astVariableDefinition*);
 // Returns 0 on success
 int astStringCreate(astStringLiteral*, const char* str);
 void astStringDestroy(astStringLiteral*);
+
+void astStatmentBlockCreate(astStatementBlock*);
+// Returns 0 on success
+int astStatmentBlockAdd(astStatementBlock*, astStatement);
+void astStatementBlockDestroy(astStatementBlock*);
 
 #endif
