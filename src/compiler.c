@@ -8,12 +8,12 @@
 // 0 = global frame
 static int FRAME_LEVEL = 0;
 
-#define PUSH_FRAME() \
+#define PUSH_FRAME()     \
 	puts("CREATEFRAME"); \
-	puts("PUSHFRAME"); \
+	puts("PUSHFRAME");   \
 	FRAME_LEVEL++
 
-#define POP_FRAME() \
+#define POP_FRAME()   \
 	puts("POPFRAME"); \
 	FRAME_LEVEL--
 
@@ -242,7 +242,7 @@ static void compileReturn(const astReturnStatement* statement) {
 }
 
 static void compileInputParamList(const astInputParameterList* list) {
-	//parameters are pushed to the stack right to left
+	// parameters are pushed to the stack right to left
 	for (int i = list->count - 1; i >= 0; i--) {
 		compileTerm(&(list->data[i].value));
 	}
@@ -291,7 +291,7 @@ static void compileStatement(const astStatement* statement) {
 
 void compileFunctionDef(const astFunctionDefinition* def) {
 	PUSH_FRAME();
-	//parameters are read left to right
+	// parameters are read left to right
 	for (int i = 0; i < def->params.count; i++) {
 		printf("POPS LF@");
 		emitVariableId(&(def->params.data[i].insideName));
