@@ -136,9 +136,13 @@ void printVariableDefinition(const astVariableDefinition* definition, int indent
 }
 
 void printAssignment(const astAssignment* assignment, int indent) {
-	(void)assignment;
-	(void)indent;
-	// TODO
+	printIndent(indent);
+	puts("ASSIGNMENT:");
+	printIndent(indent + 1);
+	printf("NAME: %s\n", assignment->variableName);
+	printIndent(indent + 1);
+	puts("VALUE:");
+	printExpression(&assignment->value, indent + 2);
 }
 
 void printConditional(const astConditional* conditional, int indent) {

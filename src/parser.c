@@ -95,32 +95,49 @@ parseResult parseStringLiteral(const token* tok, astExpression* expr) {
 	return PARSE_OK;
 }
 
-parseResult parseExpression(astExpression* expression);	 // fwd
+parseResult parseIdentifier(const token* tok, astExpression* expr) {
+	expr->type = AST_EXPR_TERM;
+	expr->term.type = AST_TERM_ID;
+	expr->term.identificator.name = malloc(strlen(tok->content) + 1);
+	if (!expr->term.string.content) {
+		return PARSE_INTERNAL_ERROR;
+	}
+	strcpy(expr->term.identificator.name, tok->content);
 
-parseResult parsePrimaryExpression(astExpression* expression) {
-	token firstToken;
-	GET_TOKEN(firstToken, {});
+	return PARSE_OK;
+}
 
-	switch (firstToken.type) {
+parseResult parseExpression(astExpression* expression, token* firstToken); // fwd
+
+parseResult parsePrimaryExpression(astExpression* expression, token* firstToken) {
+	switch (firstToken->type) {
 		case TOKEN_INT_LITERAL:
-			parseIntLiteral(&firstToken, expression);
+			parseIntLiteral(firstToken, expression);
 			break;
 		case TOKEN_DEC_LITERAL:
-			parseDecimalLiteral(&firstToken, expression);
+			parseDecimalLiteral(firstToken, expression);
 			break;
 		case TOKEN_STR_LITERAL:
-			TRY_PARSE(parseStringLiteral(&firstToken, expression), { tokenDestroy(&firstToken); });
+			TRY_PARSE(parseStringLiteral(firstToken, expression), {});
 			break;
-		case TOKEN_BRACKET_ROUND_LEFT:
-			TRY_PARSE(parseExpression(expression), { tokenDestroy(&firstToken); });
-			CONSUME_TOKEN_ASSUME_TYPE(TOKEN_BRACKET_ROUND_RIGHT, { tokenDestroy(&firstToken); });
+		case TOKEN_BRACKET_ROUND_LEFT: {
+			token nextToken;
+			GET_TOKEN(nextToken, {});
+			TRY_PARSE(parseExpression(expression, &nextToken), {
+				tokenDestroy(&nextToken);
+			});
+			tokenDestroy(&nextToken);
+			CONSUME_TOKEN_ASSUME_TYPE(TOKEN_BRACKET_ROUND_RIGHT, {});
+			break;
+		}
+		case TOKEN_IDENTIFIER:
+			TRY_PARSE(parseIdentifier(firstToken, expression), {});
 			break;
 		// TODO - unwrap expression
 		default:
 			fprintf(stderr, "Unexpected token ");
-			printToken(&firstToken, stderr);
+			printToken(firstToken, stderr);
 			fprintf(stderr, "on start of expression.\n");
-			tokenDestroy(&firstToken);
 			return PARSE_ERROR;
 	}
 
@@ -193,14 +210,14 @@ int operatorPrecedence(astBinaryOperator op) {
 	assert(false);
 }
 
-parseResult parseExpression(astExpression* expression) {
+parseResult parseExpression(astExpression* expression, token* exprFirstToken) {
 	astExpression subExpressions[512];
 	int subExpressionsCount = 0;
 	astBinaryOperator operators[512];
 	int operatorCount = 0;
 
 	// TODO - error when array overflows
-	TRY_PARSE(parsePrimaryExpression(&subExpressions[subExpressionsCount++]), {});
+	TRY_PARSE(parsePrimaryExpression(&subExpressions[subExpressionsCount++], exprFirstToken), {});
 
 	while (1) {
 		token firstToken;
@@ -211,10 +228,17 @@ parseResult parseExpression(astExpression* expression) {
 			break;
 		}
 
+		// TODO - error when array overflows
 		operators[operatorCount++] = parseBinaryOperator(firstToken.type);
 		tokenDestroy(&firstToken);
-		// TODO - error when array overflows
-		TRY_PARSE(parsePrimaryExpression(&subExpressions[subExpressionsCount++]), {});
+
+		token subExprFirstToken;
+		GET_TOKEN(subExprFirstToken, {});
+		printToken(&subExprFirstToken, stdout);
+		TRY_PARSE(parsePrimaryExpression(&subExpressions[subExpressionsCount++], &subExprFirstToken), {
+			tokenDestroy(&subExprFirstToken);
+		});
+		tokenDestroy(&subExprFirstToken);
 	}
 
 	// TODO - operator associativity?
@@ -270,9 +294,17 @@ parseResult parseVarDef(astStatement* statement, bool immutable) {
 	});
 
 	astExpression initExpression;
-	TRY_PARSE(parseExpression(&initExpression), {
+	token initExprFirstToken;
+
+	GET_TOKEN(initExprFirstToken, {
 		tokenDestroy(&variableNameToken);
 		tokenDestroy(&variableTypeToken);
+	});
+
+	TRY_PARSE(parseExpression(&initExpression, &initExprFirstToken), {
+		tokenDestroy(&variableNameToken);
+		tokenDestroy(&variableTypeToken);
+		tokenDestroy(&initExprFirstToken);
 	});
 
 	astDataType dataType;
@@ -286,6 +318,58 @@ parseResult parseVarDef(astStatement* statement, bool immutable) {
 	}
 
 	return returnValue;
+}
+
+parseResult parseFunctionCall(astStatement* statement, const char* varName, const char* funcName) {
+	(void)statement;
+	(void)varName;
+	(void)funcName;
+	return PARSE_OK;
+	//TODO
+}
+
+parseResult parseVoidFunctionCall(astStatement* statement, const char* funcName) {
+	(void)statement;
+	(void)funcName;
+	return PARSE_OK;
+	// TODO
+}
+
+parseResult parseAssignment(astStatement* statement, const char* varName, token* exprFirstToken) {
+	statement->type = AST_STATEMENT_ASSIGN;
+	statement->assignment.variableName = malloc(strlen(varName) + 1);
+	if (!statement->assignment.variableName) {
+		return PARSE_INTERNAL_ERROR;
+	}
+	strcpy(statement->assignment.variableName, varName);
+	TRY_PARSE(parseExpression(&(statement->assignment.value), exprFirstToken), {});
+	return PARSE_OK;
+}
+
+parseResult parseAssignmentOrFunctionCall(astStatement* statement, const char* varName) {
+	token idToken;
+	GET_TOKEN_ASSUME_TYPE(idToken, TOKEN_IDENTIFIER, {});
+
+	token nextToken;
+	GET_TOKEN(nextToken, {
+		tokenDestroy(&idToken);
+	});
+
+	if (nextToken.type == TOKEN_BRACKET_ROUND_LEFT) {
+		TRY_PARSE(parseFunctionCall(statement, varName, nextToken.content), {
+			tokenDestroy(&idToken);
+			tokenDestroy(&nextToken);
+		});
+		tokenDestroy(&nextToken);
+	} else {
+		unGetToken(&nextToken);
+		TRY_PARSE(parseAssignment(statement, varName, &idToken), {
+			tokenDestroy(&idToken);
+		});
+	}
+	tokenDestroy(&idToken);
+
+	return PARSE_OK;
 }
 
 parseResult parseStatement(astStatement* statement, const token* firstToken) {
@@ -305,9 +389,18 @@ parseResult parseStatement(astStatement* statement, const token* firstToken) {
 		case TOKEN_KEYWORD_WHILE:
 			// TODO - parse iteration
 			break;
-		case TOKEN_IDENTIFIER:
-			// TODO - parse variable assignment or function call
+		case TOKEN_IDENTIFIER: {
+			token secondToken;
+			GET_TOKEN(secondToken, {});
+			tokenType secondTokenType = secondToken.type;
+			tokenDestroy(&secondToken);
+			if (secondTokenType == TOKEN_ASSIGN) {
+				TRY_PARSE(parseAssignmentOrFunctionCall(statement, firstToken->content), {});
+			} else {
+				TRY_PARSE(parseVoidFunctionCall(statement, firstToken->content), {});
+			}
 			break;
+		}
 		default:
 			fprintf(stderr, "Unexpected token ");
 			printToken(firstToken, stderr);
