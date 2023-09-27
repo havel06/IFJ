@@ -44,12 +44,11 @@ void tokenDestroy(token* tok) {
 
 // Returns 0 if no comments were skipped
 int skipComments() {
-	// TODO - multiline comments
 	int skipped = 0;
+	// single line comment
 	while (1) {
 		int slash1 = getchar();
 		int slash2 = getchar();
-		// single line comment
 		if (slash1 != '/' || slash2 != '/') {
 			ungetc(slash2, stdin);
 			ungetc(slash1, stdin);
@@ -66,7 +65,7 @@ int skipComments() {
 			}
 		}
 	}
-	// mulitline comment - possible bugs
+	// mulitline comment
 	while (1) {
 		int slash = getchar();
 		int asterisk = getchar();
