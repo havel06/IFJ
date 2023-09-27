@@ -196,6 +196,22 @@ void printIteration(const astIteration* iteration, int indent) {
 	printStatementBlock(&iteration->body, indent + 2);
 }
 
+void printFunctionCallParams(const astInputParameterList* list, int indent) {
+	printIndent(indent);
+	puts("PARAMS:");
+	for (int i = 0; i < list->count; i++) {
+		printIndent(indent + 1);
+		puts("PARAM:");
+		if (list->data[i].name.name) {
+			printIndent(indent + 2);
+			printf("NAME: %s\n", list->data[i].name.name);
+		}
+		printIndent(indent + 2);
+		puts("VALUE:");
+		printTerm(&(list->data[i].value), indent + 3);
+	}
+}
+
 void printFunctionCall(const astFunctionCall* call, int indent) {
 	printIndent(indent);
 	puts("FUNCTION CALL:");
@@ -206,25 +222,17 @@ void printFunctionCall(const astFunctionCall* call, int indent) {
 	printIndent(indent + 1);
 	printf("VARIABLE NAME: %s\n", call->varName.name);
 
-	printIndent(indent + 1);
-	puts("PARAMS:");
-	for (int i = 0; i < call->params.count; i++) {
-		printIndent(indent + 2);
-		puts("PARAM:");
-		if (call->params.data[i].name.name) {
-			printIndent(indent + 3);
-			printf("NAME: %s\n", call->params.data[i].name.name);
-		}
-		printIndent(indent + 3);
-		puts("VALUE:");
-		printTerm(&(call->params.data[i].value), indent + 4);
-	}
+	printFunctionCallParams(&call->params, indent + 1);
 }
 
 void printProcedureCall(const astProcedureCall* call, int indent) {
-	(void)call;
-	(void)indent;
-	// TODO
+	printIndent(indent);
+	puts("PROCEDURE CALL:");
+
+	printIndent(indent + 1);
+	printf("PROCEDURE NAME: %s\n", call->procName.name);
+
+	printFunctionCallParams(&call->params, indent + 1);
 }
 
 void printReturn(const astReturnStatement* ret, int indent) {

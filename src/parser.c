@@ -27,15 +27,13 @@ static parseResult parseExpression(astExpression* expression, const token* first
 		}                                    \
 	} while (0)
 
-/*
 #define GET_TOKEN_TYPE(typeVar, onError) \
-	do { \
-		token testedToken; \
+	do {                                 \
+		token testedToken;               \
 		GET_TOKEN(testedToken, onError); \
-		typeVar = testedToken.type; \
-		tokenDestroy(&testedToken); \
+		typeVar = testedToken.type;      \
+		tokenDestroy(&testedToken);      \
 	} while (0)
-	*/
 
 #define GET_TOKEN_ASSUME_TYPE(tokenVar, assumedType, onError) \
 	do {                                                      \
@@ -426,10 +424,13 @@ static parseResult parseFunctionCall(astStatement* statement, const token* varNa
 }
 
 static parseResult parseProcedureCall(astStatement* statement, const token* funcName) {
-	(void)statement;
-	(void)funcName;
+	statement->type = AST_STATEMENT_PROC_CALL;
+
+	TRY_PARSE(parseIdentifier(funcName, &(statement->procedureCall.procName)), {});
+	TRY_PARSE(parseFunctionCallParams(&(statement->procedureCall.params)), {});
+	CONSUME_TOKEN_ASSUME_TYPE(TOKEN_BRACKET_ROUND_RIGHT, {});
+
 	return PARSE_OK;
-	// TODO
 }
 
 static parseResult parseAssignment(astStatement* statement, const token* varName, token* exprFirstToken) {
@@ -559,14 +560,14 @@ parseResult parseStatement(astStatement* statement, const token* firstToken, boo
 			TRY_PARSE(parseIteration(statement, insideFunction), {});
 			break;
 		case TOKEN_IDENTIFIER: {
-			token secondToken;
-			GET_TOKEN(secondToken, {});
-			tokenType secondTokenType = secondToken.type;
-			tokenDestroy(&secondToken);
+			tokenType secondTokenType;
+			GET_TOKEN_TYPE(secondTokenType, {});
 			if (secondTokenType == TOKEN_ASSIGN) {
 				TRY_PARSE(parseAssignmentOrFunctionCall(statement, firstToken), {});
-			} else {
+			} else if (secondTokenType == TOKEN_BRACKET_ROUND_LEFT) {
 				TRY_PARSE(parseProcedureCall(statement, firstToken), {});
+			} else {
+				return PARSE_ERROR;
 			}
 			break;
 		}

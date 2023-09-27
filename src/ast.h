@@ -160,7 +160,8 @@ typedef struct {
 } astFunctionCall;
 
 typedef struct {
-	// TODO
+	astIdentifier procName;
+	astInputParameterList params;
 } astProcedureCall;
 
 typedef struct {

@@ -11,3 +11,4 @@
 //}
 
 foo = bar(32, "hello", nil)
+baz(64, nil)
