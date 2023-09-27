@@ -170,9 +170,13 @@ static void compileVariableDef(const astVariableDefinition* def) {
 }
 
 static void compileStatementBlock(const astStatementBlock* block) {
+	puts("CREATEFRAME");
+	puts("PUSHFRAME");
+	FRAME_LEVEL++;
 	for (int i = 0; i < block->count; i++) {
 		compileStatement(&block->statements[i]);
 	}
+	puts("POPFRAME");
 }
 
 static void compileConditional(const astConditional* conditional) {
@@ -185,12 +189,13 @@ static void compileConditional(const astConditional* conditional) {
 
 	int label1 = newLabelName();
 	puts("PUSHS bool@true");
-	printf("JUMPIFNEQ %d\n", label1);
+	printf("JUMPIFNEQS %d\n", label1);
 
 	compileStatementBlock(&conditional->body);
 
 	if (!conditional->hasElse) {
 		printf("LABEL %d\n", label1);
+		puts("CLEARS");
 		return;
 	}
 
@@ -201,6 +206,22 @@ static void compileConditional(const astConditional* conditional) {
 	compileStatementBlock(&conditional->bodyElse);
 
 	printf("LABEL %d\n", label2);
+	puts("CLEARS");
+}
+
+static void compileIteration(const astIteration* iteration) {
+	int startLabel = newLabelName();
+	int condLabel = newLabelName();
+	printf("JUMP %d\n", condLabel);
+	printf("LABEL %d\n", startLabel);
+	// body
+	compileStatementBlock(&iteration->body);
+	// condition
+	printf("LABEL %d\n", condLabel);
+	compileExpression(&iteration->condition);
+	puts("PUSHS bool@true");
+	printf("JUMPIFEQS %d\n", startLabel);
+	puts("CLEARS");
 }
 
 static void compileStatement(const astStatement* statement) {
@@ -215,8 +236,7 @@ static void compileStatement(const astStatement* statement) {
 			compileConditional(&statement->conditional);
 			break;
 		case AST_STATEMENT_ITER:
-			// TODO
-			// compileIteration(&statement->iteration);
+			compileIteration(&statement->iteration);
 			break;
 		case AST_STATEMENT_FUNC_CALL:
 			// TODO
