@@ -10,8 +10,8 @@
 #include "printToken.h"
 
 // forward declarations
-parseResult parseStatement(astStatement* statement, const token* firstToken, bool insideFunction);
-parseResult parseExpression(astExpression* expression, const token* firstToken);
+static parseResult parseStatement(astStatement* statement, const token* firstToken, bool insideFunction);
+static parseResult parseExpression(astExpression* expression, const token* firstToken);
 
 #define GET_TOKEN(tokenVar, onError)         \
 	do {                                     \
@@ -69,7 +69,7 @@ parseResult parseExpression(astExpression* expression, const token* firstToken);
 		}                            \
 	} while (0)
 
-astBasicDataType keywordToDataType(tokenType type) {
+static astBasicDataType keywordToDataType(tokenType type) {
 	switch (type) {
 		case TOKEN_KEYWORD_INT:
 			return AST_TYPE_INT;
@@ -82,32 +82,29 @@ astBasicDataType keywordToDataType(tokenType type) {
 	}
 }
 
-void parseIntLiteral(const token* tok, astExpression* expr) {
-	expr->type = AST_EXPR_TERM;
-	expr->term.type = AST_TERM_INT;
-	expr->term.integer.value = atoi(tok->content);
+static void parseIntLiteral(const token* tok, astTerm* term) {
+	term->type = AST_TERM_INT;
+	term->integer.value = atoi(tok->content);
 	// TODO - parse exponent notation correctly
 }
 
-void parseDecimalLiteral(const token* tok, astExpression* expr) {
-	expr->type = AST_EXPR_TERM;
-	expr->term.type = AST_TERM_DECIMAL;
-	expr->term.decimal.value = atof(tok->content);
+static void parseDecimalLiteral(const token* tok, astTerm* term) {
+	term->type = AST_TERM_DECIMAL;
+	term->decimal.value = atof(tok->content);
 }
 
-parseResult parseStringLiteral(const token* tok, astExpression* expr) {
-	expr->type = AST_EXPR_TERM;
-	expr->term.type = AST_TERM_STRING;
-	expr->term.string.content = malloc(strlen(tok->content) * sizeof(char) + 1);
-	if (!expr->term.string.content) {
+static parseResult parseStringLiteral(const token* tok, astTerm* term) {
+	term->type = AST_TERM_STRING;
+	term->string.content = malloc(strlen(tok->content) * sizeof(char) + 1);
+	if (!term->string.content) {
 		return PARSE_INTERNAL_ERROR;
 	}
-	strcpy(expr->term.string.content, tok->content);
+	strcpy(term->string.content, tok->content);
 
 	return PARSE_OK;
 }
 
-parseResult parseIdentifier(const token* tok, astIdentifier* identifier) {
+static parseResult parseIdentifier(const token* tok, astIdentifier* identifier) {
 	identifier->name = malloc(strlen(tok->content) + 1);
 	if (!identifier->name) {
 		return PARSE_INTERNAL_ERROR;
@@ -116,28 +113,41 @@ parseResult parseIdentifier(const token* tok, astIdentifier* identifier) {
 	return PARSE_OK;
 }
 
-parseResult parseIdentifierExpr(const token* tok, astExpression* expr) {
-	expr->type = AST_EXPR_TERM;
-	expr->term.type = AST_TERM_ID;
-	TRY_PARSE(parseIdentifier(tok, &(expr->term.identifier)), {});
+static parseResult parseIdentifierTerm(const token* tok, astTerm* term) {
+	term->type = AST_TERM_ID;
+	TRY_PARSE(parseIdentifier(tok, &(term->identifier)), {});
 	return PARSE_OK;
 }
 
-parseResult parsePrimaryExpression(astExpression* expression, const token* firstToken) {
+static parseResult parseTerm(astTerm* term, const token* firstToken) {
 	switch (firstToken->type) {
 		case TOKEN_KEYWORD_NIL:
-			expression->type = AST_EXPR_TERM;
-			expression->term.type = AST_TERM_NIL;
+			term->type = AST_TERM_NIL;
 			break;
 		case TOKEN_INT_LITERAL:
-			parseIntLiteral(firstToken, expression);
+			parseIntLiteral(firstToken, term);
 			break;
 		case TOKEN_DEC_LITERAL:
-			parseDecimalLiteral(firstToken, expression);
+			parseDecimalLiteral(firstToken, term);
 			break;
 		case TOKEN_STR_LITERAL:
-			TRY_PARSE(parseStringLiteral(firstToken, expression), {});
+			TRY_PARSE(parseStringLiteral(firstToken, term), {});
 			break;
+		case TOKEN_IDENTIFIER:
+			TRY_PARSE(parseIdentifierTerm(firstToken, term), {});
+			break;
+		default:
+			fprintf(stderr, "Unexpected token ");
+			printToken(firstToken, stderr);
+			fprintf(stderr, "on start of term.\n");
+			return PARSE_ERROR;
+	}
+
+	return PARSE_OK;
+}
+
+static parseResult parsePrimaryExpression(astExpression* expression, const token* firstToken) {
+	switch (firstToken->type) {
 		case TOKEN_BRACKET_ROUND_LEFT: {
 			token nextToken;
 			GET_TOKEN(nextToken, {});
@@ -145,22 +155,20 @@ parseResult parsePrimaryExpression(astExpression* expression, const token* first
 			tokenDestroy(&nextToken);
 			CONSUME_TOKEN_ASSUME_TYPE(TOKEN_BRACKET_ROUND_RIGHT, {});
 			break;
+
+			default:
+				expression->type = AST_EXPR_TERM;
+				TRY_PARSE(parseTerm(&expression->term, firstToken), {});
+				break;
 		}
-		case TOKEN_IDENTIFIER:
-			TRY_PARSE(parseIdentifierExpr(firstToken, expression), {});
-			break;
-		// TODO - unwrap expression
-		default:
-			fprintf(stderr, "Unexpected token ");
-			printToken(firstToken, stderr);
-			fprintf(stderr, "on start of expression.\n");
-			return PARSE_ERROR;
 	}
+
+	// TODO - unwrap expression
 
 	return PARSE_OK;
 }
 
-bool isBinaryOperator(tokenType type) {
+static bool isBinaryOperator(tokenType type) {
 	switch (type) {
 		case TOKEN_NEQ:
 		case TOKEN_LESS:
@@ -178,7 +186,7 @@ bool isBinaryOperator(tokenType type) {
 	}
 }
 
-astBinaryOperator parseBinaryOperator(tokenType type) {
+static astBinaryOperator parseBinaryOperator(tokenType type) {
 	switch (type) {
 		case TOKEN_NEQ:
 			return AST_BINARY_NEQ;
@@ -205,7 +213,7 @@ astBinaryOperator parseBinaryOperator(tokenType type) {
 	}
 }
 
-int operatorPrecedence(astBinaryOperator op) {
+static int operatorPrecedence(astBinaryOperator op) {
 	switch (op) {
 		case AST_BINARY_MUL:
 		case AST_BINARY_DIV:
@@ -226,7 +234,7 @@ int operatorPrecedence(astBinaryOperator op) {
 	assert(false);
 }
 
-parseResult parseExpression(astExpression* expression, const token* exprFirstToken) {
+static parseResult parseExpression(astExpression* expression, const token* exprFirstToken) {
 	astExpression subExpressions[512];
 	int subExpressionsCount = 0;
 	astBinaryOperator operators[512];
@@ -290,7 +298,7 @@ parseResult parseExpression(astExpression* expression, const token* exprFirstTok
 	return PARSE_OK;
 }
 
-parseResult parseDataType(astDataType* dataType) {
+static parseResult parseDataType(astDataType* dataType) {
 	token tok;
 	GET_TOKEN(tok, {});
 	dataType->type = keywordToDataType(tok.type);
@@ -311,7 +319,7 @@ parseResult parseDataType(astDataType* dataType) {
 	return PARSE_OK;
 }
 
-parseResult parseVarDef(astStatement* statement, bool immutable) {
+static parseResult parseVarDef(astStatement* statement, bool immutable) {
 	statement->type = AST_STATEMENT_VAR_DEF;
 
 	token variableNameToken;
@@ -344,7 +352,7 @@ parseResult parseVarDef(astStatement* statement, bool immutable) {
 	return returnValue;
 }
 
-parseResult parseStatementBlock(astStatementBlock* block, bool insideFunction) {
+static parseResult parseStatementBlock(astStatementBlock* block, bool insideFunction) {
 	astStatementBlockCreate(block);
 	CONSUME_TOKEN_ASSUME_TYPE(TOKEN_BRACKET_CURLY_LEFT, {});
 	while (1) {
@@ -368,33 +376,74 @@ parseResult parseStatementBlock(astStatementBlock* block, bool insideFunction) {
 	return PARSE_OK;
 }
 
-parseResult parseFunctionCall(astStatement* statement, const char* varName, const char* funcName) {
+static parseResult parseFunctionCallParameter(astInputParameter* param) {
+	// TODO - named params
+	param->name.name = NULL;
+	token firstToken;
+	GET_TOKEN(firstToken, {});
+	TRY_PARSE(parseTerm(&(param->value), &firstToken), { tokenDestroy(&firstToken); });
+	tokenDestroy(&firstToken);
+	return PARSE_OK;
+}
+
+static parseResult parseFunctionCallParams(astInputParameterList* params) {
+	astInputParameterListCreate(params);
+
+	astInputParameter firstParam;
+	TRY_PARSE(parseFunctionCallParameter(&firstParam), {});
+	if (astInputParameterListAdd(params, firstParam) != 0) {
+		return PARSE_INTERNAL_ERROR;
+	}
+
+	while (1) {
+		// check for comma
+		token nextToken;
+		GET_TOKEN(nextToken, {});
+		if (nextToken.type != TOKEN_COMMA) {
+			unGetToken(&nextToken);
+			break;
+		}
+		tokenDestroy(&nextToken);
+
+		// parse next parameter
+		astInputParameter param;
+		TRY_PARSE(parseFunctionCallParameter(&param), {});
+		astInputParameterListAdd(params, param);
+	}
+
+	return PARSE_OK;
+}
+
+static parseResult parseFunctionCall(astStatement* statement, const token* varName, const token* funcName) {
+	statement->type = AST_STATEMENT_FUNC_CALL;
+
+	TRY_PARSE(parseIdentifier(varName, &(statement->functionCall.varName)), {});
+	TRY_PARSE(parseIdentifier(funcName, &(statement->functionCall.funcName)), {});
+	TRY_PARSE(parseFunctionCallParams(&(statement->functionCall.params)), {});
+	CONSUME_TOKEN_ASSUME_TYPE(TOKEN_BRACKET_ROUND_RIGHT, {});
+
+	return PARSE_OK;
+}
+
+static parseResult parseProcedureCall(astStatement* statement, const token* funcName) {
 	(void)statement;
-	(void)varName;
 	(void)funcName;
 	return PARSE_OK;
 	// TODO
 }
 
-parseResult parseVoidFunctionCall(astStatement* statement, const char* funcName) {
-	(void)statement;
-	(void)funcName;
-	return PARSE_OK;
-	// TODO
-}
-
-parseResult parseAssignment(astStatement* statement, const char* varName, token* exprFirstToken) {
+static parseResult parseAssignment(astStatement* statement, const token* varName, token* exprFirstToken) {
 	statement->type = AST_STATEMENT_ASSIGN;
-	statement->assignment.variableName = malloc(strlen(varName) + 1);
+	statement->assignment.variableName = malloc(strlen(varName->content) + 1);
 	if (!statement->assignment.variableName) {
 		return PARSE_INTERNAL_ERROR;
 	}
-	strcpy(statement->assignment.variableName, varName);
+	strcpy(statement->assignment.variableName, varName->content);
 	TRY_PARSE(parseExpression(&(statement->assignment.value), exprFirstToken), {});
 	return PARSE_OK;
 }
 
-parseResult parseAssignmentOrFunctionCall(astStatement* statement, const char* varName) {
+static parseResult parseAssignmentOrFunctionCall(astStatement* statement, const token* varName) {
 	token firstToken;
 	GET_TOKEN(firstToken, {});
 
@@ -403,11 +452,8 @@ parseResult parseAssignmentOrFunctionCall(astStatement* statement, const char* v
 		GET_TOKEN(nextToken, { tokenDestroy(&firstToken); });
 
 		if (nextToken.type == TOKEN_BRACKET_ROUND_LEFT) {
-			TRY_PARSE(parseFunctionCall(statement, varName, nextToken.content), {
-				tokenDestroy(&firstToken);
-				tokenDestroy(&nextToken);
-			});
 			tokenDestroy(&nextToken);
+			TRY_PARSE(parseFunctionCall(statement, varName, &firstToken), { tokenDestroy(&firstToken); });
 		} else {
 			unGetToken(&nextToken);
 			TRY_PARSE(parseAssignment(statement, varName, &firstToken), { tokenDestroy(&firstToken); });
@@ -421,7 +467,7 @@ parseResult parseAssignmentOrFunctionCall(astStatement* statement, const char* v
 	return PARSE_OK;
 }
 
-parseResult parseIteration(astStatement* statement, bool insideFunction) {
+static parseResult parseIteration(astStatement* statement, bool insideFunction) {
 	statement->type = AST_STATEMENT_ITER;
 	token exprFirstToken;
 	GET_TOKEN(exprFirstToken, {});
@@ -433,7 +479,7 @@ parseResult parseIteration(astStatement* statement, bool insideFunction) {
 	return PARSE_OK;
 }
 
-parseResult parseReturnStatement(astStatement* statement, bool withValue) {
+static parseResult parseReturnStatement(astStatement* statement, bool withValue) {
 	statement->type = AST_STATEMENT_RETURN;
 	statement->returnStmt.has_value = withValue;
 
@@ -447,7 +493,7 @@ parseResult parseReturnStatement(astStatement* statement, bool withValue) {
 	return PARSE_OK;
 }
 
-parseResult parseConditionalCondition(astCondition* condition) {
+static parseResult parseConditionalCondition(astCondition* condition) {
 	token conditionFirstToken;
 	GET_TOKEN(conditionFirstToken, {});
 
@@ -470,7 +516,7 @@ parseResult parseConditionalCondition(astCondition* condition) {
 	return PARSE_OK;
 }
 
-parseResult parseConditional(astStatement* statement, bool insideFunction) {
+static parseResult parseConditional(astStatement* statement, bool insideFunction) {
 	statement->type = AST_STATEMENT_COND;
 
 	// parse condition
@@ -518,9 +564,9 @@ parseResult parseStatement(astStatement* statement, const token* firstToken, boo
 			tokenType secondTokenType = secondToken.type;
 			tokenDestroy(&secondToken);
 			if (secondTokenType == TOKEN_ASSIGN) {
-				TRY_PARSE(parseAssignmentOrFunctionCall(statement, firstToken->content), {});
+				TRY_PARSE(parseAssignmentOrFunctionCall(statement, firstToken), {});
 			} else {
-				TRY_PARSE(parseVoidFunctionCall(statement, firstToken->content), {});
+				TRY_PARSE(parseProcedureCall(statement, firstToken), {});
 			}
 			break;
 		}
@@ -534,7 +580,7 @@ parseResult parseStatement(astStatement* statement, const token* firstToken, boo
 	return PARSE_OK;
 }
 
-parseResult parseParameter(astParameter* param) {
+static parseResult parseParameter(astParameter* param) {
 	// parse outside name
 	token outsideNameToken;
 	GET_TOKEN(outsideNameToken, {});
@@ -562,7 +608,7 @@ parseResult parseParameter(astParameter* param) {
 	return PARSE_OK;
 }
 
-parseResult parseParameterList(astParameterList* list) {
+static parseResult parseParameterList(astParameterList* list) {
 	astParameterListCreate(list);
 
 	astParameter firstParam;
@@ -588,7 +634,7 @@ parseResult parseParameterList(astParameterList* list) {
 	return PARSE_OK;
 }
 
-parseResult parseFunctionDefinition(astFunctionDefinition* def) {
+static parseResult parseFunctionDefinition(astFunctionDefinition* def) {
 	// parse name
 	token idToken;
 	GET_TOKEN(idToken, {});

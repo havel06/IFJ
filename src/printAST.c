@@ -197,9 +197,28 @@ void printIteration(const astIteration* iteration, int indent) {
 }
 
 void printFunctionCall(const astFunctionCall* call, int indent) {
-	(void)call;
-	(void)indent;
-	// TODO
+	printIndent(indent);
+	puts("FUNCTION CALL:");
+
+	printIndent(indent + 1);
+	printf("FUNCTION NAME: %s\n", call->funcName.name);
+
+	printIndent(indent + 1);
+	printf("VARIABLE NAME: %s\n", call->varName.name);
+
+	printIndent(indent + 1);
+	puts("PARAMS:");
+	for (int i = 0; i < call->params.count; i++) {
+		printIndent(indent + 2);
+		puts("PARAM:");
+		if (call->params.data[i].name.name) {
+			printIndent(indent + 3);
+			printf("NAME: %s\n", call->params.data[i].name.name);
+		}
+		printIndent(indent + 3);
+		puts("VALUE:");
+		printTerm(&(call->params.data[i].value), indent + 4);
+	}
 }
 
 void printProcedureCall(const astProcedureCall* call, int indent) {

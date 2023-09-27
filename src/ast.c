@@ -104,7 +104,27 @@ int astParameterListAdd(astParameterList *list, astParameter param) {
 	if (list->data == NULL) {
 		list->data = malloc(sizeof(param));
 	} else {
-		list->data = realloc(list->data, sizeof(param) * list->count + 1);
+		list->data = realloc(list->data, sizeof(param) * (list->count + 1));
+	}
+
+	if (list->data == NULL) {
+		return 1;
+	}
+
+	list->data[list->count++] = param;
+	return 0;
+}
+
+void astInputParameterListCreate(astInputParameterList *list) {
+	list->data = NULL;
+	list->count = 0;
+}
+
+int astInputParameterListAdd(astInputParameterList *list, astInputParameter param) {
+	if (list->data == NULL) {
+		list->data = malloc(sizeof(param));
+	} else {
+		list->data = realloc(list->data, sizeof(param) * (list->count + 1));
 	}
 
 	if (list->data == NULL) {

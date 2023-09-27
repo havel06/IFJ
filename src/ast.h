@@ -144,7 +144,19 @@ typedef struct {
 } astIteration;
 
 typedef struct {
-	// TODO
+	astIdentifier name;
+	astTerm value;
+} astInputParameter;
+
+typedef struct {
+	astInputParameter* data;
+	int count;
+} astInputParameterList;
+
+typedef struct {
+	astIdentifier varName;
+	astIdentifier funcName;
+	astInputParameterList params;
 } astFunctionCall;
 
 typedef struct {
@@ -232,10 +244,12 @@ void astStatementBlockDestroy(astStatementBlock*);
 
 // void astParameterDestroy();
 
-// Returns 0 on success
 void astParameterListCreate(astParameterList*);
 // Returns 0 on success
 int astParameterListAdd(astParameterList*, astParameter);
 // void astParameterListDestroy();
+//
+void astInputParameterListCreate(astInputParameterList*);
+int astInputParameterListAdd(astInputParameterList*, astInputParameter);
 
 #endif
