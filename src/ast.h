@@ -114,7 +114,24 @@ typedef struct {
 } astStatementBlock;
 
 typedef struct {
-	astExpression condition;
+	char* variableName;
+} astOptionalBinding;
+
+typedef enum {
+	AST_CONDITION_OPT_BINDING,
+	AST_CONDITION_EXPRESSION,
+} astConditionType;
+
+typedef struct {
+	astConditionType type;
+	union {
+		astExpression expression;
+		astOptionalBinding optBinding;
+	};
+} astCondition;
+
+typedef struct {
+	astCondition condition;
 	astStatementBlock body;
 	astStatementBlock bodyElse;
 } astConditional;
