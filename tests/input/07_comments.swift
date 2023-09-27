@@ -9,8 +9,14 @@ comment
 */
 
 /* 
-multiline comment 
-/*
-with multiline comment inside?
+    multiline comment 
+        /* 
+            with multiline comment inside? 
+        */ 
 */
+
+/* 
+    multiline comment
+    
+    //with line comment
 */
