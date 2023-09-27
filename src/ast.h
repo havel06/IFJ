@@ -98,14 +98,14 @@ typedef struct {
 } astDataType;
 
 typedef struct {
-	char* variableName;	 // TODO - use identifier
+	astIdentifier variableName;
 	astDataType variableType;
 	astExpression value;
 	bool immutable;
 } astVariableDefinition;
 
 typedef struct {
-	char* variableName;	 // TODO - use identifier
+	astIdentifier variableName;
 	astExpression value;
 } astAssignment;
 
@@ -229,10 +229,6 @@ void astBinaryExprDestroy(astExpression*);
 // Returns 0 on success
 int astIdentCreate(astIdentifier*, const char* str);
 void astIdentDestroy(astIdentifier*);
-
-// Returns 0 on success
-int astVarDefCreate(astVariableDefinition*, const char* str, astDataType, astExpression, bool immutable);
-void astVarDefDestroy(astVariableDefinition*);
 
 // Returns 0 on success
 int astStringCreate(astStringLiteral*, const char* str);

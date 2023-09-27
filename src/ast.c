@@ -42,20 +42,6 @@ void astProgramDestroy(astProgram *program) {
 	program->count = 0;
 }
 
-int astVarDefCreate(astVariableDefinition *varDef, const char *str, astDataType type, astExpression expr,
-					bool immutable) {
-	varDef->variableName = malloc(strlen(str) * sizeof(char) + 1);
-	if (varDef->variableName == NULL) {
-		return 1;
-	}
-	strcpy(varDef->variableName, str);
-
-	varDef->variableType = type;
-	varDef->value = expr;
-	varDef->immutable = immutable;
-	return 0;
-}
-
 int astBinaryExprCreate(astExpression *expr, astExpression lhs, astExpression rhs, astBinaryOperator op) {
 	expr->type = AST_EXPR_BINARY;
 
@@ -141,13 +127,5 @@ void astBinaryExprDestroy(astExpression* expr) {
 	free(expr->binary.rhs);
 	expr->binary.lhs = NULL;
 	expr->binary.rhs = NULL;
-}
-*/
-
-/*
-void astVarDefDestroy(astVariableDefinition* varDef) {
-	if (varDef->variableName) {
-		free(varDef->variableName);
-	}
 }
 */

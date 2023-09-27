@@ -319,35 +319,29 @@ static parseResult parseDataType(astDataType* dataType) {
 
 static parseResult parseVarDef(astStatement* statement, bool immutable) {
 	statement->type = AST_STATEMENT_VAR_DEF;
+	statement->variableDef.immutable = immutable;
 
 	token variableNameToken;
 	GET_TOKEN_ASSUME_TYPE(variableNameToken, TOKEN_IDENTIFIER, {});
+	TRY_PARSE(parseIdentifier(&variableNameToken, &(statement->variableDef.variableName)), {});
+	tokenDestroy(&variableNameToken);
 
 	// TODO - omit variable type
-	CONSUME_TOKEN_ASSUME_TYPE(TOKEN_COLON, { tokenDestroy(&variableNameToken); });
+	CONSUME_TOKEN_ASSUME_TYPE(TOKEN_COLON, {});
 
-	astDataType dataType;
-	TRY_PARSE(parseDataType(&dataType), { tokenDestroy(&variableNameToken); });
+	TRY_PARSE(parseDataType(&(statement->variableDef.variableType)), {});
 
 	// TODO - omit init value
-	CONSUME_TOKEN_ASSUME_TYPE(TOKEN_ASSIGN, { tokenDestroy(&variableNameToken); });
+	CONSUME_TOKEN_ASSUME_TYPE(TOKEN_ASSIGN, {});
 
-	astExpression initExpression;
 	token initExprFirstToken;
+	GET_TOKEN(initExprFirstToken, {});
 
-	GET_TOKEN(initExprFirstToken, { tokenDestroy(&variableNameToken); });
+	TRY_PARSE(parseExpression(&(statement->variableDef.value), &initExprFirstToken),
+			  { tokenDestroy(&initExprFirstToken); });
+	tokenDestroy(&initExprFirstToken);
 
-	TRY_PARSE(parseExpression(&initExpression, &initExprFirstToken), {
-		tokenDestroy(&variableNameToken);
-		tokenDestroy(&initExprFirstToken);
-	});
-
-	parseResult returnValue = PARSE_OK;
-	if (astVarDefCreate(&statement->variableDef, variableNameToken.content, dataType, initExpression, immutable) != 0) {
-		returnValue = PARSE_INTERNAL_ERROR;
-	}
-
-	return returnValue;
+	return PARSE_OK;
 }
 
 static parseResult parseStatementBlock(astStatementBlock* block, bool insideFunction) {
@@ -435,11 +429,7 @@ static parseResult parseProcedureCall(astStatement* statement, const token* func
 
 static parseResult parseAssignment(astStatement* statement, const token* varName, token* exprFirstToken) {
 	statement->type = AST_STATEMENT_ASSIGN;
-	statement->assignment.variableName = malloc(strlen(varName->content) + 1);
-	if (!statement->assignment.variableName) {
-		return PARSE_INTERNAL_ERROR;
-	}
-	strcpy(statement->assignment.variableName, varName->content);
+	TRY_PARSE(parseIdentifier(varName, &(statement->assignment.variableName)), {});
 	TRY_PARSE(parseExpression(&(statement->assignment.value), exprFirstToken), {});
 	return PARSE_OK;
 }

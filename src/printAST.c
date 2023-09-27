@@ -134,7 +134,7 @@ void printVariableDefinition(const astVariableDefinition* definition, int indent
 		puts("(mutable)");
 	}
 	printIndent(indent + 1);
-	printf("NAME: %s\n", definition->variableName);
+	printf("NAME: %s\n", definition->variableName.name);
 	printIndent(indent + 1);
 	printf("TYPE: ");
 	printDataType(&definition->variableType);
@@ -148,7 +148,7 @@ void printAssignment(const astAssignment* assignment, int indent) {
 	printIndent(indent);
 	puts("ASSIGNMENT:");
 	printIndent(indent + 1);
-	printf("NAME: %s\n", assignment->variableName);
+	printf("NAME: %s\n", assignment->variableName.name);
 	printIndent(indent + 1);
 	puts("VALUE:");
 	printExpression(&assignment->value, indent + 2);

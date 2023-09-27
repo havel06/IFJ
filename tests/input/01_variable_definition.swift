@@ -8,3 +8,4 @@ var double2 : Double = 23.1E3
 var double3 : Double = 23.1e1
 var baz : String = "Hello world"
 var bar : String? = baz
+let boo : Int = nil
