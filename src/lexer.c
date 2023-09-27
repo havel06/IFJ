@@ -45,6 +45,7 @@ void tokenDestroy(token* tok) {
 // Returns 0 if no comments were skipped
 int skipComments() {
 	int skipped = 0;
+	int counter = 0;
 	// single line comment
 	while (1) {
 		int slash1 = getchar();
@@ -75,11 +76,18 @@ int skipComments() {
 			break;
 		}
 		int nextC = getchar();
+		counter++;
 		while (1) {
 			int c = nextC;
 			nextC = getchar();
 			if (c == '*' || nextC == '/') {
-				break;
+				counter--;
+				if (counter == 0) {
+					break;
+				}
+			if (c == '/' & nextC == '*') {
+				counter++;
+			}
 			} else {
 				skipped++;
 			}
