@@ -91,8 +91,7 @@ int skipComments() {
 				if (nextC == EOF) {
 					break;
 				}
-			}
-			else {
+			} else {
 				skipped++;
 			}
 		}
