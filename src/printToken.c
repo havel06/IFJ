@@ -117,5 +117,8 @@ void printToken(const token* tok, FILE* file) {
 		case TOKEN_STR_LITERAL:
 			fprintf(file, "STRING LITERAL: %s\n", tok->content);
 			break;
+		case TOKEN_COMMA:
+			fputs("/\n", file);
+			break;
 	}
 }

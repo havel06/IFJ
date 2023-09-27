@@ -80,15 +80,19 @@ int skipComments() {
 		while (1) {
 			int c = nextC;
 			nextC = getchar();
-			if (c == '*' || nextC == '/') {
+			if (c == '/' && nextC == '*') {
+				counter++;
+			}
+			if (c == '*' && nextC == '/') {
 				counter--;
 				if (counter == 0) {
 					break;
 				}
-			if (c == '/' & nextC == '*') {
-				counter++;
+				if (nextC == EOF) {
+					break;
+				}
 			}
-			} else {
+			else {
 				skipped++;
 			}
 		}
