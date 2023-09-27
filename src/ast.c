@@ -75,12 +75,12 @@ int astBinaryExprCreate(astExpression *expr, astExpression lhs, astExpression rh
 	return 0;
 }
 
-void astStatmentBlockCreate(astStatementBlock *block) {
+void astStatementBlockCreate(astStatementBlock *block) {
 	block->statements = NULL;
 	block->count = 0;
 }
 
-int astStatmentBlockAdd(astStatementBlock *block, astStatement statement) {
+int astStatementBlockAdd(astStatementBlock *block, astStatement statement) {
 	if (block->statements == NULL) {
 		block->statements = malloc(sizeof(statement));
 	} else {

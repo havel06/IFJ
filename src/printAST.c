@@ -151,12 +151,6 @@ void printAssignment(const astAssignment* assignment, int indent) {
 	printExpression(&assignment->value, indent + 2);
 }
 
-void printConditional(const astConditional* conditional, int indent) {
-	(void)conditional;
-	(void)indent;
-	// TODO
-}
-
 void printStatementBlock(const astStatementBlock* block, int indent) {
 	printIndent(indent);
 	puts("{");
@@ -165,6 +159,27 @@ void printStatementBlock(const astStatementBlock* block, int indent) {
 	}
 	printIndent(indent);
 	puts("}");
+}
+
+void printConditional(const astConditional* conditional, int indent) {
+	printIndent(indent);
+	puts("CONDITIONAL:");
+	printIndent(indent + 1);
+	puts("CONDITION:");
+	if (conditional->condition.type == AST_CONDITION_OPT_BINDING) {
+		printIndent(indent + 2);
+		printf("OPTIONAL BINDING: %s\n", conditional->condition.optBinding.identifier.name);
+	} else {
+		printExpression(&(conditional->condition.expression), indent + 2);
+	}
+	printIndent(indent + 1);
+	puts("BODY:");
+	printStatementBlock(&(conditional->body), indent + 2);
+	if (conditional->has_else) {
+		printIndent(indent + 1);
+		puts("ELSE:");
+		printStatementBlock(&(conditional->bodyElse), indent + 2);
+	}
 }
 
 void printIteration(const astIteration* iteration, int indent) {
@@ -217,7 +232,7 @@ void printStatement(const astStatement* statement, int indent) {
 		case AST_STATEMENT_FUNC_CALL:
 			printFunctionCall(&statement->functionCall, indent);
 			break;
-		case AST_STATEMENT_FUNC_CALL_VOID:
+		case AST_STATEMENT_PROC_CALL:
 			printProcedureCall(&statement->procedureCall, indent);
 			break;
 		case AST_STATEMENT_RETURN:

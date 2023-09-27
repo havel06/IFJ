@@ -81,7 +81,7 @@ typedef enum {
 	AST_STATEMENT_COND,
 	AST_STATEMENT_ITER,
 	AST_STATEMENT_FUNC_CALL,
-	AST_STATEMENT_FUNC_CALL_VOID,
+	AST_STATEMENT_PROC_CALL,
 	AST_STATEMENT_RETURN,
 } astStatementType;
 
@@ -98,14 +98,14 @@ typedef struct {
 } astDataType;
 
 typedef struct {
-	char* variableName;
+	char* variableName;	 // TODO - use identifier
 	astDataType variableType;
 	astExpression value;
 	bool immutable;
 } astVariableDefinition;
 
 typedef struct {
-	char* variableName;
+	char* variableName;	 // TODO - use identifier
 	astExpression value;
 } astAssignment;
 
@@ -115,7 +115,7 @@ typedef struct {
 } astStatementBlock;
 
 typedef struct {
-	char* variableName;
+	astIdentifier identifier;
 } astOptionalBinding;
 
 typedef enum {
@@ -135,6 +135,7 @@ typedef struct {
 	astCondition condition;
 	astStatementBlock body;
 	astStatementBlock bodyElse;
+	bool has_else;
 } astConditional;
 
 typedef struct {
@@ -208,9 +209,9 @@ void astVarDefDestroy(astVariableDefinition*);
 int astStringCreate(astStringLiteral*, const char* str);
 void astStringDestroy(astStringLiteral*);
 
-void astStatmentBlockCreate(astStatementBlock*);
+void astStatementBlockCreate(astStatementBlock*);
 // Returns 0 on success
-int astStatmentBlockAdd(astStatementBlock*, astStatement);
+int astStatementBlockAdd(astStatementBlock*, astStatement);
 void astStatementBlockDestroy(astStatementBlock*);
 
 #endif
