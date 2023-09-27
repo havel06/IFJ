@@ -545,7 +545,7 @@ static parseResult parseConditional(astStatement* statement, bool insideFunction
 	return PARSE_OK;
 }
 
-parseResult parseStatement(astStatement* statement, const token* firstToken, bool insideFunction) {
+static parseResult parseStatement(astStatement* statement, const token* firstToken, bool insideFunction) {
 	assert(statement);
 	assert(firstToken);
 

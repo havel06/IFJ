@@ -43,7 +43,7 @@ void tokenDestroy(token* tok) {
 }
 
 // Returns 0 if no comments were skipped
-int skipComments() {
+static int skipComments() {
 	int skipped = 0;
 	int counter = 0;
 	// single line comment
@@ -101,7 +101,7 @@ int skipComments() {
 }
 
 // Returns 0 if no whitespace was skipped
-int skipWhiteSpace() {
+static int skipWhiteSpace() {
 	int skipped = 0;
 
 	while (1) {
@@ -118,7 +118,7 @@ int skipWhiteSpace() {
 	return skipped;
 }
 
-void checkForKeyword(token* newToken) {
+static void checkForKeyword(token* newToken) {
 	assert(newToken);
 	assert(newToken->content);
 
@@ -147,7 +147,7 @@ void checkForKeyword(token* newToken) {
 	}
 }
 
-lexerResult lexIdentifierToken(token* newToken) {
+static lexerResult lexIdentifierToken(token* newToken) {
 	assert(newToken);
 	newToken->type = TOKEN_IDENTIFIER;
 	while (1) {
@@ -178,7 +178,7 @@ lexerResult lexIdentifierToken(token* newToken) {
 	return LEXER_OK;
 }
 
-lexerResult lexNumberToken(token* newToken) {
+static lexerResult lexNumberToken(token* newToken) {
 	assert(newToken);
 
 	enum { INT_PART, DEC_PART, EXP_PART } numberPart;
@@ -233,8 +233,7 @@ lexerResult lexNumberToken(token* newToken) {
 	return LEXER_OK;
 }
 
-// Returns 0 on success
-lexerResult lexStringToken(token* newToken) {
+static lexerResult lexStringToken(token* newToken) {
 	// TODO - escape sequences
 	newToken->type = TOKEN_STR_LITERAL;
 	newToken->content = calloc(2048, sizeof(char));
