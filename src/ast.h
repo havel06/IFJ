@@ -86,10 +86,11 @@ typedef enum {
 } astStatementType;
 
 typedef enum {
-	AST_TYPE_UNSPECIFIED,
 	AST_TYPE_INT,
 	AST_TYPE_DOUBLE,
 	AST_TYPE_STRING,
+	AST_TYPE_NIL,
+	AST_TYPE_BOOL,
 } astBasicDataType;
 
 typedef struct {
