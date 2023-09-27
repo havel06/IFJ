@@ -7,9 +7,14 @@
 
 // 0 = global
 static int FRAME_LEVEL = 0;
+// used for compiler-generated labes (in conditionals etc)
+static int LAST_LABEL_NAME = 0;
+
+static int newLabelName() { return LAST_LABEL_NAME++; }
 
 // forward decl
 static astDataType compileExpression(const astExpression*);
+static void compileStatement(const astStatement*);
 
 static void emitVariableId(const astIdentifier* var) {
 	if (FRAME_LEVEL == 0) {
@@ -164,6 +169,40 @@ static void compileVariableDef(const astVariableDefinition* def) {
 	}
 }
 
+static void compileStatementBlock(const astStatementBlock* block) {
+	for (int i = 0; i < block->count; i++) {
+		compileStatement(&block->statements[i]);
+	}
+}
+
+static void compileConditional(const astConditional* conditional) {
+	if (conditional->condition.type == AST_CONDITION_EXPRESSION) {
+		compileExpression(&conditional->condition.expression);
+	} else {
+		// TODO
+		assert(false);
+	}
+
+	int label1 = newLabelName();
+	puts("PUSHS bool@true");
+	printf("JUMPIFNEQ %d\n", label1);
+
+	compileStatementBlock(&conditional->body);
+
+	if (!conditional->hasElse) {
+		printf("LABEL %d\n", label1);
+		return;
+	}
+
+	int label2 = newLabelName();
+	printf("JUMP %d\n", label2);
+	printf("LABEL %d\n", label1);
+
+	compileStatementBlock(&conditional->bodyElse);
+
+	printf("LABEL %d\n", label2);
+}
+
 static void compileStatement(const astStatement* statement) {
 	switch (statement->type) {
 		case AST_STATEMENT_VAR_DEF:
@@ -173,8 +212,7 @@ static void compileStatement(const astStatement* statement) {
 			compileAssignment(&statement->assignment);
 			break;
 		case AST_STATEMENT_COND:
-			// TODO
-			// compileConditional(&statement->conditional);
+			compileConditional(&statement->conditional);
 			break;
 		case AST_STATEMENT_ITER:
 			// TODO
