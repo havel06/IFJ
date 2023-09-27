@@ -10,7 +10,7 @@
 #include "printToken.h"
 
 // forward declarations
-parseResult parseStatement(astStatement* statement, const token* firstToken);
+parseResult parseStatement(astStatement* statement, const token* firstToken, bool insideFunction);
 parseResult parseExpression(astExpression* expression, const token* firstToken);
 
 #define GET_TOKEN(tokenVar, onError)         \
@@ -100,11 +100,11 @@ parseResult parseStringLiteral(const token* tok, astExpression* expr) {
 parseResult parseIdentifier(const token* tok, astExpression* expr) {
 	expr->type = AST_EXPR_TERM;
 	expr->term.type = AST_TERM_ID;
-	expr->term.identificator.name = malloc(strlen(tok->content) + 1);
+	expr->term.identifier.name = malloc(strlen(tok->content) + 1);
 	if (!expr->term.string.content) {
 		return PARSE_INTERNAL_ERROR;
 	}
-	strcpy(expr->term.identificator.name, tok->content);
+	strcpy(expr->term.identifier.name, tok->content);
 
 	return PARSE_OK;
 }
@@ -336,7 +336,7 @@ parseResult parseVarDef(astStatement* statement, bool immutable) {
 	return returnValue;
 }
 
-parseResult parseStatementBlock(astStatementBlock* block) {
+parseResult parseStatementBlock(astStatementBlock* block, bool insideFunction) {
 	CONSUME_TOKEN_ASSUME_TYPE(TOKEN_BRACKET_CURLY_LEFT, {});
 	while (1) {
 		token nextToken;
@@ -348,7 +348,7 @@ parseResult parseStatementBlock(astStatementBlock* block) {
 		}
 
 		astStatement statement;
-		TRY_PARSE(parseStatement(&statement, &nextToken), { tokenDestroy(&nextToken); });
+		TRY_PARSE(parseStatement(&statement, &nextToken, insideFunction), { tokenDestroy(&nextToken); });
 
 		if (astStatmentBlockAdd(block, statement) != 0) {
 			tokenDestroy(&nextToken);
@@ -408,7 +408,7 @@ parseResult parseAssignmentOrFunctionCall(astStatement* statement, const char* v
 	return PARSE_OK;
 }
 
-parseResult parseIteration(astStatement* statement) {
+parseResult parseIteration(astStatement* statement, bool insideFunction) {
 	statement->type = AST_STATEMENT_ITER;
 	token exprFirstToken;
 	GET_TOKEN(exprFirstToken, {});
@@ -417,11 +417,25 @@ parseResult parseIteration(astStatement* statement) {
 	tokenDestroy(&exprFirstToken);
 
 	astStatmentBlockCreate(&statement->iteration.body);
-	TRY_PARSE(parseStatementBlock(&statement->iteration.body), {});
+	TRY_PARSE(parseStatementBlock(&statement->iteration.body, insideFunction), {});
 	return PARSE_OK;
 }
 
-parseResult parseStatement(astStatement* statement, const token* firstToken) {
+parseResult parseReturnStatement(astStatement* statement, bool withValue) {
+	statement->type = AST_STATEMENT_RETURN;
+	statement->returnStmt.has_value = withValue;
+
+	if (withValue) {
+		token exprFirstToken;
+		GET_TOKEN(exprFirstToken, {});
+		TRY_PARSE(parseExpression(&(statement->returnStmt.value), &exprFirstToken), { tokenDestroy(&exprFirstToken); });
+		tokenDestroy(&exprFirstToken);
+	}
+
+	return PARSE_OK;
+}
+
+parseResult parseStatement(astStatement* statement, const token* firstToken, bool insideFunction) {
 	assert(statement);
 	assert(firstToken);
 
@@ -432,11 +446,14 @@ parseResult parseStatement(astStatement* statement, const token* firstToken) {
 		case TOKEN_KEYWORD_LET:
 			TRY_PARSE(parseVarDef(statement, true), {});
 			break;
+		case TOKEN_KEYWORD_RETURN:
+			TRY_PARSE(parseReturnStatement(statement, insideFunction), {});
+			break;
 		case TOKEN_KEYWORD_IF:
 			// TODO - parse conditional
 			break;
 		case TOKEN_KEYWORD_WHILE:
-			TRY_PARSE(parseIteration(statement), {});
+			TRY_PARSE(parseIteration(statement, insideFunction), {});
 			break;
 		case TOKEN_IDENTIFIER: {
 			token secondToken;
@@ -474,7 +491,7 @@ parseResult parseProgram(astProgram* program) {
 			// TODO - parse function definition
 		} else {
 			topStatement.type = AST_TOP_STATEMENT;
-			TRY_PARSE(parseStatement(&topStatement.statement, &nextToken), { tokenDestroy(&nextToken); });
+			TRY_PARSE(parseStatement(&topStatement.statement, &nextToken, false), { tokenDestroy(&nextToken); });
 		}
 
 		tokenDestroy(&nextToken);

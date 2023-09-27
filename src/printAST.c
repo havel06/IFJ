@@ -47,7 +47,7 @@ void printTerm(const astTerm* term, int indent) {
 			printf("STRING LITERAL: %s\n", term->string.content);
 			break;
 		case AST_TERM_ID:
-			printf("IDENTIFIER: %s\n", term->identificator.name);
+			printf("IDENTIFIER: %s\n", term->identifier.name);
 			break;
 		case AST_TERM_NIL:
 			puts("NIL");
@@ -184,16 +184,20 @@ void printFunctionCall(const astFunctionCall* call, int indent) {
 	// TODO
 }
 
-void printVoidFunctionCall(const astVoidFunctionCall* call, int indent) {
+void printProcedureCall(const astProcedureCall* call, int indent) {
 	(void)call;
 	(void)indent;
 	// TODO
 }
 
 void printReturn(const astReturnStatement* ret, int indent) {
-	(void)ret;
-	(void)indent;
-	// TODO
+	printIndent(indent);
+	puts("RETURN");
+	if (ret->has_value) {
+		printIndent(indent + 1);
+		puts("VALUE:");
+		printExpression(&ret->value, indent + 2);
+	}
 }
 
 void printStatement(const astStatement* statement, int indent) {
@@ -214,7 +218,7 @@ void printStatement(const astStatement* statement, int indent) {
 			printFunctionCall(&statement->functionCall, indent);
 			break;
 		case AST_STATEMENT_FUNC_CALL_VOID:
-			printVoidFunctionCall(&statement->voidFunctionCall, indent);
+			printProcedureCall(&statement->procedureCall, indent);
 			break;
 		case AST_STATEMENT_RETURN:
 			printReturn(&statement->returnStmt, indent);
@@ -222,7 +226,7 @@ void printStatement(const astStatement* statement, int indent) {
 	}
 }
 
-void printTopLeveStatement(const astTopLevelStatement* statement) {
+void printTopLevelStatement(const astTopLevelStatement* statement) {
 	if (statement->type == AST_TOP_STATEMENT) {
 		printStatement(&statement->statement, 0);
 	} else {
@@ -232,6 +236,6 @@ void printTopLeveStatement(const astTopLevelStatement* statement) {
 
 void astPrint(const astProgram* program) {
 	for (int i = 0; i < program->count; i++) {
-		printTopLeveStatement(&program->statements[i]);
+		printTopLevelStatement(&program->statements[i]);
 	}
 }

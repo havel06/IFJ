@@ -8,7 +8,7 @@ typedef struct astExpression astExpression;	 // fwd
 
 typedef struct {
 	char* name;
-} astIdentificator;
+} astIdentifier;
 
 typedef struct {
 	int value;
@@ -33,7 +33,7 @@ typedef enum {
 typedef struct {
 	astTermType type;
 	union {
-		astIdentificator identificator;	 // TODO - rename to identifier
+		astIdentifier identifier;
 		astIntLiteral integer;
 		astDecimalLiteral decimal;
 		astStringLiteral string;
@@ -148,7 +148,7 @@ typedef struct {
 
 typedef struct {
 	// TODO
-} astVoidFunctionCall;
+} astProcedureCall;
 
 typedef struct {
 	bool has_value;
@@ -163,7 +163,7 @@ struct astStatement {
 		astConditional conditional;
 		astIteration iteration;
 		astFunctionCall functionCall;
-		astVoidFunctionCall voidFunctionCall;
+		astProcedureCall procedureCall;
 		astReturnStatement returnStmt;
 	};
 };
@@ -197,8 +197,8 @@ int astBinaryExprCreate(astExpression*, astExpression lhs, astExpression rhs, as
 void astBinaryExprDestroy(astExpression*);
 
 // Returns 0 on success
-int astIdentCreate(astIdentificator*, const char* str);
-void astIdentDestroy(astIdentificator*);
+int astIdentCreate(astIdentifier*, const char* str);
+void astIdentDestroy(astIdentifier*);
 
 // Returns 0 on success
 int astVarDefCreate(astVariableDefinition*, const char* str, astDataType, astExpression, bool immutable);
