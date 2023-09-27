@@ -280,6 +280,27 @@ parseResult parseExpression(astExpression* expression, const token* exprFirstTok
 	return PARSE_OK;
 }
 
+parseResult parseDataType(astDataType* dataType) {
+	token tok;
+	GET_TOKEN(tok, {});
+	dataType->type = keywordToDataType(tok.type);
+	tokenDestroy(&tok);
+
+	token optToken;
+	GET_TOKEN(optToken, {});
+
+	// parse nullable part
+	if (optToken.type == TOKEN_QUESTION_MARK) {
+		dataType->nullable = true;
+		tokenDestroy(&optToken);
+	} else {
+		dataType->nullable = false;
+		unGetToken(&optToken);
+	}
+
+	return PARSE_OK;
+}
+
 parseResult parseVarDef(astStatement* statement, bool immutable) {
 	statement->type = AST_STATEMENT_VAR_DEF;
 
@@ -289,48 +310,21 @@ parseResult parseVarDef(astStatement* statement, bool immutable) {
 	// TODO - omit variable type
 	CONSUME_TOKEN_ASSUME_TYPE(TOKEN_COLON, { tokenDestroy(&variableNameToken); });
 
-	token variableTypeToken;
-	GET_TOKEN(variableTypeToken, { tokenDestroy(&variableNameToken); });
+	astDataType dataType;
+	TRY_PARSE(parseDataType(&dataType), { tokenDestroy(&variableNameToken); });
 
-	token assignOrOptToken;
-	GET_TOKEN(assignOrOptToken, {
-		tokenDestroy(&variableNameToken);
-		tokenDestroy(&variableTypeToken);
-	});
-
-	bool nullable = false;
-	if (assignOrOptToken.type == TOKEN_QUESTION_MARK) {
-		nullable = true;
-		CONSUME_TOKEN_ASSUME_TYPE(TOKEN_ASSIGN, {
-			tokenDestroy(&variableNameToken);
-			tokenDestroy(&variableTypeToken);
-			tokenDestroy(&assignOrOptToken);
-		});
-	} else if (assignOrOptToken.type != TOKEN_ASSIGN) {
-		tokenDestroy(&variableNameToken);
-		tokenDestroy(&variableTypeToken);
-		tokenDestroy(&assignOrOptToken);
-		return PARSE_ERROR;
-	}
-	tokenDestroy(&assignOrOptToken);
+	// TODO - omit init value
+	CONSUME_TOKEN_ASSUME_TYPE(TOKEN_ASSIGN, { tokenDestroy(&variableNameToken); });
 
 	astExpression initExpression;
 	token initExprFirstToken;
 
-	GET_TOKEN(initExprFirstToken, {
-		tokenDestroy(&variableNameToken);
-		tokenDestroy(&variableTypeToken);
-	});
+	GET_TOKEN(initExprFirstToken, { tokenDestroy(&variableNameToken); });
 
 	TRY_PARSE(parseExpression(&initExpression, &initExprFirstToken), {
 		tokenDestroy(&variableNameToken);
-		tokenDestroy(&variableTypeToken);
 		tokenDestroy(&initExprFirstToken);
 	});
-
-	astDataType dataType;
-	dataType.type = keywordToDataType(variableTypeToken.type);
-	dataType.nullable = nullable;
 
 	parseResult returnValue = PARSE_OK;
 	if (astVarDefCreate(&statement->variableDef, variableNameToken.content, dataType, initExpression, immutable) != 0) {
@@ -476,12 +470,12 @@ parseResult parseConditional(astStatement* statement, bool insideFunction) {
 	token maybeElseToken;
 	GET_TOKEN(maybeElseToken, {});
 	if (maybeElseToken.type == TOKEN_KEYWORD_ELSE) {
-		statement->conditional.has_else = true;
+		statement->conditional.hasElse = true;
 		TRY_PARSE(parseStatementBlock(&(statement->conditional.bodyElse), insideFunction),
 				  { tokenDestroy(&maybeElseToken); });
 		tokenDestroy(&maybeElseToken);
 	} else {
-		statement->conditional.has_else = false;
+		statement->conditional.hasElse = false;
 		unGetToken(&maybeElseToken);
 	}
 
@@ -530,6 +524,35 @@ parseResult parseStatement(astStatement* statement, const token* firstToken, boo
 	return PARSE_OK;
 }
 
+parseResult parseFunctionDefinition(astFunctionDefinition* def) {
+	// parse name
+	token idToken;
+	GET_TOKEN(idToken, {});
+	TRY_PARSE(parseIdentifier(&idToken, &(def->name)), { tokenDestroy(&idToken); });
+	tokenDestroy(&idToken);
+
+	CONSUME_TOKEN_ASSUME_TYPE(TOKEN_BRACKET_ROUND_LEFT, {});
+	// TODO - parameter list
+	CONSUME_TOKEN_ASSUME_TYPE(TOKEN_BRACKET_ROUND_RIGHT, {});
+
+	// parse return type
+	token maybeArrow;
+	GET_TOKEN(maybeArrow, {});
+	if (maybeArrow.type == TOKEN_ARROW) {
+		def->hasReturnValue = true;
+		tokenDestroy(&maybeArrow);
+		TRY_PARSE(parseDataType(&(def->returnType)), {});
+	} else {
+		def->hasReturnValue = false;
+		unGetToken(&maybeArrow);
+	}
+
+	// parse body
+	TRY_PARSE(parseStatementBlock(&(def->body), def->hasReturnValue), {});
+
+	return PARSE_OK;
+}
+
 parseResult parseProgram(astProgram* program) {
 	token nextToken;
 
@@ -541,7 +564,7 @@ parseResult parseProgram(astProgram* program) {
 			break;
 		} else if (nextToken.type == TOKEN_KEYWORD_FUNC) {
 			topStatement.type = AST_TOP_FUNCTION;
-			// TODO - parse function definition
+			TRY_PARSE(parseFunctionDefinition(&topStatement.functionDef), { tokenDestroy(&nextToken); });
 		} else {
 			topStatement.type = AST_TOP_STATEMENT;
 			TRY_PARSE(parseStatement(&topStatement.statement, &nextToken, false), { tokenDestroy(&nextToken); });

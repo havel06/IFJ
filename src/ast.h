@@ -135,7 +135,7 @@ typedef struct {
 	astCondition condition;
 	astStatementBlock body;
 	astStatementBlock bodyElse;
-	bool has_else;
+	bool hasElse;
 } astConditional;
 
 typedef struct {
@@ -171,6 +171,14 @@ struct astStatement {
 
 typedef struct {
 	// TODO
+} astParameterList;
+
+typedef struct {
+	astIdentifier name;
+	astParameterList params;
+	bool hasReturnValue;
+	astDataType returnType;
+	astStatementBlock body;
 } astFunctionDefinition;
 
 typedef enum { AST_TOP_FUNCTION, AST_TOP_STATEMENT } astTopLevelStatementType;

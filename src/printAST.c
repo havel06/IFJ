@@ -175,7 +175,7 @@ void printConditional(const astConditional* conditional, int indent) {
 	printIndent(indent + 1);
 	puts("BODY:");
 	printStatementBlock(&(conditional->body), indent + 2);
-	if (conditional->has_else) {
+	if (conditional->hasElse) {
 		printIndent(indent + 1);
 		puts("ELSE:");
 		printStatementBlock(&(conditional->bodyElse), indent + 2);
@@ -241,11 +241,27 @@ void printStatement(const astStatement* statement, int indent) {
 	}
 }
 
+void printFunctionDef(const astFunctionDefinition* def) {
+	puts("FUNCTION DEFINITION");
+	printIndent(1);
+	printf("NAME: %s\n", def->name.name);
+	// TODO - parameter list
+	if (def->hasReturnValue) {
+		printIndent(1);
+		printf("RETURN TYPE: ");
+		printDataType(&(def->returnType));
+		puts("");
+	}
+	printIndent(1);
+	puts("BODY:");
+	printStatementBlock(&(def->body), 2);
+}
+
 void printTopLevelStatement(const astTopLevelStatement* statement) {
 	if (statement->type == AST_TOP_STATEMENT) {
 		printStatement(&statement->statement, 0);
 	} else {
-		// printFunctionDef(&statement->functionDef);
+		printFunctionDef(&statement->functionDef);
 	}
 }
 
