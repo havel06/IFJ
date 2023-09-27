@@ -49,12 +49,66 @@ void printTerm(const astTerm* term, int indent) {
 	}
 }
 
+void printBinaryOperator(astBinaryOperator op) {
+	switch (op) {
+		case AST_BINARY_MUL:
+			printf("*");
+			break;
+		case AST_BINARY_DIV:
+			printf("/");
+			break;
+		case AST_BINARY_PLUS:
+			printf("+");
+			break;
+		case AST_BINARY_MINUS:
+			printf("-");
+			break;
+		case AST_BINARY_EQ:
+			printf("==");
+			break;
+		case AST_BINARY_NEQ:
+			printf("!=");
+			break;
+		case AST_BINARY_LESS:
+			printf("<");
+			break;
+		case AST_BINARY_GREATER:
+			printf(">");
+			break;
+		case AST_BINARY_LESS_EQ:
+			printf("<=");
+			break;
+		case AST_BINARY_GREATER_EQ:
+			printf(">=");
+			break;
+		case AST_BINARY_NIL_COAL:
+			printf("??");
+			break;
+	}
+}
+
+void printExpression(const astExpression* expression, int indent);	// fwd
+
+void printBinaryExpression(const astBinaryExpression* expression, int indent) {
+	printIndent(indent);
+	printf("BINARY EXPRESSION (");
+	printBinaryOperator(expression->op);
+	puts(")");
+	printIndent(indent + 1);
+	puts("LHS:");
+	printExpression(expression->lhs, indent + 2);
+	printIndent(indent + 1);
+	puts("RHS:");
+	printExpression(expression->rhs, indent + 2);
+}
+
 void printExpression(const astExpression* expression, int indent) {
 	switch (expression->type) {
 		case AST_EXPR_TERM:
 			printTerm(&expression->term, indent);
 			break;
 		case AST_EXPR_BINARY:
+			printBinaryExpression(&expression->binary, indent);
 			break;
 		case AST_EXPR_UNWRAP:
 			break;

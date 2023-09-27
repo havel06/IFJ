@@ -54,5 +54,8 @@ void tokenDestroy(token*);
 typedef enum { LEXER_OK, LEXER_ERROR, LEXER_INTERNAL_ERROR } lexerResult;
 
 lexerResult getNextToken(token*);
+// dont't destroy token after returning!
+// only return multiple tokens at once
+void unGetToken(const token*);
 
 #endif

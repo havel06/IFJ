@@ -2,9 +2,19 @@
 
 #include <assert.h>
 #include <ctype.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+static token BUFFERED_TOKEN;
+static bool BUFFERED_TOKEN_EMPTY = true;
+
+void unGetToken(const token* tok) {
+	assert(BUFFERED_TOKEN_EMPTY);
+	BUFFERED_TOKEN = *tok;
+	BUFFERED_TOKEN_EMPTY = false;
+}
 
 /*
 int tokenCreate(token* newToken, tokenType type, const char* str) {
@@ -244,6 +254,13 @@ lexerResult lexStringToken(token* newToken) {
 
 lexerResult getNextToken(token* newToken) {
 	assert(newToken);
+
+	if (!BUFFERED_TOKEN_EMPTY) {
+		*newToken = BUFFERED_TOKEN;
+		BUFFERED_TOKEN_EMPTY = true;
+		return LEXER_OK;
+	}
+
 	newToken->content = NULL;
 	while (skipWhiteSpace() || skipComments()) {
 	}

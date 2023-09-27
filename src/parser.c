@@ -95,7 +95,9 @@ parseResult parseStringLiteral(const token* tok, astExpression* expr) {
 	return PARSE_OK;
 }
 
-parseResult parseExpression(astExpression* expression) {
+parseResult parseExpression(astExpression* expression);	 // fwd
+
+parseResult parsePrimaryExpression(astExpression* expression) {
 	token firstToken;
 	GET_TOKEN(firstToken, {});
 
@@ -113,7 +115,6 @@ parseResult parseExpression(astExpression* expression) {
 			TRY_PARSE(parseExpression(expression), { tokenDestroy(&firstToken); });
 			CONSUME_TOKEN_ASSUME_TYPE(TOKEN_BRACKET_ROUND_RIGHT, { tokenDestroy(&firstToken); });
 			break;
-		// TODO - binary expression
 		// TODO - unwrap expression
 		default:
 			fprintf(stderr, "Unexpected token ");
@@ -123,7 +124,131 @@ parseResult parseExpression(astExpression* expression) {
 			return PARSE_ERROR;
 	}
 
-	tokenDestroy(&firstToken);
+	return PARSE_OK;
+}
+
+bool isBinaryOperator(tokenType type) {
+	switch (type) {
+		case TOKEN_NEQ:
+		case TOKEN_LESS:
+		case TOKEN_GREATER:
+		case TOKEN_LESS_EQ:
+		case TOKEN_GREATER_EQ:
+		case TOKEN_MUL:
+		case TOKEN_DIV:
+		case TOKEN_PLUS:
+		case TOKEN_MINUS:
+		case TOKEN_COALESCE:
+			return true;
+		default:
+			return false;
+	}
+}
+
+astBinaryOperator parseBinaryOperator(tokenType type) {
+	switch (type) {
+		case TOKEN_NEQ:
+			return AST_BINARY_NEQ;
+		case TOKEN_LESS:
+			return AST_BINARY_LESS;
+		case TOKEN_GREATER:
+			return AST_BINARY_GREATER;
+		case TOKEN_LESS_EQ:
+			return AST_BINARY_LESS_EQ;
+		case TOKEN_GREATER_EQ:
+			return AST_BINARY_GREATER_EQ;
+		case TOKEN_MUL:
+			return AST_BINARY_MUL;
+		case TOKEN_DIV:
+			return AST_BINARY_DIV;
+		case TOKEN_PLUS:
+			return AST_BINARY_PLUS;
+		case TOKEN_MINUS:
+			return AST_BINARY_MINUS;
+		case TOKEN_COALESCE:
+			return AST_BINARY_NIL_COAL;
+		default:
+			assert(false);
+	}
+}
+
+int operatorPrecedence(astBinaryOperator op) {
+	switch (op) {
+		case AST_BINARY_MUL:
+		case AST_BINARY_DIV:
+			return 3;
+		case AST_BINARY_PLUS:
+		case AST_BINARY_MINUS:
+			return 2;
+		case AST_BINARY_EQ:
+		case AST_BINARY_NEQ:
+		case AST_BINARY_LESS:
+		case AST_BINARY_GREATER:
+		case AST_BINARY_LESS_EQ:
+		case AST_BINARY_GREATER_EQ:
+			return 1;
+		case AST_BINARY_NIL_COAL:
+			return 0;
+	}
+	assert(false);
+}
+
+parseResult parseExpression(astExpression* expression) {
+	astExpression subExpressions[512];
+	int subExpressionsCount = 0;
+	astBinaryOperator operators[512];
+	int operatorCount = 0;
+
+	// TODO - error when array overflows
+	TRY_PARSE(parsePrimaryExpression(&subExpressions[subExpressionsCount++]), {});
+
+	while (1) {
+		token firstToken;
+		GET_TOKEN(firstToken, {});
+
+		if (!isBinaryOperator(firstToken.type)) {
+			unGetToken(&firstToken);
+			break;
+		}
+
+		operators[operatorCount++] = parseBinaryOperator(firstToken.type);
+		tokenDestroy(&firstToken);
+		// TODO - error when array overflows
+		TRY_PARSE(parsePrimaryExpression(&subExpressions[subExpressionsCount++]), {});
+	}
+
+	// TODO - operator associativity?
+	while (operatorCount > 0) {
+		// apply operator precedence
+		int maxPrecedence = 0;
+		int maxPrecedenceIndex = 0;
+		// scan operators for highest precedence
+		for (int i = 0; i < operatorCount; i++) {
+			int precednece = operatorPrecedence(operators[i]);
+			if (precednece > maxPrecedence) {
+				maxPrecedence = precednece;
+				maxPrecedenceIndex = i;
+			}
+		}
+		// join expressions
+		astExpression newBinaryExpr;
+		astBinaryExprCreate(&newBinaryExpr, subExpressions[maxPrecedenceIndex], subExpressions[maxPrecedenceIndex + 1],
+							operators[maxPrecedenceIndex]);
+		subExpressions[maxPrecedenceIndex] = newBinaryExpr;
+		// rotate the rest of the expressions to the left to remove rhs
+		for (int i = maxPrecedenceIndex + 1; i < subExpressionsCount - 1; i++) {
+			subExpressions[i] = subExpressions[i + 1];
+		}
+		// rotate the rest of the operators to the left to remove used operator
+		for (int i = maxPrecedenceIndex + 1; i < operatorCount - 1; i++) {
+			operators[i] = operators[i + 1];
+		}
+
+		operatorCount--;
+		subExpressionsCount--;
+	}
+
+	*expression = subExpressions[0];
 	return PARSE_OK;
 }
 

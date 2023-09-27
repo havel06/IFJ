@@ -56,6 +56,34 @@ int astVarDefCreate(astVariableDefinition *varDef, const char *str, astDataType 
 	return 0;
 }
 
+int astBinaryExprCreate(astExpression *expr, astExpression lhs, astExpression rhs, astBinaryOperator op) {
+	expr->type = AST_EXPR_BINARY;
+
+	expr->binary.lhs = malloc(sizeof(astExpression));
+	if (!expr->binary.lhs) {
+		return 1;
+	}
+	expr->binary.rhs = malloc(sizeof(astExpression));
+	if (!expr->binary.rhs) {
+		free(expr->binary.lhs);
+		return 1;
+	}
+
+	*(expr->binary.lhs) = lhs;
+	*(expr->binary.rhs) = rhs;
+	expr->binary.op = op;
+	return 0;
+}
+
+/*
+void astBinaryExprDestroy(astExpression* expr) {
+	free(expr->binary.lhs);
+	free(expr->binary.rhs);
+	expr->binary.lhs = NULL;
+	expr->binary.rhs = NULL;
+}
+*/
+
 /*
 void astVarDefDestroy(astVariableDefinition* varDef) {
 	if (varDef->variableName) {

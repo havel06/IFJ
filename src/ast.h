@@ -175,8 +175,8 @@ void astProgramDestroy(astProgram*);
 int astProgramAdd(astProgram*, astTopLevelStatement);
 
 // Returns 0 on success
-int astBinaryExprCreate(astBinaryExpression*, astExpression lhs, astExpression rhs, astBinaryOperator);
-void astBinaryExprDestroy(astBinaryExpression*);
+int astBinaryExprCreate(astExpression*, astExpression lhs, astExpression rhs, astBinaryOperator);
+void astBinaryExprDestroy(astExpression*);
 
 // Returns 0 on success
 int astIdentCreate(astIdentificator*, const char* str);
