@@ -288,10 +288,27 @@ parseResult parseVarDef(astStatement* statement, bool immutable) {
 	token variableTypeToken;
 	GET_TOKEN(variableTypeToken, { tokenDestroy(&variableNameToken); });
 
-	CONSUME_TOKEN_ASSUME_TYPE(TOKEN_ASSIGN, {
+	token assignOrOptToken;
+	GET_TOKEN(assignOrOptToken, {
 		tokenDestroy(&variableNameToken);
 		tokenDestroy(&variableTypeToken);
 	});
+
+	bool nullable = false;
+	if (assignOrOptToken.type == TOKEN_QUESTION_MARK) {
+		nullable = true;
+		CONSUME_TOKEN_ASSUME_TYPE(TOKEN_ASSIGN, {
+			tokenDestroy(&variableNameToken);
+			tokenDestroy(&variableTypeToken);
+			tokenDestroy(&assignOrOptToken);
+		});
+	} else if (assignOrOptToken.type != TOKEN_ASSIGN) {
+		tokenDestroy(&variableNameToken);
+		tokenDestroy(&variableTypeToken);
+		tokenDestroy(&assignOrOptToken);
+		return PARSE_ERROR;
+	}
+	tokenDestroy(&assignOrOptToken);
 
 	astExpression initExpression;
 	token initExprFirstToken;
@@ -309,8 +326,7 @@ parseResult parseVarDef(astStatement* statement, bool immutable) {
 
 	astDataType dataType;
 	dataType.type = keywordToDataType(variableTypeToken.type);
-	dataType.nullable = false;
-	// TODO - parse nullable types
+	dataType.nullable = nullable;
 
 	parseResult returnValue = PARSE_OK;
 	if (astVarDefCreate(&statement->variableDef, variableNameToken.content, dataType, initExpression, immutable) != 0) {
