@@ -165,7 +165,7 @@ typedef struct {
 } astProcedureCall;
 
 typedef struct {
-	bool has_value;
+	bool hasValue;
 	astExpression value;
 } astReturnStatement;
 

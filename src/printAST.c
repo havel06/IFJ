@@ -238,7 +238,7 @@ void printProcedureCall(const astProcedureCall* call, int indent) {
 void printReturn(const astReturnStatement* ret, int indent) {
 	printIndent(indent);
 	puts("RETURN");
-	if (ret->has_value) {
+	if (ret->hasValue) {
 		printIndent(indent + 1);
 		puts("VALUE:");
 		printExpression(&ret->value, indent + 2);

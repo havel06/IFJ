@@ -369,10 +369,25 @@ static parseResult parseStatementBlock(astStatementBlock* block, bool insideFunc
 }
 
 static parseResult parseFunctionCallParameter(astInputParameter* param) {
-	// TODO - named params
-	param->name.name = NULL;
 	token firstToken;
 	GET_TOKEN(firstToken, {});
+
+	// check if parameter has a name
+	param->name.name = NULL;
+	if (firstToken.type == TOKEN_IDENTIFIER) {
+		token secondToken;
+		GET_TOKEN(secondToken, {});
+
+		if (secondToken.type == TOKEN_COLON) {
+			TRY_PARSE(parseIdentifier(&firstToken, &(param->name)), { tokenDestroy(&firstToken); });
+			// replace first token with value token
+			tokenDestroy(&firstToken);
+			GET_TOKEN(firstToken, {});
+		} else {
+			unGetToken(&secondToken);
+		}
+	}
+
 	TRY_PARSE(parseTerm(&(param->value), &firstToken), { tokenDestroy(&firstToken); });
 	tokenDestroy(&firstToken);
 	return PARSE_OK;
@@ -472,7 +487,7 @@ static parseResult parseIteration(astStatement* statement, bool insideFunction) 
 
 static parseResult parseReturnStatement(astStatement* statement, bool withValue) {
 	statement->type = AST_STATEMENT_RETURN;
-	statement->returnStmt.has_value = withValue;
+	statement->returnStmt.hasValue = withValue;
 
 	if (withValue) {
 		token exprFirstToken;

@@ -12,3 +12,4 @@
 
 foo = bar(32, "hello", nil)
 baz(64, nil)
+bar(param : nil, other : 32, 64)
