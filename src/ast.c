@@ -75,6 +75,26 @@ int astBinaryExprCreate(astExpression *expr, astExpression lhs, astExpression rh
 	return 0;
 }
 
+void astStatmentBlockCreate(astStatementBlock *block) {
+	block->statements = NULL;
+	block->count = 0;
+}
+
+int astStatmentBlockAdd(astStatementBlock *block, astStatement statement) {
+	if (block->statements == NULL) {
+		block->statements = malloc(sizeof(statement));
+	} else {
+		block->statements = realloc(block->statements, sizeof(statement) * block->count + 1);
+	}
+
+	if (block->statements == NULL) {
+		return 1;
+	}
+
+	block->statements[block->count++] = statement;
+	return 0;
+}
+
 /*
 void astBinaryExprDestroy(astExpression* expr) {
 	free(expr->binary.lhs);

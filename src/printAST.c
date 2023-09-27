@@ -4,6 +4,9 @@
 
 #include "ast.h"
 
+// forward declaration
+void printStatement(const astStatement* statement, int indent);
+
 void printIndent(int level) {
 	for (int i = 0; i < level * 2; i++) {
 		putchar(' ');
@@ -151,10 +154,25 @@ void printConditional(const astConditional* conditional, int indent) {
 	// TODO
 }
 
+void printStatementBlock(const astStatementBlock* block, int indent) {
+	printIndent(indent);
+	puts("{");
+	for (int i = 0; i < block->count; i++) {
+		printStatement(&(block->statements[i]), indent + 1);
+	}
+	printIndent(indent);
+	puts("}");
+}
+
 void printIteration(const astIteration* iteration, int indent) {
-	(void)iteration;
-	(void)indent;
-	// TODO
+	printIndent(indent);
+	puts("ITERATION");
+	printIndent(indent + 1);
+	puts("CONDITION:");
+	printExpression(&iteration->condition, indent + 2);
+	printIndent(indent + 1);
+	puts("BODY:");
+	printStatementBlock(&iteration->body, indent + 2);
 }
 
 void printFunctionCall(const astFunctionCall* call, int indent) {

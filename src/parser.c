@@ -9,7 +9,9 @@
 #include "lexer.h"
 #include "printToken.h"
 
-// TODO - destroy tokens when any macro returns error
+// forward declarations
+parseResult parseStatement(astStatement* statement, const token* firstToken);
+parseResult parseExpression(astExpression* expression, const token* firstToken);
 
 #define GET_TOKEN(tokenVar, onError)         \
 	do {                                     \
@@ -107,9 +109,7 @@ parseResult parseIdentifier(const token* tok, astExpression* expr) {
 	return PARSE_OK;
 }
 
-parseResult parseExpression(astExpression* expression, token* firstToken); // fwd
-
-parseResult parsePrimaryExpression(astExpression* expression, token* firstToken) {
+parseResult parsePrimaryExpression(astExpression* expression, const token* firstToken) {
 	switch (firstToken->type) {
 		case TOKEN_INT_LITERAL:
 			parseIntLiteral(firstToken, expression);
@@ -123,9 +123,7 @@ parseResult parsePrimaryExpression(astExpression* expression, token* firstToken)
 		case TOKEN_BRACKET_ROUND_LEFT: {
 			token nextToken;
 			GET_TOKEN(nextToken, {});
-			TRY_PARSE(parseExpression(expression, &nextToken), {
-				tokenDestroy(&nextToken);
-			});
+			TRY_PARSE(parseExpression(expression, &nextToken), { tokenDestroy(&nextToken); });
 			tokenDestroy(&nextToken);
 			CONSUME_TOKEN_ASSUME_TYPE(TOKEN_BRACKET_ROUND_RIGHT, {});
 			break;
@@ -210,7 +208,7 @@ int operatorPrecedence(astBinaryOperator op) {
 	assert(false);
 }
 
-parseResult parseExpression(astExpression* expression, token* exprFirstToken) {
+parseResult parseExpression(astExpression* expression, const token* exprFirstToken) {
 	astExpression subExpressions[512];
 	int subExpressionsCount = 0;
 	astBinaryOperator operators[512];
@@ -234,10 +232,8 @@ parseResult parseExpression(astExpression* expression, token* exprFirstToken) {
 
 		token subExprFirstToken;
 		GET_TOKEN(subExprFirstToken, {});
-		printToken(&subExprFirstToken, stdout);
-		TRY_PARSE(parsePrimaryExpression(&subExpressions[subExpressionsCount++], &subExprFirstToken), {
-			tokenDestroy(&subExprFirstToken);
-		});
+		TRY_PARSE(parsePrimaryExpression(&subExpressions[subExpressionsCount++], &subExprFirstToken),
+				  { tokenDestroy(&subExprFirstToken); });
 		tokenDestroy(&subExprFirstToken);
 	}
 
@@ -320,12 +316,36 @@ parseResult parseVarDef(astStatement* statement, bool immutable) {
 	return returnValue;
 }
 
+parseResult parseStatementBlock(astStatementBlock* block) {
+	CONSUME_TOKEN_ASSUME_TYPE(TOKEN_BRACKET_CURLY_LEFT, {});
+	while (1) {
+		token nextToken;
+		GET_TOKEN(nextToken, {});
+
+		if (nextToken.type == TOKEN_BRACKET_CURLY_RIGHT) {
+			tokenDestroy(&nextToken);
+			break;
+		}
+
+		astStatement statement;
+		TRY_PARSE(parseStatement(&statement, &nextToken), { tokenDestroy(&nextToken); });
+
+		if (astStatmentBlockAdd(block, statement) != 0) {
+			tokenDestroy(&nextToken);
+			return PARSE_INTERNAL_ERROR;
+		}
+
+		tokenDestroy(&nextToken);
+	}
+	return PARSE_OK;
+}
+
 parseResult parseFunctionCall(astStatement* statement, const char* varName, const char* funcName) {
 	(void)statement;
 	(void)varName;
 	(void)funcName;
 	return PARSE_OK;
-	//TODO
+	// TODO
 }
 
 parseResult parseVoidFunctionCall(astStatement* statement, const char* funcName) {
@@ -351,9 +371,7 @@ parseResult parseAssignmentOrFunctionCall(astStatement* statement, const char* v
 	GET_TOKEN_ASSUME_TYPE(idToken, TOKEN_IDENTIFIER, {});
 
 	token nextToken;
-	GET_TOKEN(nextToken, {
-		tokenDestroy(&idToken);
-	});
+	GET_TOKEN(nextToken, { tokenDestroy(&idToken); });
 
 	if (nextToken.type == TOKEN_BRACKET_ROUND_LEFT) {
 		TRY_PARSE(parseFunctionCall(statement, varName, nextToken.content), {
@@ -363,12 +381,23 @@ parseResult parseAssignmentOrFunctionCall(astStatement* statement, const char* v
 		tokenDestroy(&nextToken);
 	} else {
 		unGetToken(&nextToken);
-		TRY_PARSE(parseAssignment(statement, varName, &idToken), {
-			tokenDestroy(&idToken);
-		});
+		TRY_PARSE(parseAssignment(statement, varName, &idToken), { tokenDestroy(&idToken); });
 	}
 	tokenDestroy(&idToken);
 
+	return PARSE_OK;
+}
+
+parseResult parseIteration(astStatement* statement) {
+	statement->type = AST_STATEMENT_ITER;
+	token exprFirstToken;
+	GET_TOKEN(exprFirstToken, {});
+
+	TRY_PARSE(parseExpression(&statement->iteration.condition, &exprFirstToken), { tokenDestroy(&exprFirstToken); });
+	tokenDestroy(&exprFirstToken);
+
+	astStatmentBlockCreate(&statement->iteration.body);
+	TRY_PARSE(parseStatementBlock(&statement->iteration.body), {});
 	return PARSE_OK;
 }
 
@@ -387,7 +416,7 @@ parseResult parseStatement(astStatement* statement, const token* firstToken) {
 			// TODO - parse conditional
 			break;
 		case TOKEN_KEYWORD_WHILE:
-			// TODO - parse iteration
+			TRY_PARSE(parseIteration(statement), {});
 			break;
 		case TOKEN_IDENTIFIER: {
 			token secondToken;
