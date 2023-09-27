@@ -27,6 +27,7 @@ typedef enum {
 	AST_TERM_INT,
 	AST_TERM_DECIMAL,
 	AST_TERM_STRING,
+	AST_TERM_NIL,
 } astTermType;
 
 typedef struct {

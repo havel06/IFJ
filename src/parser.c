@@ -111,6 +111,10 @@ parseResult parseIdentifier(const token* tok, astExpression* expr) {
 
 parseResult parsePrimaryExpression(astExpression* expression, const token* firstToken) {
 	switch (firstToken->type) {
+		case TOKEN_KEYWORD_NIL:
+			expression->type = AST_EXPR_TERM;
+			expression->term.type = AST_TERM_NIL;
+			break;
 		case TOKEN_INT_LITERAL:
 			parseIntLiteral(firstToken, expression);
 			break;

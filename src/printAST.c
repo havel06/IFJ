@@ -49,6 +49,9 @@ void printTerm(const astTerm* term, int indent) {
 		case AST_TERM_ID:
 			printf("IDENTIFIER: %s\n", term->identificator.name);
 			break;
+		case AST_TERM_NIL:
+			puts("NIL");
+			break;
 	}
 }
 
