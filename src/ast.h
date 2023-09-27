@@ -170,7 +170,15 @@ struct astStatement {
 };
 
 typedef struct {
-	// TODO
+	bool requiresName;
+	astIdentifier outsideName;
+	astIdentifier insideName;
+	astDataType dataType;
+} astParameter;
+
+typedef struct {
+	astParameter* data;
+	int count;
 } astParameterList;
 
 typedef struct {
@@ -221,5 +229,13 @@ void astStatementBlockCreate(astStatementBlock*);
 // Returns 0 on success
 int astStatementBlockAdd(astStatementBlock*, astStatement);
 void astStatementBlockDestroy(astStatementBlock*);
+
+// void astParameterDestroy();
+
+// Returns 0 on success
+void astParameterListCreate(astParameterList*);
+// Returns 0 on success
+int astParameterListAdd(astParameterList*, astParameter);
+// void astParameterListDestroy();
 
 #endif

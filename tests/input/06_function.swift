@@ -2,10 +2,10 @@ func foo() -> Int {
     return 12
 }
 
-func bar() {
+func bar(with f : String, something gg : Int?) {
     return
 }
 
-func baz() -> String? {
+func baz(with f : String) -> String? {
     return nil
 }

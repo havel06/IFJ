@@ -270,6 +270,9 @@ lexerResult getNextToken(token* newToken) {
 		case EOF:
 			newToken->type = TOKEN_EOF;
 			return LEXER_OK;
+		case ',':
+			newToken->type = TOKEN_COMMA;
+			return LEXER_OK;
 		case '*':
 			newToken->type = TOKEN_MUL;
 			return LEXER_OK;

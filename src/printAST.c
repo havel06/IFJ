@@ -1,5 +1,6 @@
 #include "printAST.h"
 
+#include <assert.h>
 #include <stdio.h>
 
 #include "ast.h"
@@ -27,6 +28,8 @@ void printDataType(const astDataType* type) {
 		case AST_TYPE_UNSPECIFIED:
 			printf("Unspecified");
 			break;
+		default:
+			assert(false);
 	}
 
 	if (type->nullable) {
@@ -245,7 +248,20 @@ void printFunctionDef(const astFunctionDefinition* def) {
 	puts("FUNCTION DEFINITION");
 	printIndent(1);
 	printf("NAME: %s\n", def->name.name);
-	// TODO - parameter list
+	printIndent(1);
+	puts("PARAMETERS:");
+	for (int i = 0; i < def->params.count; i++) {
+		printIndent(2);
+		puts("PARAM");
+		printIndent(3);
+		printf("OUTSIDE_NAME: %s\n", def->params.data[i].outsideName.name);
+		printIndent(3);
+		printf("INSIDE_NAME: %s\n", def->params.data[i].insideName.name);
+		printIndent(3);
+		printf("TYPE: ");
+		printDataType(&(def->params.data[i].dataType));
+		puts("");
+	}
 	if (def->hasReturnValue) {
 		printIndent(1);
 		printf("RETURN TYPE: ");

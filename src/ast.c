@@ -95,6 +95,26 @@ int astStatementBlockAdd(astStatementBlock *block, astStatement statement) {
 	return 0;
 }
 
+void astParameterListCreate(astParameterList *list) {
+	list->data = NULL;
+	list->count = 0;
+}
+
+int astParameterListAdd(astParameterList *list, astParameter param) {
+	if (list->data == NULL) {
+		list->data = malloc(sizeof(param));
+	} else {
+		list->data = realloc(list->data, sizeof(param) * list->count + 1);
+	}
+
+	if (list->data == NULL) {
+		return 1;
+	}
+
+	list->data[list->count++] = param;
+	return 0;
+}
+
 /*
 void astBinaryExprDestroy(astExpression* expr) {
 	free(expr->binary.lhs);

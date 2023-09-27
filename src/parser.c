@@ -27,6 +27,16 @@ parseResult parseExpression(astExpression* expression, const token* firstToken);
 		}                                    \
 	} while (0)
 
+/*
+#define GET_TOKEN_TYPE(typeVar, onError) \
+	do { \
+		token testedToken; \
+		GET_TOKEN(testedToken, onError); \
+		typeVar = testedToken.type; \
+		tokenDestroy(&testedToken); \
+	} while (0)
+	*/
+
 #define GET_TOKEN_ASSUME_TYPE(tokenVar, assumedType, onError) \
 	do {                                                      \
 		GET_TOKEN(tokenVar, onError);                         \
@@ -524,6 +534,60 @@ parseResult parseStatement(astStatement* statement, const token* firstToken, boo
 	return PARSE_OK;
 }
 
+parseResult parseParameter(astParameter* param) {
+	// parse outside name
+	token outsideNameToken;
+	GET_TOKEN(outsideNameToken, {});
+	if (outsideNameToken.type == TOKEN_UNDERSCORE) {
+		param->requiresName = false;
+	} else if (outsideNameToken.type == TOKEN_IDENTIFIER) {
+		param->requiresName = true;
+		TRY_PARSE(parseIdentifier(&outsideNameToken, &(param->outsideName)), { tokenDestroy(&outsideNameToken); });
+	} else {
+		// TODO - emit message
+		return PARSE_ERROR;
+	}
+	tokenDestroy(&outsideNameToken);
+
+	// parse inside name
+	token insideNameToken;
+	GET_TOKEN_ASSUME_TYPE(insideNameToken, TOKEN_IDENTIFIER, {});
+	TRY_PARSE(parseIdentifier(&insideNameToken, &(param->insideName)), { tokenDestroy(&insideNameToken); });
+
+	CONSUME_TOKEN_ASSUME_TYPE(TOKEN_COLON, {});
+
+	// parse type
+	TRY_PARSE(parseDataType(&(param->dataType)), {});
+
+	return PARSE_OK;
+}
+
+parseResult parseParameterList(astParameterList* list) {
+	astParameterListCreate(list);
+
+	astParameter firstParam;
+	TRY_PARSE(parseParameter(&firstParam), {});
+	astParameterListAdd(list, firstParam);
+
+	while (1) {
+		// check for comma
+		token nextToken;
+		GET_TOKEN(nextToken, {});
+		if (nextToken.type != TOKEN_COMMA) {
+			unGetToken(&nextToken);
+			break;
+		}
+		tokenDestroy(&nextToken);
+
+		// parse next parameter
+		astParameter param;
+		TRY_PARSE(parseParameter(&param), {});
+		astParameterListAdd(list, param);
+	}
+
+	return PARSE_OK;
+}
+
 parseResult parseFunctionDefinition(astFunctionDefinition* def) {
 	// parse name
 	token idToken;
@@ -531,9 +595,18 @@ parseResult parseFunctionDefinition(astFunctionDefinition* def) {
 	TRY_PARSE(parseIdentifier(&idToken, &(def->name)), { tokenDestroy(&idToken); });
 	tokenDestroy(&idToken);
 
+	// parse params
 	CONSUME_TOKEN_ASSUME_TYPE(TOKEN_BRACKET_ROUND_LEFT, {});
-	// TODO - parameter list
-	CONSUME_TOKEN_ASSUME_TYPE(TOKEN_BRACKET_ROUND_RIGHT, {});
+	token maybeParamToken;
+	GET_TOKEN(maybeParamToken, {});
+	if (maybeParamToken.type != TOKEN_BRACKET_ROUND_RIGHT) {
+		unGetToken(&maybeParamToken);
+		TRY_PARSE(parseParameterList(&(def->params)), {});
+		CONSUME_TOKEN_ASSUME_TYPE(TOKEN_BRACKET_ROUND_RIGHT, {});
+	} else {
+		tokenDestroy(&maybeParamToken);
+		astParameterListCreate(&(def->params));
+	}
 
 	// parse return type
 	token maybeArrow;
