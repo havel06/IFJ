@@ -5,8 +5,18 @@
 
 #include "ast.h"
 
-// 0 = global
+// 0 = global frame
 static int FRAME_LEVEL = 0;
+
+#define PUSH_FRAME() \
+	puts("CREATEFRAME"); \
+	puts("PUSHFRAME"); \
+	FRAME_LEVEL++
+
+#define POP_FRAME() \
+	puts("POPFRAME"); \
+	FRAME_LEVEL--
+
 // used for compiler-generated labes (in conditionals etc)
 static int LAST_LABEL_NAME = 0;
 
@@ -128,6 +138,7 @@ static astDataType compileBinaryExpression(const astBinaryExpression* expr) {
 			break;
 		case AST_BINARY_NIL_COAL:
 			// TODO
+			assert(false);
 			break;
 	}
 	puts("PUSHS TF@res");
@@ -144,6 +155,7 @@ static astDataType compileExpression(const astExpression* expr) {
 			break;
 		case AST_EXPR_UNWRAP:
 			// TODO
+			assert(false);
 			break;
 	}
 	assert(false);
@@ -170,13 +182,11 @@ static void compileVariableDef(const astVariableDefinition* def) {
 }
 
 static void compileStatementBlock(const astStatementBlock* block) {
-	puts("CREATEFRAME");
-	puts("PUSHFRAME");
-	FRAME_LEVEL++;
+	PUSH_FRAME();
 	for (int i = 0; i < block->count; i++) {
 		compileStatement(&block->statements[i]);
 	}
-	puts("POPFRAME");
+	POP_FRAME();
 }
 
 static void compileConditional(const astConditional* conditional) {
@@ -224,6 +234,35 @@ static void compileIteration(const astIteration* iteration) {
 	puts("CLEARS");
 }
 
+static void compileReturn(const astReturnStatement* statement) {
+	if (statement->hasValue) {
+		compileExpression(&statement->value);
+	}
+	puts("RETURN");
+}
+
+static void compileInputParamList(const astInputParameterList* list) {
+	//parameters are pushed to the stack right to left
+	for (int i = list->count - 1; i >= 0; i--) {
+		compileTerm(&(list->data[i].value));
+	}
+}
+
+static void compileProcedureCall(const astProcedureCall* call) {
+	compileInputParamList(&call->params);
+	printf("CALL %s\n", call->procName.name);
+	puts("CLEARS");
+}
+
+static void compileFunctionCall(const astFunctionCall* call) {
+	compileInputParamList(&call->params);
+	printf("CALL %s\n", call->funcName.name);
+	printf("POPS ");
+	emitVariableId(&call->varName);
+	puts("");
+	puts("CLEARS");
+}
+
 static void compileStatement(const astStatement* statement) {
 	switch (statement->type) {
 		case AST_STATEMENT_VAR_DEF:
@@ -239,18 +278,28 @@ static void compileStatement(const astStatement* statement) {
 			compileIteration(&statement->iteration);
 			break;
 		case AST_STATEMENT_FUNC_CALL:
-			// TODO
-			// compileFunctionCall(&statement->functionCall);
+			compileFunctionCall(&statement->functionCall);
 			break;
 		case AST_STATEMENT_PROC_CALL:
-			// TODO
-			// compileProcedureCall(&statement->procedureCall);
+			compileProcedureCall(&statement->procedureCall);
 			break;
 		case AST_STATEMENT_RETURN:
-			// TODO
-			// compileReturn(&statement->returnStmt);
+			compileReturn(&statement->returnStmt);
 			break;
 	}
+}
+
+void compileFunctionDef(const astFunctionDefinition* def) {
+	PUSH_FRAME();
+	//parameters are read left to right
+	for (int i = 0; i < def->params.count; i++) {
+		printf("POPS LF@");
+		emitVariableId(&(def->params.data[i].insideName));
+		puts("");
+	}
+
+	compileStatementBlock(&def->body);
+	POP_FRAME();
 }
 
 void compileProgram(const astProgram* program) {
@@ -260,7 +309,7 @@ void compileProgram(const astProgram* program) {
 		if (topStatement->type == AST_TOP_STATEMENT) {
 			compileStatement(&topStatement->statement);
 		} else {
-			// TODO
+			compileFunctionDef(&topStatement->functionDef);
 		}
 	}
 }
