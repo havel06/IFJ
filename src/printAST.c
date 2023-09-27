@@ -140,8 +140,10 @@ void printVariableDefinition(const astVariableDefinition* definition, int indent
 	printDataType(&definition->variableType);
 	puts("");
 	printIndent(indent + 1);
-	puts("VALUE:");
-	printExpression(&definition->value, indent + 2);
+	if (definition->hasInitValue) {
+		puts("VALUE:");
+		printExpression(&definition->value, indent + 2);
+	}
 }
 
 void printAssignment(const astAssignment* assignment, int indent) {

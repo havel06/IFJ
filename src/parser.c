@@ -332,6 +332,7 @@ static parseResult parseVarDef(astStatement* statement, bool immutable) {
 	TRY_PARSE(parseDataType(&(statement->variableDef.variableType)), {});
 
 	// TODO - omit init value
+	statement->variableDef.hasInitValue = true;
 	CONSUME_TOKEN_ASSUME_TYPE(TOKEN_ASSIGN, {});
 
 	token initExprFirstToken;
