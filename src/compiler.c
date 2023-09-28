@@ -143,18 +143,18 @@ static astDataType compileBinaryExpression(const astBinaryExpression* expr) {
 	return resultType;
 }
 
+static astDataType compileUnwrapExpression(const astUnwrapExpression* expr) {
+	return compileExpression(expr->innerExpr);
+}
+
 static astDataType compileExpression(const astExpression* expr) {
 	switch (expr->type) {
 		case AST_EXPR_TERM:
 			return compileTerm(&expr->term);
-			break;
 		case AST_EXPR_BINARY:
 			return compileBinaryExpression(&expr->binary);
-			break;
 		case AST_EXPR_UNWRAP:
-			// TODO
-			assert(false);
-			break;
+			return compileUnwrapExpression(&expr->unwrap);
 	}
 	assert(false);
 }
@@ -295,9 +295,7 @@ static void compileBuiltInOrd() {
 	puts("PUSHS TF@res");
 }
 
-static void compileBuiltInChr() {
-	puts("INT2CHARS");
-}
+static void compileBuiltInChr() { puts("INT2CHARS"); }
 
 static void compileInputParamList(const astInputParameterList* list) {
 	// parameters are pushed to the stack right to left

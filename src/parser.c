@@ -153,15 +153,29 @@ static parseResult parsePrimaryExpression(astExpression* expression, const token
 			tokenDestroy(&nextToken);
 			CONSUME_TOKEN_ASSUME_TYPE(TOKEN_BRACKET_ROUND_RIGHT, {});
 			break;
-
-			default:
-				expression->type = AST_EXPR_TERM;
-				TRY_PARSE(parseTerm(&expression->term, firstToken), {});
-				break;
 		}
+		default:
+			expression->type = AST_EXPR_TERM;
+			TRY_PARSE(parseTerm(&expression->term, firstToken), {});
+			break;
 	}
 
-	// TODO - unwrap expression
+	// unwrap expression
+	token nextToken;
+	GET_TOKEN(nextToken, {});
+	if (nextToken.type == TOKEN_UNWRAP) {
+		tokenDestroy(&nextToken);
+		astExpression unwrapExpression;
+		unwrapExpression.type = AST_EXPR_UNWRAP;
+		unwrapExpression.unwrap.innerExpr = malloc(sizeof(astExpression));
+		if (!unwrapExpression.unwrap.innerExpr) {
+			return PARSE_INTERNAL_ERROR;
+		}
+		*(unwrapExpression.unwrap.innerExpr) = *expression;
+		*expression = unwrapExpression;
+	} else {
+		unGetToken(&nextToken);
+	}
 
 	return PARSE_OK;
 }

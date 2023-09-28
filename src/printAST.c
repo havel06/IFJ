@@ -25,11 +25,12 @@ void printDataType(const astDataType* type) {
 		case AST_TYPE_STRING:
 			printf("String");
 			break;
-		case AST_TYPE_UNSPECIFIED:
-			printf("Unspecified");
+		case AST_TYPE_NIL:
+			printf("nil");
 			break;
-		default:
-			assert(false);
+		case AST_TYPE_BOOL:
+			printf("bool");
+			break;
 	}
 
 	if (type->nullable) {
@@ -111,6 +112,12 @@ void printBinaryExpression(const astBinaryExpression* expression, int indent) {
 	printExpression(expression->rhs, indent + 2);
 }
 
+void printUnwrapExpression(const astUnwrapExpression* expr, int indent) {
+	printIndent(indent);
+	puts("UNWRAP:");
+	printExpression(expr->innerExpr, indent + 1);
+}
+
 void printExpression(const astExpression* expression, int indent) {
 	switch (expression->type) {
 		case AST_EXPR_TERM:
@@ -120,6 +127,7 @@ void printExpression(const astExpression* expression, int indent) {
 			printBinaryExpression(&expression->binary, indent);
 			break;
 		case AST_EXPR_UNWRAP:
+			printUnwrapExpression(&expression->unwrap, indent);
 			break;
 	}
 }

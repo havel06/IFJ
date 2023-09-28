@@ -90,8 +90,13 @@ static analysisResult analyseBinaryExpression(const astBinaryExpression* express
 }
 
 static analysisResult analyseUnwrapExpression(const astUnwrapExpression* expression, astDataType* outType) {
-	// TODO
 	ANALYSE(analyseExpression(expression->innerExpr, outType), {});
+
+	if (!outType->nullable) {
+		fputs("Cannot unwrap non-nullable value.", stderr);
+		return ANALYSIS_OTHER_ERROR;
+	}
+
 	outType->nullable = false;
 	return ANALYSIS_OK;
 }

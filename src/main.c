@@ -54,6 +54,7 @@ int main() {
 
 #ifdef TEST_PARSER
 	astPrint(&program);
+	return 0;
 #endif
 
 	switch (analyseProgram(&program)) {
