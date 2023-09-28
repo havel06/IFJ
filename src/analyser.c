@@ -90,8 +90,21 @@ static analysisResult analyseVariableDef(const astVariableDefinition* definition
 }
 
 static analysisResult analyseAssignment(const astAssignment* assignment) {
-	// TODO
+	symbolTableSlot* slot = symStackLookup(&VAR_SYM_STACK, assignment->variableName.name, NULL);
+	// check if variable exists
+	if (!slot) {
+		fprintf(stderr, "Usage of undefined variable %s\n", assignment->variableName.name);
+		return ANALYSIS_UNDEFINED_VAR;
+	}
+	// check if variable is mutable
+	if (slot->variable.immutable) {
+		fprintf(stderr, "Modification of immutable variable %s\n", assignment->variableName.name);
+		return ANALYSIS_OTHER_ERROR;  // TODO - is this correct?
+	}
+
 	ANALYSE(analyseExpression(&assignment->value), {});
+	// TODO - type checking
+
 	return ANALYSIS_OK;
 }
 
