@@ -1,5 +1,6 @@
 #include "analyser.h"
 
+#include <assert.h>
 #include <stdio.h>
 
 #include "ast.h"
@@ -16,25 +17,86 @@
 
 // forward decl
 static analysisResult analyseStatementBlock(const astStatementBlock*);
-static analysisResult analyseExpression(const astExpression*);
+static analysisResult analyseExpression(const astExpression*, astDataType* outType);
 
 static symbolTableStack VAR_SYM_STACK;
 static symbolTable FUNC_SYM_TABLE;
 
-static analysisResult analyseBinaryExpression(const astBinaryExpression* expression) {
+bool isNumberType(astDataType type) { return (type.type == AST_TYPE_INT || type.type == AST_TYPE_DOUBLE); }
+
+bool isNoNullNumberType(astDataType type) { return !type.nullable && isNumberType(type); }
+
+static analysisResult analyseBinaryExpression(const astBinaryExpression* expression, astDataType* outType) {
 	// TODO
-	ANALYSE(analyseExpression(expression->lhs), {});
-	ANALYSE(analyseExpression(expression->rhs), {});
+	astDataType lhsType;
+	astDataType rhsType;
+	ANALYSE(analyseExpression(expression->lhs, &lhsType), {});
+	ANALYSE(analyseExpression(expression->rhs, &rhsType), {});
+
+	switch (expression->op) {
+		case AST_BINARY_MUL:
+		case AST_BINARY_PLUS:
+		case AST_BINARY_MINUS:
+			if (!isNoNullNumberType(lhsType) || !isNoNullNumberType(rhsType)) {
+				fputs("Incompatible types for binary operation.", stderr);
+				return ANALYSIS_WRONG_BINARY_TYPES;
+			}
+			if (lhsType.type == AST_TYPE_INT && rhsType.type == AST_TYPE_INT) {
+				outType->type = AST_TYPE_INT;
+			} else {
+				outType->type = AST_TYPE_DOUBLE;
+			}
+			outType->nullable = false;
+			break;
+		case AST_BINARY_DIV:
+			if (!isNoNullNumberType(lhsType) || !isNoNullNumberType(rhsType)) {
+				fputs("Incompatible types for binary operation.", stderr);
+				return ANALYSIS_WRONG_BINARY_TYPES;
+			}
+			outType->type = AST_TYPE_DOUBLE;
+			outType->nullable = false;
+			break;
+		case AST_BINARY_LESS_EQ:
+		case AST_BINARY_GREATER_EQ:
+		case AST_BINARY_LESS:
+		case AST_BINARY_GREATER:
+			if (!isNoNullNumberType(lhsType) || !isNoNullNumberType(rhsType)) {
+				fputs("Incompatible types for binary operation.", stderr);
+				return ANALYSIS_WRONG_BINARY_TYPES;
+			}
+			if (lhsType.type != rhsType.type) {
+				fputs("Incompatible types for binary operation.", stderr);
+				return ANALYSIS_WRONG_BINARY_TYPES;
+			}
+			outType->type = AST_TYPE_BOOL;
+			outType->nullable = false;
+			break;
+		case AST_BINARY_EQ:
+		case AST_BINARY_NEQ:
+			if ((lhsType.type != rhsType.type) && !(isNumberType(lhsType) && isNumberType(rhsType))) {
+				fputs("Incompatible types for binary operation.", stderr);
+				return ANALYSIS_WRONG_BINARY_TYPES;
+			}
+			outType->type = AST_TYPE_BOOL;
+			outType->nullable = lhsType.nullable || rhsType.nullable;
+			break;
+		case AST_BINARY_NIL_COAL:
+			assert(false);
+			// TODO
+			break;
+	}
+
 	return ANALYSIS_OK;
 }
 
-static analysisResult analyseUnwrapExpression(const astUnwrapExpression* expression) {
+static analysisResult analyseUnwrapExpression(const astUnwrapExpression* expression, astDataType* outType) {
 	// TODO
-	ANALYSE(analyseExpression(expression->innerExpr), {});
+	ANALYSE(analyseExpression(expression->innerExpr, outType), {});
+	outType->nullable = false;
 	return ANALYSIS_OK;
 }
 
-static analysisResult analyseVariableId(const astIdentifier* id) {
+static analysisResult analyseVariableId(const astIdentifier* id, astDataType* outType) {
 	symbolTableSlot* slot = symStackLookup(&VAR_SYM_STACK, id->name, NULL);
 	if (!slot) {
 		fprintf(stderr, "Usage of undefined variable %s\n", id->name);
@@ -43,22 +105,43 @@ static analysisResult analyseVariableId(const astIdentifier* id) {
 		fprintf(stderr, "Usage of uninitialised variable %s\n", id->name);
 		return ANALYSIS_UNDEFINED_VAR;
 	}
+
+	*outType = slot->variable.type;
 	return ANALYSIS_OK;
 }
 
-static analysisResult analyseExpression(const astExpression* expression) {
+static analysisResult analyseExpression(const astExpression* expression, astDataType* outType) {
 	// TODO
 	switch (expression->type) {
-		case AST_EXPR_TERM:
-			if (expression->term.type == AST_TERM_ID) {
-				ANALYSE(analyseVariableId(&expression->term.identifier), {});
+		case AST_EXPR_TERM: {
+			switch (expression->term.type) {
+				case AST_TERM_ID:
+					ANALYSE(analyseVariableId(&expression->term.identifier, outType), {});
+					break;
+				case AST_TERM_INT:
+					outType->type = AST_TYPE_INT;
+					outType->nullable = false;
+					break;
+				case AST_TERM_DECIMAL:
+					outType->type = AST_TYPE_DOUBLE;
+					outType->nullable = false;
+					break;
+				case AST_TERM_NIL:
+					outType->type = AST_TYPE_NIL;
+					outType->nullable = false;
+					break;
+				case AST_TERM_STRING:
+					outType->type = AST_TYPE_STRING;
+					outType->nullable = false;
+					break;
 			}
 			break;
+		}
 		case AST_EXPR_BINARY:
-			ANALYSE(analyseBinaryExpression(&expression->binary), {});
+			ANALYSE(analyseBinaryExpression(&expression->binary, outType), {});
 			break;
 		case AST_EXPR_UNWRAP:
-			ANALYSE(analyseUnwrapExpression(&expression->unwrap), {});
+			ANALYSE(analyseUnwrapExpression(&expression->unwrap, outType), {});
 			break;
 	}
 	return ANALYSIS_OK;
@@ -96,7 +179,14 @@ static analysisResult analyseVariableDef(const astVariableDefinition* definition
 	symTableInsertVar(symStackCurrentScope(&VAR_SYM_STACK), newVar, definition->variableName.name);
 
 	if (definition->hasInitValue) {
-		ANALYSE(analyseExpression(&definition->value), {});
+		astDataType initValueType;
+		ANALYSE(analyseExpression(&definition->value, &initValueType), {});
+
+		// TODO - this is probably not enough
+		if (definition->variableType.type != initValueType.type) {
+			fprintf(stderr, "Wrong type in initialisation of variable %s\n", definition->variableName.name);
+			return ANALYSIS_WRONG_BINARY_TYPES;
+		}
 	}
 	return ANALYSIS_OK;
 }
@@ -114,7 +204,12 @@ static analysisResult analyseAssignment(const astAssignment* assignment) {
 		return ANALYSIS_OTHER_ERROR;  // TODO - is this correct?
 	}
 
-	ANALYSE(analyseExpression(&assignment->value), {});
+	astDataType valueType;
+	ANALYSE(analyseExpression(&assignment->value, &valueType), {});
+	if (slot->variable.type.type != valueType.type) {
+		fprintf(stderr, "Wrong type in assignment to variable %s\n", slot->name);
+		return ANALYSIS_WRONG_BINARY_TYPES;
+	}
 	// TODO - type checking
 
 	return ANALYSIS_OK;
@@ -128,7 +223,16 @@ static analysisResult analyseAssignment(const astAssignment* assignment) {
 static analysisResult analyseCondition(const astCondition* condition) {
 	// TODO
 	if (condition->type == AST_CONDITION_EXPRESSION) {
-		ANALYSE(analyseExpression(&condition->expression), {});
+		astDataType conditionType;
+		ANALYSE(analyseExpression(&condition->expression, &conditionType), {});
+		if (conditionType.type != AST_TYPE_BOOL) {
+			fputs("Condition must be of boolean type.", stderr);
+			return ANALYSIS_WRONG_BINARY_TYPES;
+		}
+		if (conditionType.nullable) {
+			fputs("Condition must not be nullable.", stderr);
+			return ANALYSIS_WRONG_BINARY_TYPES;
+		}
 	} else {
 		// ANALYSE(analyseOptionalBinding(&condition->optBinding));
 	}
@@ -148,7 +252,17 @@ static analysisResult analyseConditional(const astConditional* conditional) {
 static analysisResult analyseIteration(const astIteration* iteration) {
 	// TODO
 
-	ANALYSE(analyseExpression(&iteration->condition), {});
+	astDataType conditionType;
+	ANALYSE(analyseExpression(&iteration->condition, &conditionType), {});
+	if (conditionType.type != AST_TYPE_BOOL) {
+		fputs("Condition must be of boolean type.", stderr);
+		return ANALYSIS_WRONG_BINARY_TYPES;
+	}
+	if (conditionType.nullable) {
+		fputs("Condition must not be nullable.", stderr);
+		return ANALYSIS_WRONG_BINARY_TYPES;
+	}
+
 	ANALYSE(analyseStatementBlock(&iteration->body), {});
 	return ANALYSIS_OK;
 }
@@ -186,7 +300,8 @@ static analysisResult analyseReturn(const astReturnStatement* ret) {
 	// TODO
 
 	if (ret->hasValue) {
-		ANALYSE(analyseExpression(&ret->value), {});
+		astDataType returnType;
+		ANALYSE(analyseExpression(&ret->value, &returnType), {});
 	}
 
 	return ANALYSIS_OK;

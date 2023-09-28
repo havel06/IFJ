@@ -82,6 +82,7 @@ static astDataType compileBinaryExpression(const astBinaryExpression* expr) {
 	resultType.nullable = false;
 
 	// perform conversion
+	// TODO - should we do this with nil coalescense?
 	if (lhsType.type == rhsType.type) {
 		// do nothing
 	} else if (lhsType.type == AST_TYPE_INT) {
@@ -96,12 +97,8 @@ static astDataType compileBinaryExpression(const astBinaryExpression* expr) {
 			resultType.type = lhsType.type;
 			break;
 		case AST_BINARY_DIV:
-			if (lhsType.type == AST_TYPE_DOUBLE) {
-				puts("DIV TF@res TF@lhs TF@rhs");
-			} else {
-				puts("IDIV TF@res TF@lhs TF@rhs");
-			}
-			resultType.type = lhsType.type;
+			puts("DIV TF@res TF@lhs TF@rhs");
+			resultType.type = AST_TYPE_DOUBLE;
 			break;
 		case AST_BINARY_PLUS:
 			puts("ADD TF@res TF@lhs TF@rhs");
