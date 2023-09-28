@@ -34,8 +34,13 @@ static analysisResult analyseBinaryExpression(const astBinaryExpression* express
 	ANALYSE(analyseExpression(expression->rhs, &rhsType), {});
 
 	switch (expression->op) {
-		case AST_BINARY_MUL:
 		case AST_BINARY_PLUS:
+			if (lhsType.type == AST_TYPE_STRING && rhsType.type == AST_TYPE_STRING) {
+				outType->type = AST_TYPE_STRING;
+				break;
+			}
+			__attribute__((fallthrough));
+		case AST_BINARY_MUL:
 		case AST_BINARY_MINUS:
 			if (!isNoNullNumberType(lhsType) || !isNoNullNumberType(rhsType)) {
 				fputs("Incompatible types for binary operation.", stderr);

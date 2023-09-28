@@ -101,7 +101,11 @@ static astDataType compileBinaryExpression(const astBinaryExpression* expr) {
 			resultType.type = AST_TYPE_DOUBLE;
 			break;
 		case AST_BINARY_PLUS:
-			puts("ADD TF@res TF@lhs TF@rhs");
+			if (lhsType.type == AST_TYPE_STRING) {
+				puts("CONCAT TF@res TF@lhs TF@rhs");
+			} else {
+				puts("ADD TF@res TF@lhs TF@rhs");
+			}
 			resultType.type = lhsType.type;
 			break;
 		case AST_BINARY_MINUS:
