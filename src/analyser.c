@@ -33,10 +33,25 @@ static analysisResult analyseUnwrapExpression(const astUnwrapExpression* express
 	return ANALYSIS_OK;
 }
 
+static analysisResult analyseVariableId(const astIdentifier* id) {
+	symbolTableSlot* slot = symStackLookup(&VAR_SYM_STACK, id->name, NULL);
+	if (!slot) {
+		fprintf(stderr, "Usage of undefined variable %s\n", id->name);
+		return ANALYSIS_UNDEFINED_VAR;
+	} else if (!slot->variable.initialised) {
+		fprintf(stderr, "Usage of uninitialised variable %s\n", id->name);
+		return ANALYSIS_UNDEFINED_VAR;
+	}
+	return ANALYSIS_OK;
+}
+
 static analysisResult analyseExpression(const astExpression* expression) {
 	// TODO
 	switch (expression->type) {
 		case AST_EXPR_TERM:
+			if (expression->term.type == AST_TERM_ID) {
+				ANALYSE(analyseVariableId(&expression->term.identifier), {});
+			}
 			break;
 		case AST_EXPR_BINARY:
 			ANALYSE(analyseBinaryExpression(&expression->binary), {});
@@ -181,9 +196,11 @@ static analysisResult analyseStatement(const astStatement* statement) {
 }
 
 static analysisResult analyseStatementBlock(const astStatementBlock* block) {
+	symStackPush(&VAR_SYM_STACK);
 	for (int i = 0; i < block->count; i++) {
 		ANALYSE(analyseStatement(&block->statements[i]), {});
 	}
+	symStackPop(&VAR_SYM_STACK);
 	return ANALYSIS_OK;
 }
 

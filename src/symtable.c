@@ -72,12 +72,10 @@ void symStackCreate(symbolTableStack* stack) { stack->count = 0; }
 
 void symStackPush(symbolTableStack* stack) { symTableCreate(&(stack->tables[stack->count++])); }
 
-/*
 void symStackPop(symbolTableStack* stack) {
 	// TODO - destroy symbol table if it contains allocated memory
 	stack->count--;
 }
-*/
 
 symbolTable* symStackCurrentScope(symbolTableStack* stack) {
 	assert(stack->count >= 0);
@@ -88,7 +86,9 @@ symbolTableSlot* symStackLookup(symbolTableStack* stack, const char* name, symbo
 	for (int i = stack->count - 1; i >= 0; i--) {
 		symbolTableSlot* slot = symTableLookup(&stack->tables[i], name);
 		if (slot) {
-			*tablePtr = &stack->tables[i];
+			if (tablePtr) {
+				*tablePtr = &stack->tables[i];
+			}
 			return slot;
 		}
 	}
