@@ -1,11 +1,15 @@
 #include "analyser.h"
 
-#include "ast.h"
+#include <stdio.h>
 
-#define ANALYSE(func)                     \
+#include "ast.h"
+#include "symtable.h"
+
+#define ANALYSE(func, onError)            \
 	do {                                  \
 		analysisResult funcRetVal = func; \
 		if (funcRetVal != ANALYSIS_OK) {  \
+			onError;                      \
 			return funcRetVal;            \
 		}                                 \
 	} while (0)
@@ -14,16 +18,18 @@
 static analysisResult analyseStatementBlock(const astStatementBlock*);
 static analysisResult analyseExpression(const astExpression*);
 
+static symbolTableStack VAR_SYM_STACK;
+
 static analysisResult analyseBinaryExpression(const astBinaryExpression* expression) {
 	// TODO
-	ANALYSE(analyseExpression(expression->lhs));
-	ANALYSE(analyseExpression(expression->rhs));
+	ANALYSE(analyseExpression(expression->lhs), {});
+	ANALYSE(analyseExpression(expression->rhs), {});
 	return ANALYSIS_OK;
 }
 
 static analysisResult analyseUnwrapExpression(const astUnwrapExpression* expression) {
 	// TODO
-	ANALYSE(analyseExpression(expression->innerExpr));
+	ANALYSE(analyseExpression(expression->innerExpr), {});
 	return ANALYSIS_OK;
 }
 
@@ -33,10 +39,10 @@ static analysisResult analyseExpression(const astExpression* expression) {
 		case AST_EXPR_TERM:
 			break;
 		case AST_EXPR_BINARY:
-			ANALYSE(analyseBinaryExpression(&expression->binary));
+			ANALYSE(analyseBinaryExpression(&expression->binary), {});
 			break;
 		case AST_EXPR_UNWRAP:
-			ANALYSE(analyseUnwrapExpression(&expression->unwrap));
+			ANALYSE(analyseUnwrapExpression(&expression->unwrap), {});
 			break;
 	}
 	return ANALYSIS_OK;
@@ -44,21 +50,33 @@ static analysisResult analyseExpression(const astExpression* expression) {
 
 static analysisResult analyseFunctionDef(const astFunctionDefinition* statement) {
 	// TODO
-	ANALYSE(analyseStatementBlock(&statement->body));
+	ANALYSE(analyseStatementBlock(&statement->body), {});
 	return ANALYSIS_OK;
 }
 
 static analysisResult analyseVariableDef(const astVariableDefinition* definition) {
-	// TODO
+	// check for variable redefinition
+	symbolTable* scopePtr;
+	symbolTableSlot* slot = symStackLookup(&VAR_SYM_STACK, definition->variableName.name, &scopePtr);
+	if (slot && scopePtr == symStackCurrentScope(&VAR_SYM_STACK)) {
+		// redefined
+		fprintf(stderr, "Variable redefinition: %s\n", definition->variableName.name);
+		return ANALYSIS_UNDEFINED_FUNC;
+	}
+
+	// insert into symtable
+	symbolVariable newVar = {definition->variableType, definition->immutable, definition->hasInitValue};
+	symTableInsertVar(symStackCurrentScope(&VAR_SYM_STACK), newVar, definition->variableName.name);
+
 	if (definition->hasInitValue) {
-		ANALYSE(analyseExpression(&definition->value));
+		ANALYSE(analyseExpression(&definition->value), {});
 	}
 	return ANALYSIS_OK;
 }
 
 static analysisResult analyseAssignment(const astAssignment* assignment) {
 	// TODO
-	ANALYSE(analyseExpression(&assignment->value));
+	ANALYSE(analyseExpression(&assignment->value), {});
 	return ANALYSIS_OK;
 }
 
@@ -70,7 +88,7 @@ static analysisResult analyseAssignment(const astAssignment* assignment) {
 static analysisResult analyseCondition(const astCondition* condition) {
 	// TODO
 	if (condition->type == AST_CONDITION_EXPRESSION) {
-		ANALYSE(analyseExpression(&condition->expression));
+		ANALYSE(analyseExpression(&condition->expression), {});
 	} else {
 		// ANALYSE(analyseOptionalBinding(&condition->optBinding));
 	}
@@ -79,10 +97,10 @@ static analysisResult analyseCondition(const astCondition* condition) {
 
 static analysisResult analyseConditional(const astConditional* conditional) {
 	// TODO
-	ANALYSE(analyseCondition(&conditional->condition));
-	ANALYSE(analyseStatementBlock(&conditional->body));
+	ANALYSE(analyseCondition(&conditional->condition), {});
+	ANALYSE(analyseStatementBlock(&conditional->body), {});
 	if (conditional->hasElse) {
-		ANALYSE(analyseStatementBlock(&conditional->bodyElse));
+		ANALYSE(analyseStatementBlock(&conditional->bodyElse), {});
 	}
 	return ANALYSIS_OK;
 }
@@ -90,8 +108,8 @@ static analysisResult analyseConditional(const astConditional* conditional) {
 static analysisResult analyseIteration(const astIteration* iteration) {
 	// TODO
 
-	ANALYSE(analyseExpression(&iteration->condition));
-	ANALYSE(analyseStatementBlock(&iteration->body));
+	ANALYSE(analyseExpression(&iteration->condition), {});
+	ANALYSE(analyseStatementBlock(&iteration->body), {});
 	return ANALYSIS_OK;
 }
 
@@ -113,14 +131,14 @@ static analysisResult analyseInputParameterList(const astInputParameterList* lis
 static analysisResult analyseFunctionCall(const astFunctionCall* call) {
 	// TODO
 
-	ANALYSE(analyseInputParameterList(&call->params));
+	ANALYSE(analyseInputParameterList(&call->params), {});
 	return ANALYSIS_OK;
 }
 
 static analysisResult analyseProcedureCall(const astProcedureCall* call) {
 	// TODO
 
-	ANALYSE(analyseInputParameterList(&call->params));
+	ANALYSE(analyseInputParameterList(&call->params), {});
 	return ANALYSIS_OK;
 }
 
@@ -128,7 +146,7 @@ static analysisResult analyseReturn(const astReturnStatement* ret) {
 	// TODO
 
 	if (ret->hasValue) {
-		ANALYSE(analyseExpression(&ret->value));
+		ANALYSE(analyseExpression(&ret->value), {});
 	}
 
 	return ANALYSIS_OK;
@@ -137,25 +155,25 @@ static analysisResult analyseReturn(const astReturnStatement* ret) {
 static analysisResult analyseStatement(const astStatement* statement) {
 	switch (statement->type) {
 		case AST_STATEMENT_VAR_DEF:
-			ANALYSE(analyseVariableDef(&statement->variableDef));
+			ANALYSE(analyseVariableDef(&statement->variableDef), {});
 			break;
 		case AST_STATEMENT_ASSIGN:
-			ANALYSE(analyseAssignment(&statement->assignment));
+			ANALYSE(analyseAssignment(&statement->assignment), {});
 			break;
 		case AST_STATEMENT_COND:
-			ANALYSE(analyseConditional(&statement->conditional));
+			ANALYSE(analyseConditional(&statement->conditional), {});
 			break;
 		case AST_STATEMENT_ITER:
-			ANALYSE(analyseIteration(&statement->iteration));
+			ANALYSE(analyseIteration(&statement->iteration), {});
 			break;
 		case AST_STATEMENT_FUNC_CALL:
-			ANALYSE(analyseFunctionCall(&statement->functionCall));
+			ANALYSE(analyseFunctionCall(&statement->functionCall), {});
 			break;
 		case AST_STATEMENT_PROC_CALL:
-			ANALYSE(analyseProcedureCall(&statement->procedureCall));
+			ANALYSE(analyseProcedureCall(&statement->procedureCall), {});
 			break;
 		case AST_STATEMENT_RETURN:
-			ANALYSE(analyseReturn(&statement->returnStmt));
+			ANALYSE(analyseReturn(&statement->returnStmt), {});
 			break;
 	}
 
@@ -164,18 +182,21 @@ static analysisResult analyseStatement(const astStatement* statement) {
 
 static analysisResult analyseStatementBlock(const astStatementBlock* block) {
 	for (int i = 0; i < block->count; i++) {
-		ANALYSE(analyseStatement(&block->statements[i]));
+		ANALYSE(analyseStatement(&block->statements[i]), {});
 	}
 	return ANALYSIS_OK;
 }
 
 analysisResult analyseProgram(const astProgram* program) {
+	symStackCreate(&VAR_SYM_STACK);
+	symStackPush(&VAR_SYM_STACK);  // global scope
+	// TODO - pop global scope and destroy symbol stack after usage
 	for (int i = 0; i < program->count; i++) {
 		const astTopLevelStatement* topStatement = &program->statements[i];
 		if (topStatement->type == AST_TOP_STATEMENT) {
-			ANALYSE(analyseStatement(&topStatement->statement));
+			ANALYSE(analyseStatement(&topStatement->statement), {});
 		} else {
-			ANALYSE(analyseFunctionDef(&topStatement->functionDef));
+			ANALYSE(analyseFunctionDef(&topStatement->functionDef), {});
 		}
 	}
 	return ANALYSIS_OK;

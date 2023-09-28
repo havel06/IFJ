@@ -4,30 +4,43 @@
 #include "ast.h"
 
 typedef struct {
-	const char* name;  // non-owning
 	astDataType type;
 	bool immutable;
+	bool initialised;
 } symbolVariable;
 
 typedef struct {
+	// TODO
+} symbolFunc;
+
+typedef struct {
+	const char* name;  // non-owning
 	bool taken;
-	symbolVariable value;
-} symbolTableScopeSlot;
+	union {
+		symbolVariable variable;
+		symbolFunc function;
+	};
+} symbolTableSlot;
 
 typedef struct {
-	symbolTableScopeSlot data[1024];  // TODO - make dynamic
-} symbolTableScope;
-
-typedef struct {
-	symbolTableScope scopes[128];  // TODO - make dynamic
-	int count;
+	symbolTableSlot data[1024];	 // TODO - make dynamic?
 } symbolTable;
+
+typedef struct {
+	symbolTable tables[256];  // TODO - make dynamic?
+	int count;
+} symbolTableStack;
 
 void symTableCreate(symbolTable*);
 // void symTableDestroy(symbolTable*);
-void symTablePushScope(symbolTable*);
-void symTablePopScope(symbolTable*);
-void symTableInsert(symbolTable*, symbolVariable);
-symbolVariable* symTableLookup(symbolTable*, const char* name);
+void symTableInsertVar(symbolTable*, symbolVariable, const char* name);
+void symTableInsertFunc(symbolTable*, symbolFunc, const char* name);
+symbolTableSlot* symTableLookup(symbolTable*, const char* name);
+
+void symStackCreate(symbolTableStack*);
+void symStackPush(symbolTableStack*);
+void symStackPop(symbolTableStack*);
+symbolTable* symStackCurrentScope(symbolTableStack*);
+symbolTableSlot* symStackLookup(symbolTableStack*, const char* name, symbolTable** tablePtr);
 
 #endif
