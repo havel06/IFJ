@@ -5,17 +5,21 @@
 #include <string.h>
 
 #include "ast.h"
+#include "symtable.h"
 
 // 0 = global frame
 static int FRAME_LEVEL = 0;
+static symbolTableStack VAR_SYM_STACK;
 
-#define PUSH_FRAME()     \
-	puts("CREATEFRAME"); \
-	puts("PUSHFRAME");   \
+#define PUSH_FRAME()              \
+	puts("CREATEFRAME");          \
+	puts("PUSHFRAME");            \
+	symStackPush(&VAR_SYM_STACK); \
 	FRAME_LEVEL++
 
-#define POP_FRAME()   \
-	puts("POPFRAME"); \
+#define POP_FRAME()              \
+	puts("POPFRAME");            \
+	symStackPop(&VAR_SYM_STACK); \
 	FRAME_LEVEL--
 
 // used for compiler-generated labes (in conditionals etc)
@@ -44,8 +48,8 @@ static astDataType compileTerm(const astTerm* term) {
 			printf("PUSHS ");
 			emitVariableId(&term->identifier);
 			puts("");
-			// TODO - find type in symbol table
-			dataType.type = AST_TYPE_NIL;
+			symbolTableSlot* slot = symStackLookup(&VAR_SYM_STACK, term->identifier.name, NULL);
+			dataType = slot->variable.type;
 			break;
 		case AST_TERM_INT:
 			printf("PUSHS int@%d\n", term->integer.value);
@@ -82,7 +86,6 @@ static astDataType compileBinaryExpression(const astBinaryExpression* expr) {
 	resultType.nullable = false;
 
 	// perform conversion
-	// TODO - should we do this with nil coalescense?
 	if (lhsType.type == rhsType.type) {
 		// do nothing
 	} else if (lhsType.type == AST_TYPE_INT) {
@@ -138,10 +141,14 @@ static astDataType compileBinaryExpression(const astBinaryExpression* expr) {
 			puts("LT TF@res TF@lhs TF@rhs");
 			puts("NOT TF@res TF@res");
 			break;
-		case AST_BINARY_NIL_COAL:
-			// TODO
-			assert(false);
+		case AST_BINARY_NIL_COAL: {
+			int coalLabel = newLabelName();
+			puts("MOVE TF@res TF@lhs");
+			printf("JUMPIFNEQ %d TF@res nil@nil\n", coalLabel);
+			puts("MOVE TF@res TF@rhs");
+			printf("LABEL %d\n", coalLabel);
 			break;
+		}
 	}
 	puts("PUSHS TF@res");
 	return resultType;
@@ -171,6 +178,10 @@ static void compileAssignment(const astAssignment* assignment) {
 }
 
 static void compileVariableDef(const astVariableDefinition* def) {
+	// insert into symtable
+	symbolVariable newVar = {def->variableType, def->immutable, def->hasInitValue};
+	symTableInsertVar(symStackCurrentScope(&VAR_SYM_STACK), newVar, def->variableName.name);
+
 	printf("DEFVAR ");
 	emitVariableId(&def->variableName);
 	puts("");
@@ -392,6 +403,8 @@ void compileFunctionDef(const astFunctionDefinition* def) {
 }
 
 void compileProgram(const astProgram* program) {
+	symStackCreate(&VAR_SYM_STACK);
+	symStackPush(&VAR_SYM_STACK);  // global scope
 	puts(".IFJcode23");
 	for (int i = 0; i < program->count; i++) {
 		const astTopLevelStatement* topStatement = &program->statements[i];

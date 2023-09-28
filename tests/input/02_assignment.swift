@@ -1,4 +1,5 @@
 //var foo : Int = 32
 //var baz : Int = 0
 //baz = foo!
-var foo : Double = 1 + 2.3
+var a : Int? = 2
+var foo : Int = (a ?? 3)

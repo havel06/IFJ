@@ -86,8 +86,13 @@ static analysisResult analyseBinaryExpression(const astBinaryExpression* express
 			outType->nullable = lhsType.nullable || rhsType.nullable;
 			break;
 		case AST_BINARY_NIL_COAL:
-			assert(false);
-			// TODO
+			if (!lhsType.nullable) {
+				fputs("Left side of nil coalescing operator must be nullable.", stderr);
+				return ANALYSIS_OTHER_ERROR;  // TODO - is this correct?
+			}
+			if (lhsType.type != rhsType.type) {
+				return ANALYSIS_WRONG_BINARY_TYPES;	 // TODO - is this correct?
+			}
 			break;
 	}
 
