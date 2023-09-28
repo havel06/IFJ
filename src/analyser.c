@@ -19,6 +19,7 @@ static analysisResult analyseStatementBlock(const astStatementBlock*);
 static analysisResult analyseExpression(const astExpression*);
 
 static symbolTableStack VAR_SYM_STACK;
+static symbolTable FUNC_SYM_TABLE;
 
 static analysisResult analyseBinaryExpression(const astBinaryExpression* expression) {
 	// TODO
@@ -63,9 +64,20 @@ static analysisResult analyseExpression(const astExpression* expression) {
 	return ANALYSIS_OK;
 }
 
-static analysisResult analyseFunctionDef(const astFunctionDefinition* statement) {
+static analysisResult analyseFunctionDef(const astFunctionDefinition* def) {
+	// check if function of same name is defined
+	symbolTableSlot* slot = symTableLookup(&FUNC_SYM_TABLE, def->name.name);
+	if (slot) {
+		fprintf(stderr, "Redefinition of function %s\n", def->name.name);
+		return ANALYSIS_UNDEFINED_FUNC;	 // TODO - is this the correct error value?
+	}
+
+	// add function to symbol table
+	symbolFunc newSymbol = {def->name.name};
+	symTableInsertFunc(&FUNC_SYM_TABLE, newSymbol, def->name.name);
+
 	// TODO
-	ANALYSE(analyseStatementBlock(&statement->body), {});
+	ANALYSE(analyseStatementBlock(&def->body), {});
 	return ANALYSIS_OK;
 }
 
@@ -218,6 +230,7 @@ static analysisResult analyseStatementBlock(const astStatementBlock* block) {
 }
 
 analysisResult analyseProgram(const astProgram* program) {
+	symTableCreate(&FUNC_SYM_TABLE);  // for functions
 	symStackCreate(&VAR_SYM_STACK);
 	symStackPush(&VAR_SYM_STACK);  // global scope
 	// TODO - pop global scope and destroy symbol stack after usage

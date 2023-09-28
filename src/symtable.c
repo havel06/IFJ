@@ -41,7 +41,6 @@ void symTableInsertVar(symbolTable* table, symbolVariable var, const char* name)
 	symTableInsertSlot(table, slot);
 }
 
-/*
 void symTableInsertFunc(symbolTable* table, symbolFunc func, const char* name) {
 	symbolTableSlot slot;
 	slot.function = func;
@@ -49,7 +48,6 @@ void symTableInsertFunc(symbolTable* table, symbolFunc func, const char* name) {
 	slot.taken = true;
 	symTableInsertSlot(table, slot);
 }
-*/
 
 symbolTableSlot* symTableLookup(symbolTable* table, const char* name) {
 	int pos = hashFunc(name);

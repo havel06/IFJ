@@ -10,7 +10,7 @@ typedef struct {
 } symbolVariable;
 
 typedef struct {
-	// TODO
+	const char* name;
 } symbolFunc;
 
 typedef struct {
