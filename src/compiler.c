@@ -2,6 +2,7 @@
 
 #include <assert.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "ast.h"
 
@@ -241,6 +242,61 @@ static void compileReturn(const astReturnStatement* statement) {
 	puts("RETURN");
 }
 
+static void compileBuiltInReadString() {
+	puts("CREATEFRAME");
+	puts("DEFVAR TF@temp");
+	puts("READ TF@temp string");
+	puts("PUSHS TF@temp");
+}
+
+static void compileBuiltInReadInt() {
+	puts("CREATEFRAME");
+	puts("DEFVAR TF@temp");
+	puts("READ TF@temp int");
+	puts("PUSHS TF@temp");
+}
+
+static void compileBuiltInReadDouble() {
+	puts("CREATEFRAME");
+	puts("DEFVAR TF@temp");
+	puts("READ TF@temp float");
+	puts("PUSHS TF@temp");
+}
+
+static void compileBuiltInWrite(int parameterCount) {
+	puts("CREATEFRAME");
+	puts("DEFVAR TF@temp");
+	for (int i = 0; i < parameterCount; i++) {
+		puts("POPS TF@term");
+		puts("WRITE TF@term");
+	}
+}
+
+static void compileBuiltInInt2Double() { puts("INT2FLOATS"); }
+
+static void compileBuiltInDouble2Int() { puts("DOUBLE2FLOATS"); }
+
+static void compileBuiltInLength() {
+	puts("CREATEFRAME");
+	puts("DEFVAR TF@temp");
+	puts("POPS TF@temp");
+	puts("STRLEN TF@temp TF@temp");
+	puts("PUSHS TF@temp");
+}
+
+static void compileBuiltInSubstring() {
+	// TODO
+	assert(false);
+}
+
+static void compileBuiltInOrd() {
+	// TODO
+}
+
+static void compileBuiltInChr() {
+	// TODO
+}
+
 static void compileInputParamList(const astInputParameterList* list) {
 	// parameters are pushed to the stack right to left
 	for (int i = list->count - 1; i >= 0; i--) {
@@ -250,13 +306,42 @@ static void compileInputParamList(const astInputParameterList* list) {
 
 static void compileProcedureCall(const astProcedureCall* call) {
 	compileInputParamList(&call->params);
-	printf("CALL %s\n", call->procName.name);
+
+	if (strcmp(call->procName.name, "write") == 0) {
+		compileBuiltInWrite(call->params.count);
+	} else {
+		printf("CALL %s\n", call->procName.name);
+	}
+
 	puts("CLEARS");
 }
 
 static void compileFunctionCall(const astFunctionCall* call) {
 	compileInputParamList(&call->params);
-	printf("CALL %s\n", call->funcName.name);
+
+	// TODO - use a more effective way
+	if (strcmp(call->funcName.name, "readString") == 0) {
+		compileBuiltInReadString();
+	} else if (strcmp(call->funcName.name, "readInt") == 0) {
+		compileBuiltInReadInt();
+	} else if (strcmp(call->funcName.name, "readDouble") == 0) {
+		compileBuiltInReadDouble();
+	} else if (strcmp(call->funcName.name, "Int2Double") == 0) {
+		compileBuiltInInt2Double();
+	} else if (strcmp(call->funcName.name, "Double2Int") == 0) {
+		compileBuiltInDouble2Int();
+	} else if (strcmp(call->funcName.name, "length") == 0) {
+		compileBuiltInLength();
+	} else if (strcmp(call->funcName.name, "substring") == 0) {
+		compileBuiltInSubstring();
+	} else if (strcmp(call->funcName.name, "ord") == 0) {
+		compileBuiltInOrd();
+	} else if (strcmp(call->funcName.name, "chr") == 0) {
+		compileBuiltInChr();
+	} else {
+		printf("CALL %s\n", call->funcName.name);
+	}
+
 	printf("POPS ");
 	emitVariableId(&call->varName);
 	puts("");
