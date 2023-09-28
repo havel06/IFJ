@@ -287,11 +287,16 @@ static void compileBuiltInSubstring() {
 }
 
 static void compileBuiltInOrd() {
-	// TODO
+	puts("CREATEFRAME");
+	puts("DEFVAR TF@res");
+	puts("DEFVAR TF@str");
+	puts("POPS TF@str");
+	puts("STR2INT TF@res TF@str 0");
+	puts("PUSHS TF@res");
 }
 
 static void compileBuiltInChr() {
-	// TODO
+	puts("INT2CHARS");
 }
 
 static void compileInputParamList(const astInputParameterList* list) {
