@@ -203,12 +203,21 @@ static void compileStatementBlock(const astStatementBlock* block) {
 	POP_FRAME();
 }
 
+static void compileOptionalBinding(const astOptionalBinding* binding) {
+	printf("PUSHS ");
+	emitVariableId(&binding->identifier);
+	puts("");
+	puts("PUSHS nil@nil");
+	puts("EQS");
+	puts("NOTS");
+}
+
 static void compileConditional(const astConditional* conditional) {
-	if (conditional->condition.type == AST_CONDITION_EXPRESSION) {
+	astConditionType conditionType = conditional->condition.type;
+	if (conditionType == AST_CONDITION_EXPRESSION) {
 		compileExpression(&conditional->condition.expression);
 	} else {
-		// TODO
-		assert(false);
+		compileOptionalBinding(&conditional->condition.optBinding);
 	}
 
 	int label1 = newLabelName();
@@ -394,6 +403,9 @@ void compileFunctionDef(const astFunctionDefinition* def) {
 	PUSH_FRAME();
 	// parameters are read left to right
 	for (int i = 0; i < def->params.count; i++) {
+		printf("DEFVAR LF@");
+		emitVariableId(&(def->params.data[i].insideName));
+		puts("");
 		printf("POPS LF@");
 		emitVariableId(&(def->params.data[i].insideName));
 		puts("");
