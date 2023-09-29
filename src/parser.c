@@ -425,7 +425,7 @@ static parseResult parseFunctionCallParams(astInputParameterList* params) {
 	token firstToken;
 	GET_TOKEN(firstToken, {});
 	if (firstToken.type == TOKEN_BRACKET_ROUND_RIGHT) {
-		tokenDestroy(&firstToken);
+		unGetToken(&firstToken);
 		return PARSE_OK;
 	}
 	unGetToken(&firstToken);

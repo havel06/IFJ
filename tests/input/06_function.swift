@@ -3,6 +3,8 @@ func foo() -> Int {
     return i
 }
 
+foo()
+
 //func bar(with f : String, _ gg : Int) {
 //    return
 //}

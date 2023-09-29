@@ -269,6 +269,7 @@ static void compileReturn(const astReturnStatement* statement) {
 	if (statement->hasValue) {
 		compileExpression(&statement->value);
 	}
+	puts("POPFRAME");
 	puts("RETURN");
 }
 
@@ -408,6 +409,7 @@ static void compileStatement(const astStatement* statement) {
 }
 
 void compileFunctionDef(const astFunctionDefinition* def) {
+	printf("LABEL %s\n", def->name.name);
 	PUSH_FRAME();
 	// parameters are read left to right
 	for (int i = 0; i < def->params.count; i++) {
@@ -421,6 +423,7 @@ void compileFunctionDef(const astFunctionDefinition* def) {
 
 	compileStatementBlock(&def->body);
 	POP_FRAME();
+	puts("RETURN");
 }
 
 void compileProgram(const astProgram* program) {
