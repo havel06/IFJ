@@ -524,8 +524,11 @@ static parseResult parseConditionalCondition(astCondition* condition) {
 		condition->type = AST_CONDITION_OPT_BINDING;
 		token varNameToken;
 		GET_TOKEN_ASSUME_TYPE(varNameToken, TOKEN_IDENTIFIER, { tokenDestroy(&conditionFirstToken); });
-		TRY_PARSE(parseIdentifier(&varNameToken, &(condition->optBinding.identifier)),
-				  { tokenDestroy(&conditionFirstToken); });
+		TRY_PARSE(parseIdentifier(&varNameToken, &(condition->optBinding.identifier)), {
+			tokenDestroy(&conditionFirstToken);
+			tokenDestroy(&varNameToken);
+		});
+		tokenDestroy(&varNameToken);
 	} else {
 		// expression
 		condition->type = AST_CONDITION_EXPRESSION;
