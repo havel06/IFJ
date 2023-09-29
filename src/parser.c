@@ -182,6 +182,7 @@ static parseResult parsePrimaryExpression(astExpression* expression, const token
 
 static bool isBinaryOperator(tokenType type) {
 	switch (type) {
+		case TOKEN_EQ:
 		case TOKEN_NEQ:
 		case TOKEN_LESS:
 		case TOKEN_GREATER:
@@ -200,6 +201,8 @@ static bool isBinaryOperator(tokenType type) {
 
 static astBinaryOperator parseBinaryOperator(tokenType type) {
 	switch (type) {
+		case TOKEN_EQ:
+			return AST_BINARY_EQ;
 		case TOKEN_NEQ:
 			return AST_BINARY_NEQ;
 		case TOKEN_LESS:
