@@ -212,8 +212,7 @@ static analysisResult analyseVariableDef(const astVariableDefinition* definition
 		astDataType initValueType;
 		ANALYSE(analyseExpression(&definition->value, &initValueType), {});
 
-		// TODO - this is probably not enough
-		if (definition->variableType.type != initValueType.type) {
+		if (!isTriviallyConvertible(definition->variableType, initValueType)) {
 			fprintf(stderr, "Wrong type in initialisation of variable %s\n", definition->variableName.name);
 			return ANALYSIS_WRONG_BINARY_TYPES;
 		}
@@ -236,11 +235,10 @@ static analysisResult analyseAssignment(const astAssignment* assignment) {
 
 	astDataType valueType;
 	ANALYSE(analyseExpression(&assignment->value, &valueType), {});
-	if (slot->variable.type.type != valueType.type) {
+	if (!isTriviallyConvertible(slot->variable.type, valueType)) {
 		fprintf(stderr, "Wrong type in assignment to variable %s\n", slot->name);
 		return ANALYSIS_WRONG_BINARY_TYPES;
 	}
-	// TODO - type checking
 
 	return ANALYSIS_OK;
 }
@@ -324,7 +322,7 @@ static analysisResult analyseInputParameterList(const astParameterList* list, co
 
 		astDataType inParamType;
 		ANALYSE(analyseTerm(&inParam->value, &inParamType), {});
-		if (param->dataType.type != inParamType.type || param->dataType.nullable != inParamType.nullable) {
+		if (!isTriviallyConvertible(param->dataType, inParamType)) {
 			fprintf(stderr, "Wrong type passed to parameter %s\n", param->outsideName.name);
 			return ANALYSIS_WRONG_FUNC_TYPE;
 		}
