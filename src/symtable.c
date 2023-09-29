@@ -5,6 +5,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+static int LAST_TABLE_ID = 0;
+
 static int hashFunc(const char* str) {
 	int hash = 5381;
 	int c;
@@ -20,6 +22,7 @@ void symTableCreate(symbolTable* table) {
 	for (int i = 0; i < 1024; i++) {
 		table->data[i].taken = false;
 	}
+	table->id = LAST_TABLE_ID++;
 }
 
 static void symTableInsertSlot(symbolTable* table, symbolTableSlot slot) {
@@ -78,6 +81,11 @@ void symStackPop(symbolTableStack* stack) {
 symbolTable* symStackCurrentScope(symbolTableStack* stack) {
 	assert(stack->count >= 0);
 	return &(stack->tables[stack->count - 1]);
+}
+
+symbolTable* symStackGlobalScope(symbolTableStack* stack) {
+	assert(stack->count >= 0);
+	return &(stack->tables[0]);
 }
 
 symbolTableSlot* symStackLookup(symbolTableStack* stack, const char* name, symbolTable** tablePtr) {

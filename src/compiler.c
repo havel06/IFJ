@@ -7,20 +7,16 @@
 #include "ast.h"
 #include "symtable.h"
 
-// 0 = global frame
-static int FRAME_LEVEL = 0;
 static symbolTableStack VAR_SYM_STACK;
 
-#define PUSH_FRAME()              \
-	puts("CREATEFRAME");          \
-	puts("PUSHFRAME");            \
-	symStackPush(&VAR_SYM_STACK); \
-	FRAME_LEVEL++
+#define PUSH_FRAME()     \
+	puts("CREATEFRAME"); \
+	puts("PUSHFRAME");   \
+	symStackPush(&VAR_SYM_STACK);
 
-#define POP_FRAME()              \
-	puts("POPFRAME");            \
-	symStackPop(&VAR_SYM_STACK); \
-	FRAME_LEVEL--
+#define POP_FRAME()   \
+	puts("POPFRAME"); \
+	symStackPop(&VAR_SYM_STACK);
 
 // used for compiler-generated labes (in conditionals etc)
 static int LAST_LABEL_NAME = 0;
@@ -31,11 +27,22 @@ static int newLabelName() { return LAST_LABEL_NAME++; }
 static astDataType compileExpression(const astExpression*);
 static void compileStatement(const astStatement*);
 
-static void emitVariableId(const astIdentifier* var) {
-	if (FRAME_LEVEL == 0) {
+static void emitNewVariableId(const astIdentifier* var) {
+	symbolTable* currentScope = symStackCurrentScope(&VAR_SYM_STACK);
+	if (currentScope == symStackGlobalScope(&VAR_SYM_STACK)) {
 		printf("GF@%s", var->name);
 	} else {
-		printf("LF@%s", var->name);
+		printf("LF@%d%s", currentScope->id, var->name);
+	}
+}
+
+static void emitVariableId(const astIdentifier* var) {
+	symbolTable* scope;
+	symStackLookup(&VAR_SYM_STACK, var->name, &scope);
+	if (scope == symStackGlobalScope(&VAR_SYM_STACK)) {
+		printf("GF@%s", var->name);
+	} else {
+		printf("LF@%d%s", scope->id, var->name);
 	}
 }
 
@@ -44,13 +51,14 @@ static astDataType compileTerm(const astTerm* term) {
 	dataType.nullable = false;
 
 	switch (term->type) {
-		case AST_TERM_ID:
+		case AST_TERM_ID: {
 			printf("PUSHS ");
 			emitVariableId(&term->identifier);
 			puts("");
 			symbolTableSlot* slot = symStackLookup(&VAR_SYM_STACK, term->identifier.name, NULL);
 			dataType = slot->variable.type;
 			break;
+		}
 		case AST_TERM_INT:
 			printf("PUSHS int@%d\n", term->integer.value);
 			dataType.type = AST_TYPE_INT;
@@ -179,14 +187,14 @@ static void compileAssignment(const astAssignment* assignment) {
 
 static void compileVariableDef(const astVariableDefinition* def) {
 	printf("DEFVAR ");
-	emitVariableId(&def->variableName);
+	emitNewVariableId(&def->variableName);
 	puts("");
 
 	astDataType variableType = def->variableType;
 	if (def->hasInitValue) {
 		variableType = compileExpression(&def->value);
 		printf("POPS ");
-		emitVariableId(&def->variableName);
+		emitNewVariableId(&def->variableName);
 		puts("");
 	}
 
@@ -196,11 +204,11 @@ static void compileVariableDef(const astVariableDefinition* def) {
 }
 
 static void compileStatementBlock(const astStatementBlock* block) {
-	PUSH_FRAME();
+	symStackPush(&VAR_SYM_STACK);
 	for (int i = 0; i < block->count; i++) {
 		compileStatement(&block->statements[i]);
 	}
-	POP_FRAME();
+	symStackPop(&VAR_SYM_STACK);
 }
 
 static void compileOptionalBinding(const astOptionalBinding* binding) {

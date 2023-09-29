@@ -24,6 +24,7 @@ typedef struct {
 
 typedef struct {
 	symbolTableSlot data[1024];	 // TODO - make dynamic?
+	int id;
 } symbolTable;
 
 typedef struct {
@@ -41,6 +42,7 @@ void symStackCreate(symbolTableStack*);
 void symStackPush(symbolTableStack*);
 void symStackPop(symbolTableStack*);
 symbolTable* symStackCurrentScope(symbolTableStack*);
+symbolTable* symStackGlobalScope(symbolTableStack*);
 symbolTableSlot* symStackLookup(symbolTableStack*, const char* name, symbolTable** tablePtr);
 
 #endif
