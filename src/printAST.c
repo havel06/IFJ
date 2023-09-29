@@ -212,7 +212,7 @@ void printFunctionCallParams(const astInputParameterList* list, int indent) {
 	for (int i = 0; i < list->count; i++) {
 		printIndent(indent + 1);
 		puts("PARAM:");
-		if (list->data[i].name.name) {
+		if (list->data[i].hasName) {
 			printIndent(indent + 2);
 			printf("NAME: %s\n", list->data[i].name.name);
 		}

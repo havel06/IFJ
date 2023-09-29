@@ -10,7 +10,7 @@ typedef struct {
 } symbolVariable;
 
 typedef struct {
-	const char* name;
+	const astParameterList* params;	 // non-owning
 } symbolFunc;
 
 typedef struct {

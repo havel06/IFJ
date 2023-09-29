@@ -2,6 +2,7 @@
 
 #include <assert.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "ast.h"
 #include "symtable.h"
@@ -125,31 +126,36 @@ static analysisResult analyseVariableId(const astIdentifier* id, astDataType* ou
 	return ANALYSIS_OK;
 }
 
+static analysisResult analyseTerm(const astTerm* term, astDataType* outType) {
+	switch (term->type) {
+		case AST_TERM_ID:
+			ANALYSE(analyseVariableId(&term->identifier, outType), {});
+			break;
+		case AST_TERM_INT:
+			outType->type = AST_TYPE_INT;
+			outType->nullable = false;
+			break;
+		case AST_TERM_DECIMAL:
+			outType->type = AST_TYPE_DOUBLE;
+			outType->nullable = false;
+			break;
+		case AST_TERM_NIL:
+			outType->type = AST_TYPE_NIL;
+			outType->nullable = false;
+			break;
+		case AST_TERM_STRING:
+			outType->type = AST_TYPE_STRING;
+			outType->nullable = false;
+			break;
+	}
+
+	return ANALYSIS_OK;
+}
+
 static analysisResult analyseExpression(const astExpression* expression, astDataType* outType) {
-	// TODO
 	switch (expression->type) {
 		case AST_EXPR_TERM: {
-			switch (expression->term.type) {
-				case AST_TERM_ID:
-					ANALYSE(analyseVariableId(&expression->term.identifier, outType), {});
-					break;
-				case AST_TERM_INT:
-					outType->type = AST_TYPE_INT;
-					outType->nullable = false;
-					break;
-				case AST_TERM_DECIMAL:
-					outType->type = AST_TYPE_DOUBLE;
-					outType->nullable = false;
-					break;
-				case AST_TERM_NIL:
-					outType->type = AST_TYPE_NIL;
-					outType->nullable = false;
-					break;
-				case AST_TERM_STRING:
-					outType->type = AST_TYPE_STRING;
-					outType->nullable = false;
-					break;
-			}
+			analyseTerm(&expression->term, outType);
 			break;
 		}
 		case AST_EXPR_BINARY:
@@ -163,18 +169,7 @@ static analysisResult analyseExpression(const astExpression* expression, astData
 }
 
 static analysisResult analyseFunctionDef(const astFunctionDefinition* def) {
-	// check if function of same name is defined
-	symbolTableSlot* slot = symTableLookup(&FUNC_SYM_TABLE, def->name.name);
-	if (slot) {
-		fprintf(stderr, "Redefinition of function %s\n", def->name.name);
-		return ANALYSIS_UNDEFINED_FUNC;	 // TODO - is this the correct error value?
-	}
-
-	// add function to symbol table
-	symbolFunc newSymbol = {def->name.name};
-	symTableInsertFunc(&FUNC_SYM_TABLE, newSymbol, def->name.name);
-
-	// TODO
+	// TODO - make parameters defined inside block
 	ANALYSE(analyseStatementBlock(&def->body), {});
 	return ANALYSIS_OK;
 }
@@ -270,11 +265,11 @@ static analysisResult analyseIteration(const astIteration* iteration) {
 	astDataType conditionType;
 	ANALYSE(analyseExpression(&iteration->condition, &conditionType), {});
 	if (conditionType.type != AST_TYPE_BOOL) {
-		fputs("Condition must be of boolean type.", stderr);
+		fputs("Condition must be of boolean type.\n", stderr);
 		return ANALYSIS_WRONG_BINARY_TYPES;
 	}
 	if (conditionType.nullable) {
-		fputs("Condition must not be nullable.", stderr);
+		fputs("Condition must not be nullable.\n", stderr);
 		return ANALYSIS_WRONG_BINARY_TYPES;
 	}
 
@@ -282,32 +277,64 @@ static analysisResult analyseIteration(const astIteration* iteration) {
 	return ANALYSIS_OK;
 }
 
-// static analysisResult analyseInputParameter(const astInputParameter* parameter) {
-//	// TODO
-//	(void)parameter;
-//	return ANALYSIS_OK;
-// }
+static analysisResult analyseInputParameterList(const astParameterList* list, const astInputParameterList* input) {
+	if (list->count != input->count) {
+		fputs("Wrong number of parameters.\n", stderr);
+		return ANALYSIS_WRONG_FUNC_TYPE;  // TODO - is this correct?
+	}
 
-static analysisResult analyseInputParameterList(const astInputParameterList* list) {
-	(void)list;
-	// TODO
-	// for (int i = 0; i < list->count; i++) {
-	//	ANALYSE(analyseInputParameter(&(list->data[i])));
-	//}
+	for (int i = 0; i < list->count; i++) {
+		astParameter* param = &list->data[i];
+		astInputParameter* inParam = &input->data[i];
+		if (param->requiresName) {
+			if (!inParam->hasName) {
+				fprintf(stderr, "Parameter %s requires to be called explicitely.\n", param->outsideName.name);
+				return ANALYSIS_WRONG_FUNC_TYPE;  // TODO - is this correct?
+			}
+
+			if (strcmp(param->outsideName.name, inParam->name.name) != 0) {
+				fprintf(stderr, "Parameter names %s and %s don't match.\n", param->outsideName.name,
+						inParam->name.name);
+				return ANALYSIS_WRONG_FUNC_TYPE;
+			}
+		} else if (inParam->hasName) {
+			fputs("Parameter does not require a name in function call.\n", stderr);
+			return ANALYSIS_WRONG_FUNC_TYPE;  // TODO - is this correct?
+		}
+
+		astDataType inParamType;
+		ANALYSE(analyseTerm(&inParam->value, &inParamType), {});
+		if (param->dataType.type != inParamType.type || param->dataType.nullable != inParamType.nullable) {
+			fprintf(stderr, "Wrong type passed to parameter %s\n", param->outsideName.name);
+			return ANALYSIS_WRONG_FUNC_TYPE;
+		}
+	}
+
 	return ANALYSIS_OK;
 }
 
 static analysisResult analyseFunctionCall(const astFunctionCall* call) {
-	// TODO
+	// check if function exists
+	symbolTableSlot* slot = symTableLookup(&FUNC_SYM_TABLE, call->funcName.name);
+	if (!slot) {
+		fprintf(stderr, "Calling undefined function %s\n", call->funcName.name);
+		return ANALYSIS_UNDEFINED_FUNC;
+	}
 
-	ANALYSE(analyseInputParameterList(&call->params), {});
+	ANALYSE(analyseInputParameterList(slot->function.params, &call->params), {});
+
 	return ANALYSIS_OK;
 }
 
 static analysisResult analyseProcedureCall(const astProcedureCall* call) {
-	// TODO
+	// check if function exists
+	symbolTableSlot* slot = symTableLookup(&FUNC_SYM_TABLE, call->procName.name);
+	if (!slot) {
+		fprintf(stderr, "Calling undefined function %s\n", call->procName.name);
+		return ANALYSIS_UNDEFINED_FUNC;
+	}
 
-	ANALYSE(analyseInputParameterList(&call->params), {});
+	ANALYSE(analyseInputParameterList(slot->function.params, &call->params), {});
 	return ANALYSIS_OK;
 }
 
@@ -359,11 +386,35 @@ static analysisResult analyseStatementBlock(const astStatementBlock* block) {
 	return ANALYSIS_OK;
 }
 
+static analysisResult registerFunction(const astFunctionDefinition* def) {
+	// check if function of same name is defined
+	symbolTableSlot* slot = symTableLookup(&FUNC_SYM_TABLE, def->name.name);
+	if (slot) {
+		fprintf(stderr, "Redefinition of function %s\n", def->name.name);
+		return ANALYSIS_UNDEFINED_FUNC;	 // TODO - is this the correct error value?
+	}
+
+	// add function to symbol table
+	symbolFunc newSymbol = {&def->params};
+	symTableInsertFunc(&FUNC_SYM_TABLE, newSymbol, def->name.name);
+	return ANALYSIS_OK;
+}
+
 analysisResult analyseProgram(const astProgram* program) {
 	symTableCreate(&FUNC_SYM_TABLE);  // for functions
 	symStackCreate(&VAR_SYM_STACK);
 	symStackPush(&VAR_SYM_STACK);  // global scope
 	// TODO - pop global scope and destroy symbol stack after usage
+
+	// first pass - register all functions
+	for (int i = 0; i < program->count; i++) {
+		const astTopLevelStatement* topStatement = &program->statements[i];
+		if (topStatement->type == AST_TOP_FUNCTION) {
+			ANALYSE(registerFunction(&topStatement->functionDef), {});
+		}
+	}
+
+	// second pass - analyse statements and function bodies
 	for (int i = 0; i < program->count; i++) {
 		const astTopLevelStatement* topStatement = &program->statements[i];
 		if (topStatement->type == AST_TOP_STATEMENT) {
@@ -372,5 +423,6 @@ analysisResult analyseProgram(const astProgram* program) {
 			ANALYSE(analyseFunctionDef(&topStatement->functionDef), {});
 		}
 	}
+
 	return ANALYSIS_OK;
 }

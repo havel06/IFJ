@@ -1,15 +1,17 @@
-func foo() -> Int {
-    return 12
-}
+//func foo() -> Int {
+//    return 12
+//}
 
-func bar(with f : String, something gg : Int?) {
+func bar(with f : String, _ gg : Int) {
     return
 }
 
-func baz(with f : String) -> String? {
-    return nil
-}
+//func baz(with f : String) -> String? {
+//    return nil
+//}
 
-foo = bar(32, "hello", nil)
-baz(64, nil)
-bar(param : nil, other : 32, 64)
+bar(with : "hello", 2)
+
+//foo = bar(32, "hello", nil)
+//baz(64, nil)
+//bar(param : nil, other : 32, 64)

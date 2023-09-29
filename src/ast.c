@@ -174,7 +174,9 @@ static void astConditionalDestroy(astConditional* conditional) {
 static void astInputParameterListDestroy(astInputParameterList* list) {
 	for (int i = 0; i < list->count; i++) {
 		astInputParameter* param = &list->data[i];
-		astIdentifierDestroy(&param->name);
+		if (param->hasName) {
+			astIdentifierDestroy(&param->name);
+		}
 		astTermDestroy(&param->value);
 	}
 

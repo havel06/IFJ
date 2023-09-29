@@ -146,6 +146,7 @@ typedef struct {
 } astIteration;
 
 typedef struct {
+	bool hasName;
 	astIdentifier name;
 	astTerm value;
 } astInputParameter;

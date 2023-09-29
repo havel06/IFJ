@@ -388,12 +388,13 @@ static parseResult parseFunctionCallParameter(astInputParameter* param) {
 	GET_TOKEN(firstToken, {});
 
 	// check if parameter has a name
-	param->name.name = NULL;
+	param->hasName = false;
 	if (firstToken.type == TOKEN_IDENTIFIER) {
 		token secondToken;
 		GET_TOKEN(secondToken, {});
 
 		if (secondToken.type == TOKEN_COLON) {
+			param->hasName = true;
 			TRY_PARSE(parseIdentifier(&firstToken, &(param->name)), { tokenDestroy(&firstToken); });
 			// replace first token with value token
 			tokenDestroy(&firstToken);
