@@ -419,6 +419,14 @@ static parseResult parseFunctionCallParameter(astInputParameter* param) {
 static parseResult parseFunctionCallParams(astInputParameterList* params) {
 	astInputParameterListCreate(params);
 
+	token firstToken;
+	GET_TOKEN(firstToken, {});
+	if (firstToken.type == TOKEN_BRACKET_ROUND_RIGHT) {
+		tokenDestroy(&firstToken);
+		return PARSE_OK;
+	}
+	unGetToken(&firstToken);
+
 	astInputParameter firstParam;
 	TRY_PARSE(parseFunctionCallParameter(&firstParam), {});
 	if (astInputParameterListAdd(params, firstParam) != 0) {
