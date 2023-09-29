@@ -235,7 +235,7 @@ void astStatementBlockDestroy(astStatementBlock* block) {
 	block->statements = 0;
 }
 
-static void astParameterListDestroy(astParameterList* list) {
+void astParameterListDestroy(astParameterList* list) {
 	for (int i = 0; i < list->count; i++) {
 		astParameter* param = &list->data[i];
 		if (param->requiresName) {

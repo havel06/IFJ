@@ -24,6 +24,15 @@ static symbolTableStack VAR_SYM_STACK;
 static symbolTable FUNC_SYM_TABLE;
 static const astFunctionDefinition* CURRENT_FUNCTION;
 
+// builtin functions
+static astParameterList EMPTY_PARAMS;
+static astParameterList INT2DOUBLE_PARAMS;
+static astParameterList DOUBLE2INT_PARAMS;
+static astParameterList LENGTH_PARAMS;
+static astParameterList SUBSTRING_PARAMS;
+static astParameterList ORD_PARAMS;
+static astParameterList CHR_PARAMS;
+
 // checks if type is easily convertible (nil to nullable, nonull to nullable)
 bool isTriviallyConvertible(astDataType to, astDataType from) {
 	if (to.nullable && from.type == AST_TYPE_NIL) {
@@ -347,26 +356,31 @@ static analysisResult analyseInputParameterList(const astParameterList* list, co
 
 static analysisResult analyseFunctionCall(const astFunctionCall* call) {
 	// check if function exists
-	symbolTableSlot* slot = symTableLookup(&FUNC_SYM_TABLE, call->funcName.name);
-	if (!slot) {
-		fprintf(stderr, "Calling undefined function %s\n", call->funcName.name);
-		return ANALYSIS_UNDEFINED_FUNC;
-	}
+	if (strcmp(call->funcName.name, "write") != 0) {
+		symbolTableSlot* slot = symTableLookup(&FUNC_SYM_TABLE, call->funcName.name);
+		if (!slot) {
+			fprintf(stderr, "Calling undefined function %s\n", call->funcName.name);
+			return ANALYSIS_UNDEFINED_FUNC;
+		}
 
-	ANALYSE(analyseInputParameterList(slot->function.params, &call->params), {});
+		ANALYSE(analyseInputParameterList(slot->function.params, &call->params), {});
+	}
 
 	return ANALYSIS_OK;
 }
 
 static analysisResult analyseProcedureCall(const astProcedureCall* call) {
 	// check if function exists
-	symbolTableSlot* slot = symTableLookup(&FUNC_SYM_TABLE, call->procName.name);
-	if (!slot) {
-		fprintf(stderr, "Calling undefined function %s\n", call->procName.name);
-		return ANALYSIS_UNDEFINED_FUNC;
+	if (strcmp(call->procName.name, "write") != 0) {
+		symbolTableSlot* slot = symTableLookup(&FUNC_SYM_TABLE, call->procName.name);
+		if (!slot) {
+			fprintf(stderr, "Calling undefined function %s\n", call->procName.name);
+			return ANALYSIS_UNDEFINED_FUNC;
+		}
+
+		ANALYSE(analyseInputParameterList(slot->function.params, &call->params), {});
 	}
 
-	ANALYSE(analyseInputParameterList(slot->function.params, &call->params), {});
 	return ANALYSIS_OK;
 }
 
@@ -435,8 +449,150 @@ static analysisResult registerFunction(const astFunctionDefinition* def) {
 	return ANALYSIS_OK;
 }
 
+static void registerReadString() {
+	symbolFunc symbol = {&EMPTY_PARAMS};
+	symTableInsertFunc(&FUNC_SYM_TABLE, symbol, "readString");
+}
+
+static void registerReadInt() {
+	symbolFunc symbol = {&EMPTY_PARAMS};
+	symTableInsertFunc(&FUNC_SYM_TABLE, symbol, "readInt");
+}
+
+static void registerReadDouble() {
+	symbolFunc symbol = {&EMPTY_PARAMS};
+	symTableInsertFunc(&FUNC_SYM_TABLE, symbol, "readDouble");
+}
+
+static void registerInt2Double() {
+	astParameterListCreate(&INT2DOUBLE_PARAMS);
+	astParameter term;
+	term.dataType.type = AST_TYPE_INT;
+	term.dataType.nullable = false;
+	term.requiresName = false;
+	term.outsideName.name = NULL;
+	term.insideName.name = NULL;
+	astParameterListAdd(&INT2DOUBLE_PARAMS, term);
+
+	symbolFunc symbol = {&INT2DOUBLE_PARAMS};
+	symTableInsertFunc(&FUNC_SYM_TABLE, symbol, "Int2Double");
+}
+
+static void registerDouble2Int() {
+	astParameterListCreate(&DOUBLE2INT_PARAMS);
+	astParameter term;
+	term.dataType.type = AST_TYPE_DOUBLE;
+	term.dataType.nullable = false;
+	term.requiresName = false;
+	term.outsideName.name = NULL;
+	term.insideName.name = NULL;
+	astParameterListAdd(&DOUBLE2INT_PARAMS, term);
+
+	symbolFunc symbol = {&DOUBLE2INT_PARAMS};
+	symTableInsertFunc(&FUNC_SYM_TABLE, symbol, "Double2Int");
+}
+
+static void registerLength() {
+	astParameterListCreate(&LENGTH_PARAMS);
+	astParameter s;
+	s.dataType.type = AST_TYPE_STRING;
+	s.dataType.nullable = false;
+	s.requiresName = false;
+	s.outsideName.name = NULL;
+	s.insideName.name = NULL;
+	astParameterListAdd(&LENGTH_PARAMS, s);
+
+	symbolFunc symbol = {&LENGTH_PARAMS};
+	symTableInsertFunc(&FUNC_SYM_TABLE, symbol, "Double2Int");
+}
+
+static void registerSubstring() {
+	astParameterListCreate(&SUBSTRING_PARAMS);
+
+	astParameter of;
+	of.dataType.type = AST_TYPE_STRING;
+	of.dataType.nullable = false;
+	of.requiresName = true;
+	of.outsideName.name = "of";
+	of.insideName.name = NULL;
+	astParameterListAdd(&SUBSTRING_PARAMS, of);
+
+	astParameter startingAt;
+	startingAt.dataType.type = AST_TYPE_INT;
+	startingAt.dataType.nullable = false;
+	startingAt.requiresName = true;
+	startingAt.outsideName.name = "startingAt";
+	startingAt.insideName.name = NULL;
+	astParameterListAdd(&SUBSTRING_PARAMS, startingAt);
+
+	astParameter endingBefore;
+	endingBefore.dataType.type = AST_TYPE_INT;
+	endingBefore.dataType.nullable = false;
+	endingBefore.requiresName = true;
+	endingBefore.outsideName.name = "endingBefore";
+	endingBefore.insideName.name = NULL;
+	astParameterListAdd(&SUBSTRING_PARAMS, endingBefore);
+
+	symbolFunc symbol = {&SUBSTRING_PARAMS};
+	symTableInsertFunc(&FUNC_SYM_TABLE, symbol, "substring");
+}
+
+static void registerOrd() {
+	astParameterListCreate(&ORD_PARAMS);
+	astParameter c;
+	c.dataType.type = AST_TYPE_STRING;
+	c.dataType.nullable = false;
+	c.requiresName = false;
+	c.outsideName.name = NULL;
+	c.insideName.name = NULL;
+	astParameterListAdd(&ORD_PARAMS, c);
+
+	symbolFunc symbol = {&ORD_PARAMS};
+	symTableInsertFunc(&FUNC_SYM_TABLE, symbol, "ord");
+}
+
+static void registerChr() {
+	astParameterListCreate(&CHR_PARAMS);
+	astParameter i;
+	i.dataType.type = AST_TYPE_INT;
+	i.dataType.nullable = false;
+	i.requiresName = false;
+	i.outsideName.name = NULL;
+	i.insideName.name = NULL;
+	astParameterListAdd(&CHR_PARAMS, i);
+
+	symbolFunc symbol = {&CHR_PARAMS};
+	symTableInsertFunc(&FUNC_SYM_TABLE, symbol, "ord");
+}
+
+static void registerBuiltinFunctions() {
+	astParameterListCreate(&EMPTY_PARAMS);
+
+	registerReadString();
+	registerReadDouble();
+	registerReadInt();
+	registerInt2Double();
+	registerDouble2Int();
+	registerLength();
+	registerSubstring();
+	registerOrd();
+	registerChr();
+}
+
+static void cleanUpBuiltinFunctions() {
+	// TODO - freeing static strings causes error
+	// astParameterListDestroy(&EMPTY_PARAMS);
+	// astParameterListDestroy(&INT2DOUBLE_PARAMS);
+	// astParameterListDestroy(&DOUBLE2INT_PARAMS);
+	// astParameterListDestroy(&LENGTH_PARAMS);
+	// astParameterListDestroy(&SUBSTRING_PARAMS);
+	// astParameterListDestroy(&ORD_PARAMS);
+	// astParameterListDestroy(&CHR_PARAMS);
+}
+
 analysisResult analyseProgram(const astProgram* program) {
 	symTableCreate(&FUNC_SYM_TABLE);  // for functions
+	registerBuiltinFunctions();
 	symStackCreate(&VAR_SYM_STACK);
 	symStackPush(&VAR_SYM_STACK);  // global scope
 	// TODO - pop global scope and destroy symbol stack after usage
@@ -458,6 +614,8 @@ analysisResult analyseProgram(const astProgram* program) {
 			ANALYSE(analyseFunctionDef(&topStatement->functionDef), {});
 		}
 	}
+
+	cleanUpBuiltinFunctions();
 
 	return ANALYSIS_OK;
 }

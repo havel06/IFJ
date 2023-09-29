@@ -248,7 +248,7 @@ void astStatementBlockDestroy(astStatementBlock*);
 void astParameterListCreate(astParameterList*);
 // Returns 0 on success
 int astParameterListAdd(astParameterList*, astParameter);
-// void astParameterListDestroy();
+void astParameterListDestroy(astParameterList*);
 //
 void astInputParameterListCreate(astInputParameterList*);
 int astInputParameterListAdd(astInputParameterList*, astInputParameter);
