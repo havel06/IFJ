@@ -365,6 +365,7 @@ static analysisResult analyseFunctionCall(const astFunctionCall* call) {
 
 		ANALYSE(analyseInputParameterList(slot->function.params, &call->params), {});
 	}
+	// TODO - check if return type matches
 
 	return ANALYSIS_OK;
 }

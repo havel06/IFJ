@@ -298,8 +298,8 @@ static void compileBuiltInWrite(int parameterCount) {
 	puts("CREATEFRAME");
 	puts("DEFVAR TF@temp");
 	for (int i = 0; i < parameterCount; i++) {
-		puts("POPS TF@term");
-		puts("WRITE TF@term");
+		puts("POPS TF@temp");
+		puts("WRITE TF@temp");
 	}
 }
 
