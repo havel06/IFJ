@@ -178,20 +178,21 @@ static void compileAssignment(const astAssignment* assignment) {
 }
 
 static void compileVariableDef(const astVariableDefinition* def) {
-	// insert into symtable
-	symbolVariable newVar = {def->variableType, def->immutable, def->hasInitValue};
-	symTableInsertVar(symStackCurrentScope(&VAR_SYM_STACK), newVar, def->variableName.name);
-
 	printf("DEFVAR ");
 	emitVariableId(&def->variableName);
 	puts("");
 
+	astDataType variableType = def->variableType;
 	if (def->hasInitValue) {
-		compileExpression(&def->value);
+		variableType = compileExpression(&def->value);
 		printf("POPS ");
 		emitVariableId(&def->variableName);
 		puts("");
 	}
+
+	// insert into symtable
+	symbolVariable newVar = {variableType, def->immutable, def->hasInitValue};
+	symTableInsertVar(symStackCurrentScope(&VAR_SYM_STACK), newVar, def->variableName.name);
 }
 
 static void compileStatementBlock(const astStatementBlock* block) {

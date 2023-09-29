@@ -340,10 +340,17 @@ static parseResult parseVarDef(astStatement* statement, bool immutable) {
 	TRY_PARSE(parseIdentifier(&variableNameToken, &(statement->variableDef.variableName)), {});
 	tokenDestroy(&variableNameToken);
 
-	// TODO - omit variable type
-	CONSUME_TOKEN_ASSUME_TYPE(TOKEN_COLON, {});
-
-	TRY_PARSE(parseDataType(&(statement->variableDef.variableType)), {});
+	// parse variable type
+	token maybeColonToken;
+	GET_TOKEN(maybeColonToken, {});
+	if (maybeColonToken.type == TOKEN_COLON) {
+		statement->variableDef.hasExplicitType = true;
+		tokenDestroy(&maybeColonToken);
+		TRY_PARSE(parseDataType(&(statement->variableDef.variableType)), {});
+	} else {
+		statement->variableDef.hasExplicitType = false;
+		unGetToken(&maybeColonToken);
+	}
 
 	// TODO - omit init value
 	statement->variableDef.hasInitValue = true;

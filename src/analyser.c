@@ -204,19 +204,32 @@ static analysisResult analyseVariableDef(const astVariableDefinition* definition
 		return ANALYSIS_UNDEFINED_FUNC;
 	}
 
-	// insert into symtable
-	symbolVariable newVar = {definition->variableType, definition->immutable, definition->hasInitValue};
-	symTableInsertVar(symStackCurrentScope(&VAR_SYM_STACK), newVar, definition->variableName.name);
+	astDataType variableType = definition->variableType;
 
 	if (definition->hasInitValue) {
 		astDataType initValueType;
 		ANALYSE(analyseExpression(&definition->value, &initValueType), {});
 
-		if (!isTriviallyConvertible(definition->variableType, initValueType)) {
-			fprintf(stderr, "Wrong type in initialisation of variable %s\n", definition->variableName.name);
-			return ANALYSIS_WRONG_BINARY_TYPES;
+		if (definition->hasExplicitType) {
+			if (initValueType.type == AST_TYPE_NIL) {
+				fprintf(stderr, "Cannot deduce nil type in initialisation of variable %s\n",
+						definition->variableName.name);
+				return ANALYSIS_WRONG_BINARY_TYPES;
+			}
+
+			if (!isTriviallyConvertible(definition->variableType, initValueType)) {
+				fprintf(stderr, "Wrong type in initialisation of variable %s\n", definition->variableName.name);
+				return ANALYSIS_WRONG_BINARY_TYPES;
+			}
+		} else {
+			variableType = initValueType;
 		}
 	}
+
+	// insert into symtable
+	symbolVariable newVar = {variableType, definition->immutable, definition->hasInitValue};
+	symTableInsertVar(symStackCurrentScope(&VAR_SYM_STACK), newVar, definition->variableName.name);
+
 	return ANALYSIS_OK;
 }
 

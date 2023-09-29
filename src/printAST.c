@@ -143,12 +143,19 @@ void printVariableDefinition(const astVariableDefinition* definition, int indent
 	}
 	printIndent(indent + 1);
 	printf("NAME: %s\n", definition->variableName.name);
+
 	printIndent(indent + 1);
 	printf("TYPE: ");
-	printDataType(&definition->variableType);
-	puts("");
-	printIndent(indent + 1);
+
+	if (definition->hasExplicitType) {
+		printDataType(&definition->variableType);
+		puts("");
+	} else {
+		puts("unspecified");
+	}
+
 	if (definition->hasInitValue) {
+		printIndent(indent + 1);
 		puts("VALUE:");
 		printExpression(&definition->value, indent + 2);
 	}

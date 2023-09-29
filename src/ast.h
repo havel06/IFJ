@@ -102,6 +102,7 @@ typedef struct {
 	astIdentifier variableName;
 	astDataType variableType;
 	astExpression value;
+	bool hasExplicitType;
 	bool hasInitValue;
 	bool immutable;
 } astVariableDefinition;
