@@ -22,6 +22,24 @@ static analysisResult analyseExpression(const astExpression*, astDataType* outTy
 
 static symbolTableStack VAR_SYM_STACK;
 static symbolTable FUNC_SYM_TABLE;
+static const astFunctionDefinition* CURRENT_FUNCTION;
+
+// checks if type is easily convertible (nil to nullable, nonull to nullable)
+bool isTriviallyConvertible(astDataType to, astDataType from) {
+	if (to.nullable && from.type == AST_TYPE_NIL) {
+		return true;
+	}
+
+	if (!to.nullable && from.nullable) {
+		return false;
+	}
+
+	if (!to.nullable && from.type == AST_TYPE_NIL) {
+		return false;
+	}
+
+	return to.type == from.type;
+}
 
 bool isNumberType(astDataType type) { return (type.type == AST_TYPE_INT || type.type == AST_TYPE_DOUBLE); }
 
@@ -155,7 +173,7 @@ static analysisResult analyseTerm(const astTerm* term, astDataType* outType) {
 static analysisResult analyseExpression(const astExpression* expression, astDataType* outType) {
 	switch (expression->type) {
 		case AST_EXPR_TERM: {
-			analyseTerm(&expression->term, outType);
+			ANALYSE(analyseTerm(&expression->term, outType), {});
 			break;
 		}
 		case AST_EXPR_BINARY:
@@ -170,7 +188,9 @@ static analysisResult analyseExpression(const astExpression* expression, astData
 
 static analysisResult analyseFunctionDef(const astFunctionDefinition* def) {
 	// TODO - make parameters defined inside block
+	CURRENT_FUNCTION = def;
 	ANALYSE(analyseStatementBlock(&def->body), {});
+	CURRENT_FUNCTION = NULL;
 	return ANALYSIS_OK;
 }
 
@@ -339,11 +359,14 @@ static analysisResult analyseProcedureCall(const astProcedureCall* call) {
 }
 
 static analysisResult analyseReturn(const astReturnStatement* ret) {
-	// TODO
-
 	if (ret->hasValue) {
 		astDataType returnType;
 		ANALYSE(analyseExpression(&ret->value, &returnType), {});
+
+		if (!isTriviallyConvertible(CURRENT_FUNCTION->returnType, returnType)) {
+			fputs("Incompatible return type.\n", stderr);
+			return ANALYSIS_WRONG_RETURN;
+		}
 	}
 
 	return ANALYSIS_OK;

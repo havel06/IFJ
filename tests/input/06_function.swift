@@ -1,16 +1,17 @@
-//func foo() -> Int {
-//    return 12
-//}
-
-func bar(with f : String, _ gg : Int) {
-    return
+func foo() -> Int {
+    var i : Int = 3
+    return i
 }
 
+//func bar(with f : String, _ gg : Int) {
+//    return
+//}
+//
 //func baz(with f : String) -> String? {
 //    return nil
 //}
 
-bar(with : "hello", 2)
+//bar(with : "hello", 2)
 
 //foo = bar(32, "hello", nil)
 //baz(64, nil)

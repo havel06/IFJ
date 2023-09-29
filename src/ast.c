@@ -61,7 +61,7 @@ int astStatementBlockAdd(astStatementBlock* block, astStatement statement) {
 	if (block->statements == NULL) {
 		block->statements = malloc(sizeof(statement));
 	} else {
-		block->statements = realloc(block->statements, sizeof(statement) * block->count + 1);
+		block->statements = realloc(block->statements, sizeof(statement) * (block->count + 1));
 	}
 
 	if (block->statements == NULL) {
