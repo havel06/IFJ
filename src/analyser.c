@@ -46,7 +46,6 @@ bool isNumberType(astDataType type) { return (type.type == AST_TYPE_INT || type.
 bool isNoNullNumberType(astDataType type) { return !type.nullable && isNumberType(type); }
 
 static analysisResult analyseBinaryExpression(const astBinaryExpression* expression, astDataType* outType) {
-	// TODO
 	astDataType lhsType;
 	astDataType rhsType;
 	ANALYSE(analyseExpression(expression->lhs, &lhsType), {});
@@ -256,13 +255,18 @@ static analysisResult analyseAssignment(const astAssignment* assignment) {
 	return ANALYSIS_OK;
 }
 
-// static analysisResult analyseOptionalBinding(const astOptionalBinding* binding) {
-//	// TODO
-//	return ANALYSIS_OK;
-// }
+static analysisResult analyseOptionalBinding(const astOptionalBinding* binding) {
+	astDataType variableType;
+	ANALYSE(analyseVariableId(&binding->identifier, &variableType), {});
+	if (!variableType.nullable) {
+		fputs("Variable used in optional binding must be nullable.\n", stderr);
+		return ANALYSIS_OTHER_ERROR;  // TODO - is this correct?
+	}
+	// TODO - add new variable to if statement block
+	return ANALYSIS_OK;
+}
 
 static analysisResult analyseCondition(const astCondition* condition) {
-	// TODO
 	if (condition->type == AST_CONDITION_EXPRESSION) {
 		astDataType conditionType;
 		ANALYSE(analyseExpression(&condition->expression, &conditionType), {});
@@ -275,13 +279,12 @@ static analysisResult analyseCondition(const astCondition* condition) {
 			return ANALYSIS_WRONG_BINARY_TYPES;
 		}
 	} else {
-		// ANALYSE(analyseOptionalBinding(&condition->optBinding));
+		ANALYSE(analyseOptionalBinding(&condition->optBinding), {});
 	}
 	return ANALYSIS_OK;
 }
 
 static analysisResult analyseConditional(const astConditional* conditional) {
-	// TODO
 	ANALYSE(analyseCondition(&conditional->condition), {});
 	ANALYSE(analyseStatementBlock(&conditional->body), {});
 	if (conditional->hasElse) {
@@ -291,8 +294,6 @@ static analysisResult analyseConditional(const astConditional* conditional) {
 }
 
 static analysisResult analyseIteration(const astIteration* iteration) {
-	// TODO
-
 	astDataType conditionType;
 	ANALYSE(analyseExpression(&iteration->condition, &conditionType), {});
 	if (conditionType.type != AST_TYPE_BOOL) {
