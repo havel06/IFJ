@@ -355,7 +355,19 @@ static parseResult parseVarDef(astStatement* statement, bool immutable) {
 		unGetToken(&maybeColonToken);
 	}
 
-	// TODO - omit init value
+	// omit init value
+	if (statement->variableDef.hasExplicitType) {
+		token maybeAssign;
+		GET_TOKEN(maybeAssign, {});
+		if (maybeAssign.type != TOKEN_ASSIGN) {
+			statement->variableDef.hasInitValue = false;
+			unGetToken(&maybeAssign);
+			return PARSE_OK;
+		}
+		unGetToken(&maybeAssign);
+	}
+
+	// parse init value
 	statement->variableDef.hasInitValue = true;
 	CONSUME_TOKEN_ASSUME_TYPE(TOKEN_ASSIGN, {});
 

@@ -199,7 +199,7 @@ static void compileVariableDef(const astVariableDefinition* def) {
 	}
 
 	// insert into symtable
-	symbolVariable newVar = {variableType, def->immutable, def->hasInitValue};
+	symbolVariable newVar = {variableType, def->immutable, NULL};
 	symTableInsertVar(symStackCurrentScope(&VAR_SYM_STACK), newVar, def->variableName.name);
 }
 

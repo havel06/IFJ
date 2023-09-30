@@ -15,11 +15,11 @@ static int hashFunc(const char* str) {
 		hash = hash * 33 + c;
 	}
 
-	return abs(hash) % 1024;
+	return abs(hash) % SYM_TABLE_CAPACITY;
 }
 
 void symTableCreate(symbolTable* table) {
-	for (int i = 0; i < 1024; i++) {
+	for (int i = 0; i < SYM_TABLE_CAPACITY; i++) {
 		table->data[i].taken = false;
 	}
 	table->id = LAST_TABLE_ID++;
@@ -30,7 +30,7 @@ static void symTableInsertSlot(symbolTable* table, symbolTableSlot slot) {
 
 	while (table->data[pos].taken) {
 		pos++;
-		assert(pos <= 1024);  // TODO - propagate error
+		assert(pos <= SYM_TABLE_CAPACITY);	// TODO - propagate error
 	}
 
 	table->data[pos] = slot;

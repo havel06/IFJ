@@ -143,7 +143,7 @@ static analysisResult analyseVariableId(const astIdentifier* id, astDataType* ou
 	if (!slot) {
 		fprintf(stderr, "Usage of undefined variable %s\n", id->name);
 		return ANALYSIS_UNDEFINED_VAR;
-	} else if (!slot->variable.initialised) {
+	} else if (!slot->variable.initialisedInScope) {
 		fprintf(stderr, "Usage of uninitialised variable %s\n", id->name);
 		return ANALYSIS_UNDEFINED_VAR;
 	}
@@ -235,7 +235,8 @@ static analysisResult analyseVariableDef(const astVariableDefinition* definition
 	}
 
 	// insert into symtable
-	symbolVariable newVar = {variableType, definition->immutable, definition->hasInitValue};
+	symbolVariable newVar = {variableType, definition->immutable,
+							 definition->hasInitValue ? symStackCurrentScope(&VAR_SYM_STACK) : NULL};
 	symTableInsertVar(symStackCurrentScope(&VAR_SYM_STACK), newVar, definition->variableName.name);
 
 	return ANALYSIS_OK;
@@ -260,6 +261,8 @@ static analysisResult analyseAssignment(const astAssignment* assignment) {
 		fprintf(stderr, "Wrong type in assignment to variable %s\n", slot->name);
 		return ANALYSIS_WRONG_BINARY_TYPES;
 	}
+
+	slot->variable.initialisedInScope = symStackCurrentScope(&VAR_SYM_STACK);
 
 	return ANALYSIS_OK;
 }
@@ -432,6 +435,18 @@ static analysisResult analyseStatementBlock(const astStatementBlock* block) {
 	for (int i = 0; i < block->count; i++) {
 		ANALYSE(analyseStatement(&block->statements[i]), {});
 	}
+
+	// uninitialise variables initialised in this scope
+	symbolTable* scope = symStackCurrentScope(&VAR_SYM_STACK);
+	for (int t = 0; t < VAR_SYM_STACK.count; t++) {
+		for (int i = 0; i < SYM_TABLE_CAPACITY; i++) {
+			symbolTableSlot* slot = &VAR_SYM_STACK.tables[t].data[i];
+			if (slot->taken && slot->variable.initialisedInScope == scope) {
+				slot->variable.initialisedInScope = NULL;
+			}
+		}
+	}
+
 	symStackPop(&VAR_SYM_STACK);
 	return ANALYSIS_OK;
 }

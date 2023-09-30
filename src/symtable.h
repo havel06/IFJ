@@ -3,10 +3,14 @@
 
 #include "ast.h"
 
+#define SYM_TABLE_CAPACITY 1024
+
+typedef struct symbolTable symbolTable;	 // fwd
+
 typedef struct {
 	astDataType type;
 	bool immutable;
-	bool initialised;
+	symbolTable* initialisedInScope;
 } symbolVariable;
 
 typedef struct {
@@ -22,10 +26,10 @@ typedef struct {
 	};
 } symbolTableSlot;
 
-typedef struct {
-	symbolTableSlot data[1024];	 // TODO - make dynamic?
+struct symbolTable {
+	symbolTableSlot data[SYM_TABLE_CAPACITY];  // TODO - make dynamic?
 	int id;
-} symbolTable;
+};
 
 typedef struct {
 	symbolTable tables[256];  // TODO - make dynamic?
