@@ -1,9 +1,8 @@
-func foo() -> Int {
-    var i : Int = 3
-    return i
+func foo(a b : Int) -> Int {
+    return b + 2
 }
 
-foo()
+foo(a : 3)
 
 //func bar(with f : String, _ gg : Int) {
 //    return

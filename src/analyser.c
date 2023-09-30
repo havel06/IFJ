@@ -195,9 +195,16 @@ static analysisResult analyseExpression(const astExpression* expression, astData
 }
 
 static analysisResult analyseFunctionDef(const astFunctionDefinition* def) {
-	// TODO - make parameters defined inside block
 	CURRENT_FUNCTION = def;
+	symStackPush(&VAR_SYM_STACK);
+	// add params to scope
+	for (int i = 0; i < def->params.count; i++) {
+		astParameter* param = &def->params.data[i];
+		symbolVariable symbol = {param->dataType, true, symStackCurrentScope(&VAR_SYM_STACK)};
+		symTableInsertVar(symStackCurrentScope(&VAR_SYM_STACK), symbol, param->insideName.name);
+	}
 	ANALYSE(analyseStatementBlock(&def->body), {});
+	symStackPush(&VAR_SYM_STACK);
 	CURRENT_FUNCTION = NULL;
 	return ANALYSIS_OK;
 }

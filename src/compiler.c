@@ -411,17 +411,25 @@ static void compileStatement(const astStatement* statement) {
 void compileFunctionDef(const astFunctionDefinition* def) {
 	printf("LABEL %s\n", def->name.name);
 	PUSH_FRAME();
+	// add params to symtable
+	for (int i = 0; i < def->params.count; i++) {
+		astParameter* param = &def->params.data[i];
+		symbolVariable symbol = {param->dataType, true, symStackCurrentScope(&VAR_SYM_STACK)};
+		symTableInsertVar(symStackCurrentScope(&VAR_SYM_STACK), symbol, param->insideName.name);
+	}
+	symStackPush(&VAR_SYM_STACK);  // create new symtable scope so variables can shadow params
 	// parameters are read left to right
 	for (int i = 0; i < def->params.count; i++) {
-		printf("DEFVAR LF@");
-		emitVariableId(&(def->params.data[i].insideName));
+		astParameter* param = &def->params.data[i];
+		printf("DEFVAR ");
+		emitVariableId(&(param->insideName));
 		puts("");
-		printf("POPS LF@");
-		emitVariableId(&(def->params.data[i].insideName));
+		printf("POPS ");
+		emitVariableId(&(param->insideName));
 		puts("");
 	}
-
 	compileStatementBlock(&def->body);
+	symStackPop(&VAR_SYM_STACK);
 	POP_FRAME();
 	puts("RETURN");
 }
