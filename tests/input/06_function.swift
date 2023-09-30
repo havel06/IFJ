@@ -1,8 +1,15 @@
-func foo(a b : Int) -> Int {
-    return b + 2
+//func foo(a b : Int) -> Int {
+//    if b > 3 {
+//        return b + 2
+//    }
+//}
+
+func boo() -> Int {
+
 }
 
-foo(a : 3)
+var a : Int
+a = boo()
 
 //func bar(with f : String, _ gg : Int) {
 //    return

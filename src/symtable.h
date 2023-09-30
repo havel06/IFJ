@@ -15,6 +15,7 @@ typedef struct {
 
 typedef struct {
 	const astParameterList* params;	 // non-owning
+	astDataType returnType;
 } symbolFunc;
 
 typedef struct {

@@ -269,7 +269,9 @@ static analysisResult analyseAssignment(const astAssignment* assignment) {
 		return ANALYSIS_WRONG_BINARY_TYPES;
 	}
 
-	slot->variable.initialisedInScope = symStackCurrentScope(&VAR_SYM_STACK);
+	if (!slot->variable.initialisedInScope) {
+		slot->variable.initialisedInScope = symStackCurrentScope(&VAR_SYM_STACK);
+	}
 
 	return ANALYSIS_OK;
 }
@@ -365,6 +367,7 @@ static analysisResult analyseInputParameterList(const astParameterList* list, co
 }
 
 static analysisResult analyseFunctionCall(const astFunctionCall* call) {
+	astDataType returnType = {AST_TYPE_NIL, false};
 	// check if function exists
 	if (strcmp(call->funcName.name, "write") != 0) {
 		symbolTableSlot* slot = symTableLookup(&FUNC_SYM_TABLE, call->funcName.name);
@@ -372,10 +375,21 @@ static analysisResult analyseFunctionCall(const astFunctionCall* call) {
 			fprintf(stderr, "Calling undefined function %s\n", call->funcName.name);
 			return ANALYSIS_UNDEFINED_FUNC;
 		}
+		returnType = slot->function.returnType;
 
 		ANALYSE(analyseInputParameterList(slot->function.params, &call->params), {});
 	}
-	// TODO - check if return type matches
+
+	symbolTableSlot* varSlot = symStackLookup(&VAR_SYM_STACK, call->varName.name, NULL);
+
+	if (!varSlot->variable.initialisedInScope) {
+		varSlot->variable.initialisedInScope = symStackCurrentScope(&VAR_SYM_STACK);
+	}
+
+	if (!isTriviallyConvertible(varSlot->variable.type, returnType)) {
+		fputs("Wrong return type.\n", stderr);
+		return ANALYSIS_WRONG_RETURN;
+	}
 
 	return ANALYSIS_OK;
 }
@@ -467,23 +481,27 @@ static analysisResult registerFunction(const astFunctionDefinition* def) {
 	}
 
 	// add function to symbol table
-	symbolFunc newSymbol = {&def->params};
+	astDataType nullType = {AST_TYPE_NIL, false};
+	symbolFunc newSymbol = {&def->params, def->hasReturnValue ? def->returnType : nullType};
 	symTableInsertFunc(&FUNC_SYM_TABLE, newSymbol, def->name.name);
 	return ANALYSIS_OK;
 }
 
 static void registerReadString() {
-	symbolFunc symbol = {&EMPTY_PARAMS};
+	astDataType returnType = {AST_TYPE_STRING, true};
+	symbolFunc symbol = {&EMPTY_PARAMS, returnType};
 	symTableInsertFunc(&FUNC_SYM_TABLE, symbol, "readString");
 }
 
 static void registerReadInt() {
-	symbolFunc symbol = {&EMPTY_PARAMS};
+	astDataType returnType = {AST_TYPE_INT, true};
+	symbolFunc symbol = {&EMPTY_PARAMS, returnType};
 	symTableInsertFunc(&FUNC_SYM_TABLE, symbol, "readInt");
 }
 
 static void registerReadDouble() {
-	symbolFunc symbol = {&EMPTY_PARAMS};
+	astDataType returnType = {AST_TYPE_DOUBLE, true};
+	symbolFunc symbol = {&EMPTY_PARAMS, returnType};
 	symTableInsertFunc(&FUNC_SYM_TABLE, symbol, "readDouble");
 }
 
@@ -497,7 +515,8 @@ static void registerInt2Double() {
 	term.insideName.name = NULL;
 	astParameterListAdd(&INT2DOUBLE_PARAMS, term);
 
-	symbolFunc symbol = {&INT2DOUBLE_PARAMS};
+	astDataType returnType = {AST_TYPE_DOUBLE, false};
+	symbolFunc symbol = {&INT2DOUBLE_PARAMS, returnType};
 	symTableInsertFunc(&FUNC_SYM_TABLE, symbol, "Int2Double");
 }
 
@@ -511,7 +530,8 @@ static void registerDouble2Int() {
 	term.insideName.name = NULL;
 	astParameterListAdd(&DOUBLE2INT_PARAMS, term);
 
-	symbolFunc symbol = {&DOUBLE2INT_PARAMS};
+	astDataType returnType = {AST_TYPE_INT, false};
+	symbolFunc symbol = {&DOUBLE2INT_PARAMS, returnType};
 	symTableInsertFunc(&FUNC_SYM_TABLE, symbol, "Double2Int");
 }
 
@@ -525,7 +545,8 @@ static void registerLength() {
 	s.insideName.name = NULL;
 	astParameterListAdd(&LENGTH_PARAMS, s);
 
-	symbolFunc symbol = {&LENGTH_PARAMS};
+	astDataType returnType = {AST_TYPE_INT, false};
+	symbolFunc symbol = {&LENGTH_PARAMS, returnType};
 	symTableInsertFunc(&FUNC_SYM_TABLE, symbol, "Double2Int");
 }
 
@@ -556,7 +577,8 @@ static void registerSubstring() {
 	endingBefore.insideName.name = NULL;
 	astParameterListAdd(&SUBSTRING_PARAMS, endingBefore);
 
-	symbolFunc symbol = {&SUBSTRING_PARAMS};
+	astDataType returnType = {AST_TYPE_STRING, true};
+	symbolFunc symbol = {&SUBSTRING_PARAMS, returnType};
 	symTableInsertFunc(&FUNC_SYM_TABLE, symbol, "substring");
 }
 
@@ -570,7 +592,8 @@ static void registerOrd() {
 	c.insideName.name = NULL;
 	astParameterListAdd(&ORD_PARAMS, c);
 
-	symbolFunc symbol = {&ORD_PARAMS};
+	astDataType returnType = {AST_TYPE_INT, false};
+	symbolFunc symbol = {&ORD_PARAMS, returnType};
 	symTableInsertFunc(&FUNC_SYM_TABLE, symbol, "ord");
 }
 
@@ -584,8 +607,9 @@ static void registerChr() {
 	i.insideName.name = NULL;
 	astParameterListAdd(&CHR_PARAMS, i);
 
-	symbolFunc symbol = {&CHR_PARAMS};
-	symTableInsertFunc(&FUNC_SYM_TABLE, symbol, "ord");
+	astDataType returnType = {AST_TYPE_STRING, false};
+	symbolFunc symbol = {&CHR_PARAMS, returnType};
+	symTableInsertFunc(&FUNC_SYM_TABLE, symbol, "chr");
 }
 
 static void registerBuiltinFunctions() {
