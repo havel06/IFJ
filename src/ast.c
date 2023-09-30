@@ -235,6 +235,12 @@ void astStatementBlockDestroy(astStatementBlock* block) {
 	block->statements = 0;
 }
 
+void astParameterListDestroyNoRecurse(astParameterList* list) {
+	if (list->data) {
+		free(list->data);
+	}
+}
+
 void astParameterListDestroy(astParameterList* list) {
 	for (int i = 0; i < list->count; i++) {
 		astParameter* param = &list->data[i];
@@ -244,9 +250,7 @@ void astParameterListDestroy(astParameterList* list) {
 		astIdentifierDestroy(&param->insideName);
 	}
 
-	if (list->data) {
-		free(list->data);
-	}
+	astParameterListDestroyNoRecurse(list);
 }
 
 static void astFunctionDefinitionDestroy(astFunctionDefinition* def) {

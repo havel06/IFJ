@@ -596,14 +596,13 @@ static void registerBuiltinFunctions() {
 }
 
 static void cleanUpBuiltinFunctions() {
-	// TODO - freeing static strings causes error
-	// astParameterListDestroy(&EMPTY_PARAMS);
-	// astParameterListDestroy(&INT2DOUBLE_PARAMS);
-	// astParameterListDestroy(&DOUBLE2INT_PARAMS);
-	// astParameterListDestroy(&LENGTH_PARAMS);
-	// astParameterListDestroy(&SUBSTRING_PARAMS);
-	// astParameterListDestroy(&ORD_PARAMS);
-	// astParameterListDestroy(&CHR_PARAMS);
+	astParameterListDestroyNoRecurse(&EMPTY_PARAMS);
+	astParameterListDestroyNoRecurse(&INT2DOUBLE_PARAMS);
+	astParameterListDestroyNoRecurse(&DOUBLE2INT_PARAMS);
+	astParameterListDestroyNoRecurse(&LENGTH_PARAMS);
+	astParameterListDestroyNoRecurse(&SUBSTRING_PARAMS);
+	astParameterListDestroyNoRecurse(&ORD_PARAMS);
+	astParameterListDestroyNoRecurse(&CHR_PARAMS);
 }
 
 analysisResult analyseProgram(const astProgram* program) {

@@ -249,6 +249,7 @@ void astParameterListCreate(astParameterList*);
 // Returns 0 on success
 int astParameterListAdd(astParameterList*, astParameter);
 void astParameterListDestroy(astParameterList*);
+void astParameterListDestroyNoRecurse(astParameterList*);
 //
 void astInputParameterListCreate(astInputParameterList*);
 int astInputParameterListAdd(astInputParameterList*, astInputParameter);
