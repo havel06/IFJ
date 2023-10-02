@@ -194,6 +194,23 @@ static analysisResult analyseExpression(const astExpression* expression, astData
 	return ANALYSIS_OK;
 }
 
+static bool returnsInAllPaths(const astStatementBlock* body) {
+	for (int i = 0; i < body->count; i++) {
+		const astStatement* statement = &body->statements[i];
+
+		if (statement->type == AST_STATEMENT_RETURN) {
+			return true;
+		}
+
+		if (statement->type == AST_STATEMENT_COND && statement->conditional.hasElse &&
+			returnsInAllPaths(&statement->conditional.body) && returnsInAllPaths(&statement->conditional.bodyElse)) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
 static analysisResult analyseFunctionDef(const astFunctionDefinition* def) {
 	CURRENT_FUNCTION = def;
 	symStackPush(&VAR_SYM_STACK);
@@ -204,7 +221,11 @@ static analysisResult analyseFunctionDef(const astFunctionDefinition* def) {
 		symTableInsertVar(symStackCurrentScope(&VAR_SYM_STACK), symbol, param->insideName.name);
 	}
 	ANALYSE(analyseStatementBlock(&def->body), {});
-	symStackPush(&VAR_SYM_STACK);
+	if (!returnsInAllPaths(&def->body)) {
+		fputs("Function does not return in all paths.\n", stderr);
+		return ANALYSIS_WRONG_RETURN;
+	}
+	symStackPop(&VAR_SYM_STACK);
 	CURRENT_FUNCTION = NULL;
 	return ANALYSIS_OK;
 }

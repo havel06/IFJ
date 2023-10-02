@@ -4,12 +4,16 @@
 //    }
 //}
 
-func boo() -> Int {
-
+func boo(_ a : Int) -> Int {
+    if (a > 5) {
+        return 3
+    } else {
+        return 6
+    }
 }
 
 var a : Int
-a = boo()
+a = boo(8)
 
 //func bar(with f : String, _ gg : Int) {
 //    return
