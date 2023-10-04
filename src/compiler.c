@@ -32,7 +32,7 @@ static void emitNewVariableId(const astIdentifier* var) {
 	if (currentScope == symStackGlobalScope(&VAR_SYM_STACK)) {
 		printf("GF@%s", var->name);
 	} else {
-		printf("LF@%d%s", currentScope->id, var->name);
+		printf("LF@v%d%s", currentScope->id, var->name);
 	}
 }
 
@@ -42,7 +42,7 @@ static void emitVariableId(const astIdentifier* var) {
 	if (scope == symStackGlobalScope(&VAR_SYM_STACK)) {
 		printf("GF@%s", var->name);
 	} else {
-		printf("LF@%d%s", scope->id, var->name);
+		printf("LF@v%d%s", scope->id, var->name);
 	}
 }
 
@@ -85,6 +85,7 @@ static astDataType compileBinaryExpression(const astBinaryExpression* expr) {
 	astDataType lhsType = compileExpression(expr->lhs);
 	astDataType rhsType = compileExpression(expr->rhs);
 	puts("CREATEFRAME");
+	puts("DEFVAR TF@res");
 	puts("DEFVAR TF@lhs");
 	puts("DEFVAR TF@rhs");
 	puts("POPS TF@rhs");
@@ -152,9 +153,9 @@ static astDataType compileBinaryExpression(const astBinaryExpression* expr) {
 		case AST_BINARY_NIL_COAL: {
 			int coalLabel = newLabelName();
 			puts("MOVE TF@res TF@lhs");
-			printf("JUMPIFNEQ %d TF@res nil@nil\n", coalLabel);
+			printf("JUMPIFNEQ l%d TF@res nil@nil\n", coalLabel);
 			puts("MOVE TF@res TF@rhs");
-			printf("LABEL %d\n", coalLabel);
+			printf("LABEL l%d\n", coalLabel);
 			break;
 		}
 	}
@@ -230,38 +231,38 @@ static void compileConditional(const astConditional* conditional) {
 
 	int label1 = newLabelName();
 	puts("PUSHS bool@true");
-	printf("JUMPIFNEQS %d\n", label1);
+	printf("JUMPIFNEQS l%d\n", label1);
 
 	compileStatementBlock(&conditional->body);
 
 	if (!conditional->hasElse) {
-		printf("LABEL %d\n", label1);
+		printf("LABEL l%d\n", label1);
 		puts("CLEARS");
 		return;
 	}
 
 	int label2 = newLabelName();
-	printf("JUMP %d\n", label2);
-	printf("LABEL %d\n", label1);
+	printf("JUMP l%d\n", label2);
+	printf("LABEL l%d\n", label1);
 
 	compileStatementBlock(&conditional->bodyElse);
 
-	printf("LABEL %d\n", label2);
+	printf("LABEL l%d\n", label2);
 	puts("CLEARS");
 }
 
 static void compileIteration(const astIteration* iteration) {
 	int startLabel = newLabelName();
 	int condLabel = newLabelName();
-	printf("JUMP %d\n", condLabel);
-	printf("LABEL %d\n", startLabel);
+	printf("JUMP l%d\n", condLabel);
+	printf("LABEL l%d\n", startLabel);
 	// body
 	compileStatementBlock(&iteration->body);
 	// condition
-	printf("LABEL %d\n", condLabel);
+	printf("LABEL l%d\n", condLabel);
 	compileExpression(&iteration->condition);
 	puts("PUSHS bool@true");
-	printf("JUMPIFEQS %d\n", startLabel);
+	printf("JUMPIFEQS l%d\n", startLabel);
 	puts("CLEARS");
 }
 
@@ -409,6 +410,8 @@ static void compileStatement(const astStatement* statement) {
 }
 
 void compileFunctionDef(const astFunctionDefinition* def) {
+	int funcEndLabel = newLabelName();
+	printf("JUMP l%d\n", funcEndLabel);
 	printf("LABEL %s\n", def->name.name);
 	PUSH_FRAME();
 	// add params to symtable
@@ -432,6 +435,7 @@ void compileFunctionDef(const astFunctionDefinition* def) {
 	symStackPop(&VAR_SYM_STACK);
 	POP_FRAME();
 	puts("RETURN");
+	printf("LABEL l%d\n", funcEndLabel);
 }
 
 void compileProgram(const astProgram* program) {
