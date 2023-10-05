@@ -234,7 +234,6 @@ static lexerResult lexNumberToken(token* newToken) {
 }
 
 static lexerResult lexStringToken(token* newToken) {
-	// TODO - escape sequences
 	newToken->type = TOKEN_STR_LITERAL;
 	newToken->content = calloc(2048, sizeof(char));
 	if (!newToken->content) {
@@ -253,6 +252,21 @@ static lexerResult lexStringToken(token* newToken) {
 			return LEXER_ERROR;
 		} else if (c == '"') {
 			break;
+		} else if (c == '\\') {
+			// TODO - numbered escape sequences
+			int c2 = getchar();
+			if (c2 == '\\') {
+				newToken->content[len++] = '\\';
+			} else if (c2 == 'n') {
+				newToken->content[len++] = '\n';
+			} else if (c2 == 'r') {
+				newToken->content[len++] = '\r';
+			} else if (c2 == 't') {
+				newToken->content[len++] = '\t';
+			} else {
+				ungetc(c2, stdin);
+				newToken->content[len++] = '\\';
+			}
 		} else {
 			newToken->content[len++] = c;
 		}

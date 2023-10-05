@@ -1,6 +1,7 @@
 #include "compiler.h"
 
 #include <assert.h>
+#include <ctype.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -69,7 +70,16 @@ static astDataType compileTerm(const astTerm* term) {
 			break;
 		case AST_TERM_STRING:
 			// TODO - escape sequences, control characters
-			printf("PUSHS string@%s\n", term->string.content);
+			printf("PUSHS string@");
+			for (size_t i = 0; i < strlen(term->string.content); i++) {
+				char c = term->string.content[i];
+				if (isspace(c) || !isprint(c) || c == '#' || c == '\\') {
+					printf("\\%03d", (int)c);
+				} else {
+					putchar(c);
+				}
+			}
+			puts("");
 			dataType.type = AST_TYPE_STRING;
 			break;
 		case AST_TERM_NIL:
