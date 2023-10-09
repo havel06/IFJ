@@ -16,24 +16,6 @@ void unGetToken(const token* tok) {
 	BUFFERED_TOKEN_EMPTY = false;
 }
 
-/*
-int tokenCreate(token* newToken, tokenType type, const char* str) {
-	assert(newToken);
-	newToken->type = type;
-
-	if (str) {
-		newToken->content = malloc(strlen(str) * sizeof(char) + 1);
-		if (!(newToken->content)) {
-			return 1;
-		}
-	} else {
-		newToken->content = NULL;
-	}
-
-	return 0;
-}
-*/
-
 void tokenDestroy(token* tok) {
 	assert(tok);
 	if (tok->content) {
@@ -233,6 +215,13 @@ static lexerResult lexNumberToken(token* newToken) {
 	return LEXER_OK;
 }
 
+bool isHexDigit(char c)
+{
+	return isdigit(c) ||
+		((c >= 'a') && (c <= 'f')) ||
+		((c >= 'A') && (c <= 'F'));
+}
+
 static lexerResult lexStringToken(token* newToken) {
 	newToken->type = TOKEN_STR_LITERAL;
 	newToken->content = calloc(2048, sizeof(char));
@@ -263,6 +252,24 @@ static lexerResult lexStringToken(token* newToken) {
 				newToken->content[len++] = '\r';
 			} else if (c2 == 't') {
 				newToken->content[len++] = '\t';
+			} else if (c2 == 'u') {
+				// numbered ascii escape sequence
+				char charCode[8];
+				int charCodeLen = 0;
+
+				while (charCodeLen < 8) {
+					int numChar = getchar();
+					if (isHexDigit(numChar)) {
+						charCode[charCodeLen++] = numChar;
+					} else {
+						charCode[charCodeLen] = '\0';
+						ungetc(numChar, stdin);
+						break;
+					}
+				}
+
+				int code = strtol(charCode, NULL, 16);
+				newToken->content[len++] = code;
 			} else {
 				ungetc(c2, stdin);
 				newToken->content[len++] = '\\';
