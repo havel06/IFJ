@@ -215,12 +215,7 @@ static lexerResult lexNumberToken(token* newToken) {
 	return LEXER_OK;
 }
 
-bool isHexDigit(char c)
-{
-	return isdigit(c) ||
-		((c >= 'a') && (c <= 'f')) ||
-		((c >= 'A') && (c <= 'F'));
-}
+bool isHexDigit(char c) { return isdigit(c) || ((c >= 'a') && (c <= 'f')) || ((c >= 'A') && (c <= 'F')); }
 
 static lexerResult lexStringToken(token* newToken) {
 	newToken->type = TOKEN_STR_LITERAL;
