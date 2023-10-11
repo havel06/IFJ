@@ -4,6 +4,10 @@
 //    }
 //}
 
+func foo() {
+    var a = 3
+}
+
 func boo(_ a : Int) -> Int {
     if (a > 5) {
         return 3

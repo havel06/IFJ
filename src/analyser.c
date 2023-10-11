@@ -224,7 +224,7 @@ static analysisResult analyseFunctionDef(const astFunctionDefinition* def) {
 		symTableInsertVar(symStackCurrentScope(&VAR_SYM_STACK), symbol, param->insideName.name);
 	}
 	ANALYSE(analyseStatementBlock(&def->body), {});
-	if (!returnsInAllPaths(&def->body)) {
+	if (def->hasReturnValue && !returnsInAllPaths(&def->body)) {
 		fputs("Function does not return in all paths.\n", stderr);
 		return ANALYSIS_WRONG_RETURN;
 	}
