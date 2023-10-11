@@ -12,8 +12,7 @@ func boo(_ a : Int) -> Int {
     }
 }
 
-var a : Int
-a = boo(8)
+var a = boo(8)
 
 //func bar(with f : String, _ gg : Int) {
 //    return

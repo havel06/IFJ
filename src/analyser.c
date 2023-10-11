@@ -21,7 +21,7 @@ static analysisResult analyseStatementBlock(const astStatementBlock*);
 static analysisResult analyseExpression(const astExpression*, astDataType* outType);
 
 static symbolTableStack VAR_SYM_STACK;
-static symbolTable FUNC_SYM_TABLE;
+static symbolTable* FUNC_SYM_TABLE;
 static const astFunctionDefinition* CURRENT_FUNCTION;
 
 // builtin functions
@@ -148,7 +148,10 @@ static analysisResult analyseVariableId(const astIdentifier* id, astDataType* ou
 		return ANALYSIS_UNDEFINED_VAR;
 	}
 
-	*outType = slot->variable.type;
+	if (outType) {
+		*outType = slot->variable.type;
+	}
+
 	return ANALYSIS_OK;
 }
 
@@ -227,47 +230,6 @@ static analysisResult analyseFunctionDef(const astFunctionDefinition* def) {
 	}
 	symStackPop(&VAR_SYM_STACK);
 	CURRENT_FUNCTION = NULL;
-	return ANALYSIS_OK;
-}
-
-static analysisResult analyseVariableDef(const astVariableDefinition* definition) {
-	// check for variable redefinition
-	symbolTable* scopePtr;
-	symbolTableSlot* slot = symStackLookup(&VAR_SYM_STACK, definition->variableName.name, &scopePtr);
-	if (slot && scopePtr == symStackCurrentScope(&VAR_SYM_STACK)) {
-		// redefined
-		fprintf(stderr, "Variable redefinition: %s\n", definition->variableName.name);
-		return ANALYSIS_UNDEFINED_FUNC;
-	}
-
-	astDataType variableType = definition->variableType;
-
-	if (definition->hasInitValue) {
-		astDataType initValueType;
-		// TODO - function initialisers
-		ANALYSE(analyseExpression(&definition->value.expr, &initValueType), {});
-
-		if (definition->hasExplicitType) {
-			if (initValueType.type == AST_TYPE_NIL) {
-				fprintf(stderr, "Cannot deduce nil type in initialisation of variable %s\n",
-						definition->variableName.name);
-				return ANALYSIS_WRONG_BINARY_TYPES;
-			}
-
-			if (!isTriviallyConvertible(definition->variableType, initValueType)) {
-				fprintf(stderr, "Wrong type in initialisation of variable %s\n", definition->variableName.name);
-				return ANALYSIS_WRONG_BINARY_TYPES;
-			}
-		} else {
-			variableType = initValueType;
-		}
-	}
-
-	// insert into symtable
-	symbolVariable newVar = {variableType, definition->immutable,
-							 definition->hasInitValue ? symStackCurrentScope(&VAR_SYM_STACK) : NULL};
-	symTableInsertVar(symStackCurrentScope(&VAR_SYM_STACK), newVar, definition->variableName.name);
-
 	return ANALYSIS_OK;
 }
 
@@ -388,11 +350,11 @@ static analysisResult analyseInputParameterList(const astParameterList* list, co
 	return ANALYSIS_OK;
 }
 
-static analysisResult analyseFunctionCall(const astFunctionCall* call) {
+static analysisResult analyseFunctionCall(const astFunctionCall* call, bool ignoreVariable) {
 	astDataType returnType = {AST_TYPE_NIL, false};
 	// check if function exists
 	if (strcmp(call->funcName.name, "write") != 0) {
-		symbolTableSlot* slot = symTableLookup(&FUNC_SYM_TABLE, call->funcName.name);
+		symbolTableSlot* slot = symTableLookup(FUNC_SYM_TABLE, call->funcName.name);
 		if (!slot) {
 			fprintf(stderr, "Calling undefined function %s\n", call->funcName.name);
 			return ANALYSIS_UNDEFINED_FUNC;
@@ -402,15 +364,23 @@ static analysisResult analyseFunctionCall(const astFunctionCall* call) {
 		ANALYSE(analyseInputParameterList(slot->function.params, &call->params), {});
 	}
 
-	symbolTableSlot* varSlot = symStackLookup(&VAR_SYM_STACK, call->varName.name, NULL);
+	// check the variable
+	if (!ignoreVariable) {
+		symbolTableSlot* varSlot = symStackLookup(&VAR_SYM_STACK, call->varName.name, NULL);
 
-	if (!varSlot->variable.initialisedInScope) {
-		varSlot->variable.initialisedInScope = symStackCurrentScope(&VAR_SYM_STACK);
-	}
+		if (!varSlot) {
+			fprintf(stderr, "Usage of undefined variable %s\n", call->varName.name);
+			return ANALYSIS_UNDEFINED_VAR;
+		}
 
-	if (!isTriviallyConvertible(varSlot->variable.type, returnType)) {
-		fputs("Wrong return type.\n", stderr);
-		return ANALYSIS_WRONG_RETURN;
+		if (!varSlot->variable.initialisedInScope) {
+			varSlot->variable.initialisedInScope = symStackCurrentScope(&VAR_SYM_STACK);
+		}
+
+		if (!isTriviallyConvertible(varSlot->variable.type, returnType)) {
+			fputs("Wrong return type.\n", stderr);
+			return ANALYSIS_WRONG_RETURN;
+		}
 	}
 
 	return ANALYSIS_OK;
@@ -419,7 +389,7 @@ static analysisResult analyseFunctionCall(const astFunctionCall* call) {
 static analysisResult analyseProcedureCall(const astProcedureCall* call) {
 	// check if function exists
 	if (strcmp(call->procName.name, "write") != 0) {
-		symbolTableSlot* slot = symTableLookup(&FUNC_SYM_TABLE, call->procName.name);
+		symbolTableSlot* slot = symTableLookup(FUNC_SYM_TABLE, call->procName.name);
 		if (!slot) {
 			fprintf(stderr, "Calling undefined function %s\n", call->procName.name);
 			return ANALYSIS_UNDEFINED_FUNC;
@@ -445,6 +415,55 @@ static analysisResult analyseReturn(const astReturnStatement* ret) {
 	return ANALYSIS_OK;
 }
 
+static analysisResult analyseVariableDef(const astVariableDefinition* definition) {
+	// check for variable redefinition
+	symbolTable* scopePtr;
+	symbolTableSlot* slot = symStackLookup(&VAR_SYM_STACK, definition->variableName.name, &scopePtr);
+	if (slot && scopePtr == symStackCurrentScope(&VAR_SYM_STACK)) {
+		// redefined
+		fprintf(stderr, "Variable redefinition: %s\n", definition->variableName.name);
+		return ANALYSIS_UNDEFINED_FUNC;
+	}
+
+	astDataType variableType = definition->variableType;
+
+	if (definition->hasInitValue) {
+		astDataType initValueType;
+
+		if (definition->value.type == AST_VAR_INIT_EXPR) {
+			ANALYSE(analyseExpression(&definition->value.expr, &initValueType), {});
+		} else {
+			ANALYSE(analyseFunctionCall(&definition->value.call, true), {});
+			// find function type in symtable
+			symbolTableSlot* funcSlot = symTableLookup(FUNC_SYM_TABLE, definition->value.call.funcName.name);
+			assert(funcSlot);
+			initValueType = funcSlot->function.returnType;
+		}
+
+		if (definition->hasExplicitType) {
+			if (initValueType.type == AST_TYPE_NIL) {
+				fprintf(stderr, "Cannot deduce nil type in initialisation of variable %s\n",
+						definition->variableName.name);
+				return ANALYSIS_WRONG_BINARY_TYPES;
+			}
+
+			if (!isTriviallyConvertible(definition->variableType, initValueType)) {
+				fprintf(stderr, "Wrong type in initialisation of variable %s\n", definition->variableName.name);
+				return ANALYSIS_WRONG_BINARY_TYPES;
+			}
+		} else {
+			variableType = initValueType;
+		}
+	}
+
+	// insert into symtable
+	symbolVariable newVar = {variableType, definition->immutable,
+							 definition->hasInitValue ? symStackCurrentScope(&VAR_SYM_STACK) : NULL};
+	symTableInsertVar(symStackCurrentScope(&VAR_SYM_STACK), newVar, definition->variableName.name);
+
+	return ANALYSIS_OK;
+}
+
 static analysisResult analyseStatement(const astStatement* statement) {
 	switch (statement->type) {
 		case AST_STATEMENT_VAR_DEF:
@@ -460,7 +479,7 @@ static analysisResult analyseStatement(const astStatement* statement) {
 			ANALYSE(analyseIteration(&statement->iteration), {});
 			break;
 		case AST_STATEMENT_FUNC_CALL:
-			ANALYSE(analyseFunctionCall(&statement->functionCall), {});
+			ANALYSE(analyseFunctionCall(&statement->functionCall, false), {});
 			break;
 		case AST_STATEMENT_PROC_CALL:
 			ANALYSE(analyseProcedureCall(&statement->procedureCall), {});
@@ -496,7 +515,7 @@ static analysisResult analyseStatementBlock(const astStatementBlock* block) {
 
 static analysisResult registerFunction(const astFunctionDefinition* def) {
 	// check if function of same name is defined
-	symbolTableSlot* slot = symTableLookup(&FUNC_SYM_TABLE, def->name.name);
+	symbolTableSlot* slot = symTableLookup(FUNC_SYM_TABLE, def->name.name);
 	if (slot) {
 		fprintf(stderr, "Redefinition of function %s\n", def->name.name);
 		return ANALYSIS_UNDEFINED_FUNC;	 // TODO - is this the correct error value?
@@ -505,26 +524,26 @@ static analysisResult registerFunction(const astFunctionDefinition* def) {
 	// add function to symbol table
 	astDataType nullType = {AST_TYPE_NIL, false};
 	symbolFunc newSymbol = {&def->params, def->hasReturnValue ? def->returnType : nullType};
-	symTableInsertFunc(&FUNC_SYM_TABLE, newSymbol, def->name.name);
+	symTableInsertFunc(FUNC_SYM_TABLE, newSymbol, def->name.name);
 	return ANALYSIS_OK;
 }
 
 static void registerReadString() {
 	astDataType returnType = {AST_TYPE_STRING, true};
 	symbolFunc symbol = {&EMPTY_PARAMS, returnType};
-	symTableInsertFunc(&FUNC_SYM_TABLE, symbol, "readString");
+	symTableInsertFunc(FUNC_SYM_TABLE, symbol, "readString");
 }
 
 static void registerReadInt() {
 	astDataType returnType = {AST_TYPE_INT, true};
 	symbolFunc symbol = {&EMPTY_PARAMS, returnType};
-	symTableInsertFunc(&FUNC_SYM_TABLE, symbol, "readInt");
+	symTableInsertFunc(FUNC_SYM_TABLE, symbol, "readInt");
 }
 
 static void registerReadDouble() {
 	astDataType returnType = {AST_TYPE_DOUBLE, true};
 	symbolFunc symbol = {&EMPTY_PARAMS, returnType};
-	symTableInsertFunc(&FUNC_SYM_TABLE, symbol, "readDouble");
+	symTableInsertFunc(FUNC_SYM_TABLE, symbol, "readDouble");
 }
 
 static void registerInt2Double() {
@@ -539,7 +558,7 @@ static void registerInt2Double() {
 
 	astDataType returnType = {AST_TYPE_DOUBLE, false};
 	symbolFunc symbol = {&INT2DOUBLE_PARAMS, returnType};
-	symTableInsertFunc(&FUNC_SYM_TABLE, symbol, "Int2Double");
+	symTableInsertFunc(FUNC_SYM_TABLE, symbol, "Int2Double");
 }
 
 static void registerDouble2Int() {
@@ -554,7 +573,7 @@ static void registerDouble2Int() {
 
 	astDataType returnType = {AST_TYPE_INT, false};
 	symbolFunc symbol = {&DOUBLE2INT_PARAMS, returnType};
-	symTableInsertFunc(&FUNC_SYM_TABLE, symbol, "Double2Int");
+	symTableInsertFunc(FUNC_SYM_TABLE, symbol, "Double2Int");
 }
 
 static void registerLength() {
@@ -569,7 +588,7 @@ static void registerLength() {
 
 	astDataType returnType = {AST_TYPE_INT, false};
 	symbolFunc symbol = {&LENGTH_PARAMS, returnType};
-	symTableInsertFunc(&FUNC_SYM_TABLE, symbol, "Double2Int");
+	symTableInsertFunc(FUNC_SYM_TABLE, symbol, "Double2Int");
 }
 
 static void registerSubstring() {
@@ -601,7 +620,7 @@ static void registerSubstring() {
 
 	astDataType returnType = {AST_TYPE_STRING, true};
 	symbolFunc symbol = {&SUBSTRING_PARAMS, returnType};
-	symTableInsertFunc(&FUNC_SYM_TABLE, symbol, "substring");
+	symTableInsertFunc(FUNC_SYM_TABLE, symbol, "substring");
 }
 
 static void registerOrd() {
@@ -616,7 +635,7 @@ static void registerOrd() {
 
 	astDataType returnType = {AST_TYPE_INT, false};
 	symbolFunc symbol = {&ORD_PARAMS, returnType};
-	symTableInsertFunc(&FUNC_SYM_TABLE, symbol, "ord");
+	symTableInsertFunc(FUNC_SYM_TABLE, symbol, "ord");
 }
 
 static void registerChr() {
@@ -631,7 +650,7 @@ static void registerChr() {
 
 	astDataType returnType = {AST_TYPE_STRING, false};
 	symbolFunc symbol = {&CHR_PARAMS, returnType};
-	symTableInsertFunc(&FUNC_SYM_TABLE, symbol, "chr");
+	symTableInsertFunc(FUNC_SYM_TABLE, symbol, "chr");
 }
 
 static void registerBuiltinFunctions() {
@@ -658,8 +677,8 @@ static void cleanUpBuiltinFunctions() {
 	astParameterListDestroyNoRecurse(&CHR_PARAMS);
 }
 
-analysisResult analyseProgram(const astProgram* program) {
-	symTableCreate(&FUNC_SYM_TABLE);  // for functions
+analysisResult analyseProgram(const astProgram* program, symbolTable* functionTable) {
+	FUNC_SYM_TABLE = functionTable;
 	registerBuiltinFunctions();
 	symStackCreate(&VAR_SYM_STACK);
 	symStackPush(&VAR_SYM_STACK);  // global scope

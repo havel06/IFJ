@@ -334,55 +334,6 @@ static parseResult parseDataType(astDataType* dataType) {
 	return PARSE_OK;
 }
 
-static parseResult parseVarDef(astStatement* statement, bool immutable) {
-	statement->type = AST_STATEMENT_VAR_DEF;
-	statement->variableDef.immutable = immutable;
-
-	token variableNameToken;
-	GET_TOKEN_ASSUME_TYPE(variableNameToken, TOKEN_IDENTIFIER, {});
-	TRY_PARSE(parseIdentifier(&variableNameToken, &(statement->variableDef.variableName)), {});
-	tokenDestroy(&variableNameToken);
-
-	// parse variable type
-	token maybeColonToken;
-	GET_TOKEN(maybeColonToken, {});
-	if (maybeColonToken.type == TOKEN_COLON) {
-		statement->variableDef.hasExplicitType = true;
-		tokenDestroy(&maybeColonToken);
-		TRY_PARSE(parseDataType(&(statement->variableDef.variableType)), {});
-	} else {
-		statement->variableDef.hasExplicitType = false;
-		unGetToken(&maybeColonToken);
-	}
-
-	// omit init value
-	if (statement->variableDef.hasExplicitType) {
-		token maybeAssign;
-		GET_TOKEN(maybeAssign, {});
-		if (maybeAssign.type != TOKEN_ASSIGN) {
-			statement->variableDef.hasInitValue = false;
-			unGetToken(&maybeAssign);
-			return PARSE_OK;
-		}
-		unGetToken(&maybeAssign);
-	}
-
-	// parse init value
-	statement->variableDef.hasInitValue = true;
-	statement->variableDef.value.type = AST_VAR_INIT_EXPR;
-	CONSUME_TOKEN_ASSUME_TYPE(TOKEN_ASSIGN, {});
-
-	token initExprFirstToken;
-	GET_TOKEN(initExprFirstToken, {});
-
-	TRY_PARSE(parseExpression(&(statement->variableDef.value.expr), &initExprFirstToken),
-			  { tokenDestroy(&initExprFirstToken); });
-
-	tokenDestroy(&initExprFirstToken);
-
-	return PARSE_OK;
-}
-
 static parseResult parseStatementBlock(astStatementBlock* block, bool insideFunction) {
 	astStatementBlockCreate(block);
 	CONSUME_TOKEN_ASSUME_TYPE(TOKEN_BRACKET_CURLY_LEFT, {});
@@ -469,12 +420,10 @@ static parseResult parseFunctionCallParams(astInputParameterList* params) {
 	return PARSE_OK;
 }
 
-static parseResult parseFunctionCall(astStatement* statement, const token* varName, const token* funcName) {
-	statement->type = AST_STATEMENT_FUNC_CALL;
-
-	TRY_PARSE(parseIdentifier(varName, &(statement->functionCall.varName)), {});
-	TRY_PARSE(parseIdentifier(funcName, &(statement->functionCall.funcName)), {});
-	TRY_PARSE(parseFunctionCallParams(&(statement->functionCall.params)), {});
+static parseResult parseFunctionCall(astFunctionCall* call, const token* varName, const token* funcName) {
+	TRY_PARSE(parseIdentifier(varName, &(call->varName)), {});
+	TRY_PARSE(parseIdentifier(funcName, &(call->funcName)), {});
+	TRY_PARSE(parseFunctionCallParams(&(call->params)), {});
 	CONSUME_TOKEN_ASSUME_TYPE(TOKEN_BRACKET_ROUND_RIGHT, {});
 
 	return PARSE_OK;
@@ -507,7 +456,9 @@ static parseResult parseAssignmentOrFunctionCall(astStatement* statement, const 
 
 		if (nextToken.type == TOKEN_BRACKET_ROUND_LEFT) {
 			tokenDestroy(&nextToken);
-			TRY_PARSE(parseFunctionCall(statement, varName, &firstToken), { tokenDestroy(&firstToken); });
+			statement->type = AST_STATEMENT_FUNC_CALL;
+			TRY_PARSE(parseFunctionCall(&statement->functionCall, varName, &firstToken),
+					  { tokenDestroy(&firstToken); });
 		} else {
 			unGetToken(&nextToken);
 			TRY_PARSE(parseAssignment(statement, varName, &firstToken), { tokenDestroy(&firstToken); });
@@ -517,6 +468,77 @@ static parseResult parseAssignmentOrFunctionCall(astStatement* statement, const 
 	}
 
 	tokenDestroy(&firstToken);
+
+	return PARSE_OK;
+}
+
+static parseResult parseVarInit(astVariableInitialiser* initialiser, const char* varName) {
+	token firstToken;
+	GET_TOKEN(firstToken, {});
+
+	token secondToken;
+	GET_TOKEN(secondToken, { tokenDestroy(&firstToken); });
+
+	if (firstToken.type == TOKEN_IDENTIFIER && secondToken.type == TOKEN_BRACKET_ROUND_LEFT) {
+		// function call
+
+		// NOTE - we create a fake token, since parseFunctionCall expects a token, not a string
+		token varNameToken = {TOKEN_IDENTIFIER, (char*)varName};
+
+		initialiser->type = AST_VAR_INIT_FUNC;
+		TRY_PARSE(parseFunctionCall(&initialiser->call, &varNameToken, &firstToken), {
+			tokenDestroy(&firstToken);
+			tokenDestroy(&secondToken);
+		});
+		tokenDestroy(&secondToken);
+	} else {
+		// expression
+		initialiser->type = AST_VAR_INIT_EXPR;
+		unGetToken(&secondToken);
+		TRY_PARSE(parseExpression(&(initialiser->expr), &firstToken), { tokenDestroy(&firstToken); });
+	}
+
+	tokenDestroy(&firstToken);
+	return PARSE_OK;
+}
+
+static parseResult parseVarDef(astStatement* statement, bool immutable) {
+	statement->type = AST_STATEMENT_VAR_DEF;
+	statement->variableDef.immutable = immutable;
+
+	token variableNameToken;
+	GET_TOKEN_ASSUME_TYPE(variableNameToken, TOKEN_IDENTIFIER, {});
+	TRY_PARSE(parseIdentifier(&variableNameToken, &(statement->variableDef.variableName)), {});
+	tokenDestroy(&variableNameToken);
+
+	// parse variable type
+	token maybeColonToken;
+	GET_TOKEN(maybeColonToken, {});
+	if (maybeColonToken.type == TOKEN_COLON) {
+		statement->variableDef.hasExplicitType = true;
+		tokenDestroy(&maybeColonToken);
+		TRY_PARSE(parseDataType(&(statement->variableDef.variableType)), {});
+	} else {
+		statement->variableDef.hasExplicitType = false;
+		unGetToken(&maybeColonToken);
+	}
+
+	// omit init value
+	if (statement->variableDef.hasExplicitType) {
+		token maybeAssign;
+		GET_TOKEN(maybeAssign, {});
+		if (maybeAssign.type != TOKEN_ASSIGN) {
+			statement->variableDef.hasInitValue = false;
+			unGetToken(&maybeAssign);
+			return PARSE_OK;
+		}
+		unGetToken(&maybeAssign);
+	}
+
+	// parse init value
+	CONSUME_TOKEN_ASSUME_TYPE(TOKEN_ASSIGN, {});
+	statement->variableDef.hasInitValue = true;
+	TRY_PARSE(parseVarInit(&statement->variableDef.value, statement->variableDef.variableName.name), {});
 
 	return PARSE_OK;
 }

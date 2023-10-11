@@ -9,6 +9,7 @@
 #include "symtable.h"
 
 static symbolTableStack VAR_SYM_STACK;
+static const symbolTable* FUNC_SYM_TABLE;
 
 #define PUSH_FRAME()     \
 	puts("CREATEFRAME"); \
@@ -196,25 +197,6 @@ static void compileAssignment(const astAssignment* assignment) {
 	puts("");
 }
 
-static void compileVariableDef(const astVariableDefinition* def) {
-	printf("DEFVAR ");
-	emitNewVariableId(&def->variableName);
-	puts("");
-
-	astDataType variableType = def->variableType;
-	if (def->hasInitValue) {
-		// TODO - function initialiser
-		variableType = compileExpression(&def->value.expr);
-		printf("POPS ");
-		emitNewVariableId(&def->variableName);
-		puts("");
-	}
-
-	// insert into symtable
-	symbolVariable newVar = {variableType, def->immutable, NULL};
-	symTableInsertVar(symStackCurrentScope(&VAR_SYM_STACK), newVar, def->variableName.name);
-}
-
 static void compileStatementBlock(const astStatementBlock* block) {
 	symStackPush(&VAR_SYM_STACK);
 	for (int i = 0; i < block->count; i++) {
@@ -362,7 +344,7 @@ static void compileProcedureCall(const astProcedureCall* call) {
 	puts("CLEARS");
 }
 
-static void compileFunctionCall(const astFunctionCall* call) {
+static void compileFunctionCall(const astFunctionCall* call, bool newVariable) {
 	compileInputParamList(&call->params);
 
 	// TODO - use a more effective way
@@ -389,9 +371,41 @@ static void compileFunctionCall(const astFunctionCall* call) {
 	}
 
 	printf("POPS ");
-	emitVariableId(&call->varName);
+
+	if (newVariable) {
+		emitNewVariableId(&call->varName);
+	} else {
+		emitVariableId(&call->varName);
+	}
+
 	puts("");
 	puts("CLEARS");
+}
+
+static void compileVariableDef(const astVariableDefinition* def) {
+	printf("DEFVAR ");
+	emitNewVariableId(&def->variableName);
+	puts("");
+
+	astDataType variableType = def->variableType;
+	if (def->hasInitValue) {
+		if (def->value.type == AST_VAR_INIT_EXPR) {
+			variableType = compileExpression(&def->value.expr);
+			printf("POPS ");
+			emitNewVariableId(&def->variableName);
+			puts("");
+		} else {
+			const symbolTableSlot* funcSlot =
+				symTableLookup((symbolTable*)FUNC_SYM_TABLE, def->value.call.funcName.name);
+			assert(funcSlot);
+			variableType = funcSlot->function.returnType;
+			compileFunctionCall(&def->value.call, true);
+		}
+	}
+
+	// insert into symtable
+	symbolVariable newVar = {variableType, def->immutable, NULL};
+	symTableInsertVar(symStackCurrentScope(&VAR_SYM_STACK), newVar, def->variableName.name);
 }
 
 static void compileStatement(const astStatement* statement) {
@@ -409,7 +423,7 @@ static void compileStatement(const astStatement* statement) {
 			compileIteration(&statement->iteration);
 			break;
 		case AST_STATEMENT_FUNC_CALL:
-			compileFunctionCall(&statement->functionCall);
+			compileFunctionCall(&statement->functionCall, false);
 			break;
 		case AST_STATEMENT_PROC_CALL:
 			compileProcedureCall(&statement->procedureCall);
@@ -449,7 +463,8 @@ void compileFunctionDef(const astFunctionDefinition* def) {
 	printf("LABEL l%d\n", funcEndLabel);
 }
 
-void compileProgram(const astProgram* program) {
+void compileProgram(const astProgram* program, const symbolTable* functionTable) {
+	FUNC_SYM_TABLE = functionTable;
 	symStackCreate(&VAR_SYM_STACK);
 	symStackPush(&VAR_SYM_STACK);  // global scope
 	puts(".IFJcode23");

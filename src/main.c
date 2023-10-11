@@ -7,6 +7,7 @@
 #include "parser.h"
 #include "printAST.h"
 #include "printToken.h"
+#include "symtable.h"
 
 // edit these two
 //#define TEST_LEXER
@@ -57,7 +58,9 @@ int main() {
 	return 0;
 #endif
 
-	switch (analyseProgram(&program)) {
+	symbolTable functionTable;
+	symTableCreate(&functionTable);
+	switch (analyseProgram(&program, &functionTable)) {
 		case ANALYSIS_UNDEFINED_FUNC:
 			END(3);
 		case ANALYSIS_WRONG_FUNC_TYPE:
@@ -76,7 +79,8 @@ int main() {
 			break;
 	}
 
-	compileProgram(&program);
+	compileProgram(&program, &functionTable);
+	// TODO - destroy function table
 	astProgramDestroy(&program);
 	return 0;
 }

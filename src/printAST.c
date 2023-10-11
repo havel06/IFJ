@@ -132,36 +132,6 @@ void printExpression(const astExpression* expression, int indent) {
 	}
 }
 
-void printVariableDefinition(const astVariableDefinition* definition, int indent) {
-	printIndent(indent);
-	;
-	printf("VARIABLE DEF: ");
-	if (definition->immutable) {
-		puts("(immutable)");
-	} else {
-		puts("(mutable)");
-	}
-	printIndent(indent + 1);
-	printf("NAME: %s\n", definition->variableName.name);
-
-	printIndent(indent + 1);
-	printf("TYPE: ");
-
-	if (definition->hasExplicitType) {
-		printDataType(&definition->variableType);
-		puts("");
-	} else {
-		puts("unspecified");
-	}
-
-	if (definition->hasInitValue) {
-		printIndent(indent + 1);
-		puts("VALUE:");
-		// TODO - function initialiser
-		printExpression(&definition->value.expr, indent + 2);
-	}
-}
-
 void printAssignment(const astAssignment* assignment, int indent) {
 	printIndent(indent);
 	puts("ASSIGNMENT:");
@@ -260,6 +230,39 @@ void printReturn(const astReturnStatement* ret, int indent) {
 		printIndent(indent + 1);
 		puts("VALUE:");
 		printExpression(&ret->value, indent + 2);
+	}
+}
+
+void printVariableDefinition(const astVariableDefinition* definition, int indent) {
+	printIndent(indent);
+	;
+	printf("VARIABLE DEF: ");
+	if (definition->immutable) {
+		puts("(immutable)");
+	} else {
+		puts("(mutable)");
+	}
+	printIndent(indent + 1);
+	printf("NAME: %s\n", definition->variableName.name);
+
+	printIndent(indent + 1);
+	printf("TYPE: ");
+
+	if (definition->hasExplicitType) {
+		printDataType(&definition->variableType);
+		puts("");
+	} else {
+		puts("unspecified");
+	}
+
+	if (definition->hasInitValue) {
+		printIndent(indent + 1);
+		puts("VALUE:");
+		if (definition->value.type == AST_VAR_INIT_EXPR) {
+			printExpression(&definition->value.expr, indent + 2);
+		} else {
+			printFunctionCall(&definition->value.call, indent + 2);
+		}
 	}
 }
 

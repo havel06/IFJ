@@ -2,6 +2,7 @@
 #define ANALYSER_H
 
 #include "ast.h"
+#include "symtable.h"
 
 typedef enum {
 	ANALYSIS_OK,
@@ -14,6 +15,6 @@ typedef enum {
 	ANALYSIS_OTHER_ERROR
 } analysisResult;
 
-analysisResult analyseProgram(const astProgram*);
+analysisResult analyseProgram(const astProgram*, symbolTable* functionTable);
 
 #endif
