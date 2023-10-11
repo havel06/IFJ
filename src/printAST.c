@@ -157,7 +157,8 @@ void printVariableDefinition(const astVariableDefinition* definition, int indent
 	if (definition->hasInitValue) {
 		printIndent(indent + 1);
 		puts("VALUE:");
-		printExpression(&definition->value, indent + 2);
+		// TODO - function initialiser
+		printExpression(&definition->value.expr, indent + 2);
 	}
 }
 

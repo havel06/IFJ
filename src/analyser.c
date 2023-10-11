@@ -244,7 +244,8 @@ static analysisResult analyseVariableDef(const astVariableDefinition* definition
 
 	if (definition->hasInitValue) {
 		astDataType initValueType;
-		ANALYSE(analyseExpression(&definition->value, &initValueType), {});
+		// TODO - function initialisers
+		ANALYSE(analyseExpression(&definition->value.expr, &initValueType), {});
 
 		if (definition->hasExplicitType) {
 			if (initValueType.type == AST_TYPE_NIL) {

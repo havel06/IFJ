@@ -203,7 +203,8 @@ static void compileVariableDef(const astVariableDefinition* def) {
 
 	astDataType variableType = def->variableType;
 	if (def->hasInitValue) {
-		variableType = compileExpression(&def->value);
+		// TODO - function initialiser
+		variableType = compileExpression(&def->value.expr);
 		printf("POPS ");
 		emitNewVariableId(&def->variableName);
 		puts("");

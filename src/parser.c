@@ -369,13 +369,15 @@ static parseResult parseVarDef(astStatement* statement, bool immutable) {
 
 	// parse init value
 	statement->variableDef.hasInitValue = true;
+	statement->variableDef.value.type = AST_VAR_INIT_EXPR;
 	CONSUME_TOKEN_ASSUME_TYPE(TOKEN_ASSIGN, {});
 
 	token initExprFirstToken;
 	GET_TOKEN(initExprFirstToken, {});
 
-	TRY_PARSE(parseExpression(&(statement->variableDef.value), &initExprFirstToken),
+	TRY_PARSE(parseExpression(&(statement->variableDef.value.expr), &initExprFirstToken),
 			  { tokenDestroy(&initExprFirstToken); });
+
 	tokenDestroy(&initExprFirstToken);
 
 	return PARSE_OK;

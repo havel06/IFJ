@@ -98,12 +98,24 @@ typedef struct {
 	bool nullable;
 } astDataType;
 
+typedef enum {
+	AST_VAR_INIT_EXPR,
+	AST_VAR_INIT_FUNC
+} astVariableInitType;
+
+typedef struct {
+	astVariableInitType type;
+	union {
+		astExpression expr;
+	};
+} astVariableInitialiser;
+
 typedef struct {
 	astIdentifier variableName;
 	astDataType variableType;
-	astExpression value;
 	bool hasExplicitType;
 	bool hasInitValue;
+	astVariableInitialiser value;
 	bool immutable;
 } astVariableDefinition;
 
