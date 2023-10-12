@@ -338,7 +338,7 @@ static void compileProcedureCall(const astProcedureCall* call) {
 	if (strcmp(call->procName.name, "write") == 0) {
 		compileBuiltInWrite(call->params.count);
 	} else {
-		printf("CALL %s\n", call->procName.name);
+		printf("CALL l%s\n", call->procName.name);
 	}
 
 	puts("CLEARS");
@@ -367,7 +367,7 @@ static void compileFunctionCall(const astFunctionCall* call, bool newVariable) {
 	} else if (strcmp(call->funcName.name, "chr") == 0) {
 		compileBuiltInChr();
 	} else {
-		printf("CALL %s\n", call->funcName.name);
+		printf("CALL l%s\n", call->funcName.name);
 	}
 
 	printf("POPS ");
@@ -437,7 +437,7 @@ static void compileStatement(const astStatement* statement) {
 void compileFunctionDef(const astFunctionDefinition* def) {
 	int funcEndLabel = newLabelName();
 	printf("JUMP l%d\n", funcEndLabel);
-	printf("LABEL %s\n", def->name.name);
+	printf("LABEL l%s\n", def->name.name);
 	PUSH_FRAME();
 	// add params to symtable
 	for (int i = 0; i < def->params.count; i++) {
