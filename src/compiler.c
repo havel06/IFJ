@@ -401,6 +401,11 @@ static void compileVariableDef(const astVariableDefinition* def) {
 			variableType = funcSlot->function.returnType;
 			compileFunctionCall(&def->value.call, true);
 		}
+	} else if (def->variableType.nullable) {
+		// default nil init
+		printf("MOVE ");
+		emitNewVariableId(&def->variableName);
+		puts(" nil@nil");
 	}
 
 	// insert into symtable
@@ -466,8 +471,8 @@ void compileFunctionDef(const astFunctionDefinition* def) {
 void compileProgram(const astProgram* program, const symbolTable* functionTable) {
 	FUNC_SYM_TABLE = functionTable;
 	symStackCreate(&VAR_SYM_STACK);
-	symStackPush(&VAR_SYM_STACK);  // global scope
 	puts(".IFJcode23");
+	PUSH_FRAME();  // global scope + frame for local variables that are not in functions
 	for (int i = 0; i < program->count; i++) {
 		const astTopLevelStatement* topStatement = &program->statements[i];
 		if (topStatement->type == AST_TOP_STATEMENT) {
@@ -476,4 +481,5 @@ void compileProgram(const astProgram* program, const symbolTable* functionTable)
 			compileFunctionDef(&topStatement->functionDef);
 		}
 	}
+	POP_FRAME();
 }

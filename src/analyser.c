@@ -156,6 +156,11 @@ static analysisResult analyseVariableId(const astIdentifier* id, astDataType* ou
 }
 
 static analysisResult analyseTerm(const astTerm* term, astDataType* outType) {
+	astDataType dummyDataType;	// used when function is called without an outType
+	if (!outType) {
+		outType = &dummyDataType;
+	}
+
 	switch (term->type) {
 		case AST_TERM_ID:
 			ANALYSE(analyseVariableId(&term->identifier, outType), {});
@@ -396,6 +401,11 @@ static analysisResult analyseProcedureCall(const astProcedureCall* call) {
 		}
 
 		ANALYSE(analyseInputParameterList(slot->function.params, &call->params), {});
+	} else {
+		// procedure write - just analyse the terms used as parameters
+		for (int i = 0; i < call->params.count; i++) {
+			ANALYSE(analyseTerm(&(call->params.data[i].value), NULL), {});
+		}
 	}
 
 	return ANALYSIS_OK;
@@ -426,8 +436,10 @@ static analysisResult analyseVariableDef(const astVariableDefinition* definition
 	}
 
 	astDataType variableType = definition->variableType;
+	bool initialised = false;
 
 	if (definition->hasInitValue) {
+		initialised = true;
 		astDataType initValueType;
 
 		if (definition->value.type == AST_VAR_INIT_EXPR) {
@@ -454,11 +466,13 @@ static analysisResult analyseVariableDef(const astVariableDefinition* definition
 
 			variableType = initValueType;
 		}
+	} else if (variableType.nullable) {
+		initialised = true;	 // nullable variables without init value are initialised to nil
 	}
 
 	// insert into symtable
 	symbolVariable newVar = {variableType, definition->immutable,
-							 definition->hasInitValue ? symStackCurrentScope(&VAR_SYM_STACK) : NULL};
+							 initialised ? symStackCurrentScope(&VAR_SYM_STACK) : NULL};
 	symTableInsertVar(symStackCurrentScope(&VAR_SYM_STACK), newVar, definition->variableName.name);
 
 	return ANALYSIS_OK;

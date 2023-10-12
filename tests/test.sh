@@ -39,3 +39,11 @@ execTest "Illegal nil initialization" "input/nil_init_illegal.swift" "output/emp
 execTest "Type deduction" "input/type_deduction.swift" "output/empty.txt" 0
 execTest "Nil type deduction" "input/nil_type_deduction.swift" "output/empty.txt" 7
 execTest "Comments" "input/comments.swift" "output/empty.txt" 0
+execTest "Variable redefinition" "input/variable_redefinition.swift" "output/empty.txt" 3
+execTest "Variable shadowing" "input/variable_shadowing.swift" "output/variable_shadowing.txt" 0
+execTest "Variable out of scope" "input/variable_out_of_scope.swift" "output/empty.txt" 5
+execTest "Undefined variable" "input/undefined_variable.swift" "output/empty.txt" 5
+execTest "Default nil initialisation" "input/default_nil_init.swift" "output/default_nil_init.txt" 0
+execTest "Uninitialised variable" "input/uninitialised_variable.swift" "output/empty.txt" 5
+execTest "Uninitialised variable (initialised in deeper scope)" "input/uninitialised_variable_in_scope.swift" "output/empty.txt" 5
+execTest "Variable initialised in scope" "input/initialised_variable_in_scope.swift" "output/empty.txt" 0
