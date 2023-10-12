@@ -33,3 +33,6 @@ execTest "Empty program" "input/empty.swift" "output/empty.txt" 0
 execTest "Legal variable names" "input/variable_name.swift" "output/empty.txt" 0
 execTest "Variable names starting with numbers" "input/variable_name_number.swift" "output/empty.txt" 2
 execTest "Variable name as single underscore" "input/variable_name_underscore.swift" "output/empty.txt" 2
+execTest "Variable name as keyword" "input/variable_name_keyword.swift" "output/empty.txt" 2
+execTest "Legal nil initialization" "input/nil_init.swift" "output/empty.txt" 0
+execTest "Illegal nil initialization" "input/nil_init_illegal.swift" "output/empty.txt" 7

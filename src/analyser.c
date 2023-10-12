@@ -441,17 +441,17 @@ static analysisResult analyseVariableDef(const astVariableDefinition* definition
 		}
 
 		if (definition->hasExplicitType) {
+			if (!isTriviallyConvertible(definition->variableType, initValueType)) {
+				fprintf(stderr, "Wrong type in initialisation of variable %s\n", definition->variableName.name);
+				return ANALYSIS_WRONG_BINARY_TYPES;
+			}
+		} else {
 			if (initValueType.type == AST_TYPE_NIL) {
 				fprintf(stderr, "Cannot deduce nil type in initialisation of variable %s\n",
 						definition->variableName.name);
 				return ANALYSIS_WRONG_BINARY_TYPES;
 			}
 
-			if (!isTriviallyConvertible(definition->variableType, initValueType)) {
-				fprintf(stderr, "Wrong type in initialisation of variable %s\n", definition->variableName.name);
-				return ANALYSIS_WRONG_BINARY_TYPES;
-			}
-		} else {
 			variableType = initValueType;
 		}
 	}
