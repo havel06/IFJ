@@ -10,9 +10,12 @@ testNum=1
 execTest () {
 	echo -e "\e[33m--------------------------------\e[0m"
 	bash -c "../bin/compiler < $2 > tmp_output.txt 2>&1"
-	ic23int tmp_output.txt > tmp_output2.txt
-	printf "\n" >> tmp_output2.txt
 	returnCode=$?
+	touch tmp_output2.txt
+	if [ "$returnCode" = "0" ]; then
+		ic23int tmp_output.txt > tmp_output2.txt
+	fi
+	printf "\n" >> tmp_output2.txt
 	if [ $returnCode -ne $4 ]; then
 		printf "\e[1m\e[31mFailed\e[0m Test %02d: $1:\n" $testNum
 		printf "\tWrong return code, expected $4, got $returnCode"
@@ -26,4 +29,7 @@ execTest () {
 	rm -f tmp_output.txt tmp_output2.txt
 }
 
-execTest "Empty program" "input/00_empty.swift" output/00_empty.txt 0
+execTest "Empty program" "input/empty.swift" "output/empty.txt" 0
+execTest "Legal variable names" "input/variable_name.swift" "output/empty.txt" 0
+execTest "Variable names starting with numbers" "input/variable_name_number.swift" "output/empty.txt" 2
+execTest "Variable name as single underscore" "input/variable_name_underscore.swift" "output/empty.txt" 2
