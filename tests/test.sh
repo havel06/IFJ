@@ -36,3 +36,6 @@ execTest "Variable name as single underscore" "input/variable_name_underscore.sw
 execTest "Variable name as keyword" "input/variable_name_keyword.swift" "output/empty.txt" 2
 execTest "Legal nil initialization" "input/nil_init.swift" "output/empty.txt" 0
 execTest "Illegal nil initialization" "input/nil_init_illegal.swift" "output/empty.txt" 7
+execTest "Type deduction" "input/type_deduction.swift" "output/empty.txt" 0
+execTest "Nil type deduction" "input/nil_type_deduction.swift" "output/empty.txt" 7
+execTest "Comments" "input/comments.swift" "output/empty.txt" 0
