@@ -47,3 +47,7 @@ execTest "Default nil initialisation" "input/default_nil_init.swift" "output/def
 execTest "Uninitialised variable" "input/uninitialised_variable.swift" "output/empty.txt" 5
 execTest "Uninitialised variable (initialised in deeper scope)" "input/uninitialised_variable_in_scope.swift" "output/empty.txt" 5
 execTest "Variable initialised in scope" "input/initialised_variable_in_scope.swift" "output/empty.txt" 0
+execTest "Function call" "input/function_call.swift" "output/function_call.txt" 0
+execTest "Function call before definition" "input/function_call_before_def.swift" "output/function_call.txt" 0
+execTest "Undefined function" "input/undefined_function.swift" "output/empty.txt" 3
+execTest "Function redefinition" "input/function_redefinition.swift" "output/empty.txt" 3
