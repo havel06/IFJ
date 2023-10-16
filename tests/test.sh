@@ -58,3 +58,8 @@ execTest "Function call with omitted name" "input/func_param_omit_name.swift" "o
 execTest "Function call with illegaly omitted name" "input/func_param_omit_name_illegal.swift" "output/empty.txt" 4
 execTest "Function call with wrong parameter type" "input/func_call_wrong_type.swift" "output/empty.txt" 4
 execTest "Function call with wrong number of params" "input/func_call_wrong_param_count.swift" "output/empty.txt" 4
+execTest "Modify function parameter" "input/func_call_modify_param.swift" "output/empty.txt" 9
+execTest "Eearly return from procedure" "input/proc_return.swift" "output/empty.txt" 0
+execTest "Try to return value from procedure" "input/proc_return_with_type.swift" "output/empty.txt" 2
+execTest "Try to return without value from function" "input/func_return_without_value.swift" "output/empty.txt" 2
+execTest "Return wrong type from function" "input/func_wrong_return_type.swift" "output/empty.txt" 6
