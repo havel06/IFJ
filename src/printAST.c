@@ -59,40 +59,40 @@ void printTerm(const astTerm* term, int indent) {
 	}
 }
 
-void printBinaryOperator(astBinaryOperator op) {
+void printBinaryOperator(astBinaryOperator op, FILE* f) {
 	switch (op) {
 		case AST_BINARY_MUL:
-			printf("*");
+			fprintf(f, "*");
 			break;
 		case AST_BINARY_DIV:
-			printf("/");
+			fprintf(f, "/");
 			break;
 		case AST_BINARY_PLUS:
-			printf("+");
+			fprintf(f, "+");
 			break;
 		case AST_BINARY_MINUS:
-			printf("-");
+			fprintf(f, "-");
 			break;
 		case AST_BINARY_EQ:
-			printf("==");
+			fprintf(f, "==");
 			break;
 		case AST_BINARY_NEQ:
-			printf("!=");
+			fprintf(f, "!=");
 			break;
 		case AST_BINARY_LESS:
-			printf("<");
+			fprintf(f, "<");
 			break;
 		case AST_BINARY_GREATER:
-			printf(">");
+			fprintf(f, ">");
 			break;
 		case AST_BINARY_LESS_EQ:
-			printf("<=");
+			fprintf(f, "<=");
 			break;
 		case AST_BINARY_GREATER_EQ:
-			printf(">=");
+			fprintf(f, ">=");
 			break;
 		case AST_BINARY_NIL_COAL:
-			printf("??");
+			fprintf(f, "??");
 			break;
 	}
 }
@@ -102,7 +102,7 @@ void printExpression(const astExpression* expression, int indent);	// fwd
 void printBinaryExpression(const astBinaryExpression* expression, int indent) {
 	printIndent(indent);
 	printf("BINARY EXPRESSION (");
-	printBinaryOperator(expression->op);
+	printBinaryOperator(expression->op, stdout);
 	puts(")");
 	printIndent(indent + 1);
 	puts("LHS:");

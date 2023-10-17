@@ -5,6 +5,7 @@
 #include <string.h>
 
 #include "ast.h"
+#include "printAST.h"
 #include "symtable.h"
 
 #define ANALYSE(func, onError)            \
@@ -70,7 +71,8 @@ static analysisResult analyseBinaryExpression(const astBinaryExpression* express
 		case AST_BINARY_MUL:
 		case AST_BINARY_MINUS:
 			if (!isNoNullNumberType(lhsType) || !isNoNullNumberType(rhsType)) {
-				fputs("Incompatible types for binary operation.", stderr);
+				fputs("Incompatible types for binary operation. ", stderr);
+				printBinaryOperator(expression->op, stderr);
 				return ANALYSIS_WRONG_BINARY_TYPES;
 			}
 			if (lhsType.type == AST_TYPE_INT && rhsType.type == AST_TYPE_INT) {
@@ -82,7 +84,7 @@ static analysisResult analyseBinaryExpression(const astBinaryExpression* express
 			break;
 		case AST_BINARY_DIV:
 			if (!isNoNullNumberType(lhsType) || !isNoNullNumberType(rhsType)) {
-				fputs("Incompatible types for binary operation.", stderr);
+				fputs("Incompatible types for binary operation (/).", stderr);
 				return ANALYSIS_WRONG_BINARY_TYPES;
 			}
 			outType->type = AST_TYPE_DOUBLE;
@@ -93,11 +95,13 @@ static analysisResult analyseBinaryExpression(const astBinaryExpression* express
 		case AST_BINARY_LESS:
 		case AST_BINARY_GREATER:
 			if (!isNoNullNumberType(lhsType) || !isNoNullNumberType(rhsType)) {
-				fputs("Incompatible types for binary operation.", stderr);
+				fputs("Incompatible types for binary operation. ", stderr);
+				printBinaryOperator(expression->op, stderr);
 				return ANALYSIS_WRONG_BINARY_TYPES;
 			}
 			if (lhsType.type != rhsType.type) {
-				fputs("Incompatible types for binary operation.", stderr);
+				fputs("Incompatible types for binary operation. ", stderr);
+				printBinaryOperator(expression->op, stderr);
 				return ANALYSIS_WRONG_BINARY_TYPES;
 			}
 			outType->type = AST_TYPE_BOOL;
@@ -106,7 +110,8 @@ static analysisResult analyseBinaryExpression(const astBinaryExpression* express
 		case AST_BINARY_EQ:
 		case AST_BINARY_NEQ:
 			if ((lhsType.type != rhsType.type) && !(isNumberType(lhsType) && isNumberType(rhsType))) {
-				fputs("Incompatible types for binary operation.", stderr);
+				fputs("Incompatible types for binary operation. ", stderr);
+				printBinaryOperator(expression->op, stderr);
 				return ANALYSIS_WRONG_BINARY_TYPES;
 			}
 			outType->type = AST_TYPE_BOOL;
@@ -272,7 +277,6 @@ static analysisResult analyseOptionalBinding(const astOptionalBinding* binding) 
 		fputs("Variable used in optional binding must be nullable.\n", stderr);
 		return ANALYSIS_OTHER_ERROR;  // TODO - is this correct?
 	}
-	// TODO - add new variable to if statement block
 	return ANALYSIS_OK;
 }
 
@@ -296,7 +300,26 @@ static analysisResult analyseCondition(const astCondition* condition) {
 
 static analysisResult analyseConditional(const astConditional* conditional) {
 	ANALYSE(analyseCondition(&conditional->condition), {});
-	ANALYSE(analyseStatementBlock(&conditional->body), {});
+
+	if (conditional->condition.type == AST_CONDITION_OPT_BINDING) {
+		symStackPush(&VAR_SYM_STACK);
+		// add new variable to shadow the original one (for optional binding)
+		const char* varName = conditional->condition.optBinding.identifier.name;
+		symbolTableSlot* varSlot = symStackLookup(&VAR_SYM_STACK, varName, NULL);
+		assert(varSlot);
+		symbolVariable newVar;
+		newVar.immutable = true;
+		newVar.type = varSlot->variable.type;
+		newVar.type.nullable = false;
+		newVar.initialisedInScope = varSlot->variable.initialisedInScope;
+		symTableInsertVar(symStackCurrentScope(&VAR_SYM_STACK), newVar, varName);
+
+		ANALYSE(analyseStatementBlock(&conditional->body), {});
+		symStackPop(&VAR_SYM_STACK);
+	} else {
+		ANALYSE(analyseStatementBlock(&conditional->body), {});
+	}
+
 	if (conditional->hasElse) {
 		ANALYSE(analyseStatementBlock(&conditional->bodyElse), {});
 	}
