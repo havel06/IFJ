@@ -151,13 +151,6 @@ static void astAssignmentDestroy(astAssignment* assignment) {
 	astExpressionDestroy(&assignment->value);
 }
 
-static void astVariableDefinitionDestroy(astVariableDefinition* def) {
-	astIdentifierDestroy(&def->variableName);
-	if (def->hasInitValue) {
-		astExpressionDestroy(&def->value);
-	}
-}
-
 static void astConditionalDestroy(astConditional* conditional) {
 	if (conditional->condition.type == AST_CONDITION_EXPRESSION) {
 		astExpressionDestroy(&conditional->condition.expression);
@@ -194,6 +187,17 @@ static void astFunctionCallDestroy(astFunctionCall* call) {
 static void astProcedureCallDestroy(astProcedureCall* call) {
 	astIdentifierDestroy(&call->procName);
 	astInputParameterListDestroy(&call->params);
+}
+
+static void astVariableDefinitionDestroy(astVariableDefinition* def) {
+	astIdentifierDestroy(&def->variableName);
+	if (def->hasInitValue) {
+		if (def->value.type == AST_VAR_INIT_EXPR) {
+			astExpressionDestroy(&def->value.expr);
+		} else {
+			astFunctionCallDestroy(&def->value.call);
+		}
+	}
 }
 
 static void astStatementDestroy(astStatement* statement) {
