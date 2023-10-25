@@ -310,8 +310,33 @@ static void compileBuiltInLength() {
 }
 
 static void compileBuiltInSubstring() {
-	// TODO
-	assert(false);
+	puts("CREATEFRAME");
+	// parameters
+	puts("DEFVAR TF@str");
+	puts("POPS TF@str");
+	puts("DEFVAR TF@start");
+	puts("POPS TF@start");
+	puts("DEFVAR TF@end");
+	puts("POPS TF@end");
+	// TODO - parameter errors
+
+	// create string of final length
+	puts("DEFVAR TF@result");
+	puts("MOVE TF@result string@");
+	puts("DEFVAR TF@index");
+	puts("MOVE TF@index TF@start");
+	puts("DEFVAR TF@char");
+	// loop
+	int loop1 = newLabelName();
+	printf("LABEL l%d\n", loop1);
+	puts("GETCHAR TF@char TF@str TF@index");
+	puts("CONCAT TF@result TF@result TF@char");
+	puts("ADD TF@index TF@index int@1");
+	printf("JUMPIFNEQ l%d TF@index TF@end\n", loop1);
+
+	// TODO - copy characters one by one
+
+	puts("PUSHS TF@result");
 }
 
 static void compileBuiltInOrd() {

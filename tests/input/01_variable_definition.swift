@@ -9,11 +9,13 @@ var int : Int = 32
 //var baz : String = "Hello \n\t wor\ld"
 //var baz : String = "Hello \u00023 world"
 
-var baz : String = """
-    hello world
-"""
+//var baz : String = """
+//    hello world
+//"""
 
 //var bar : String? = baz
 //let boo : Int = nil
 
-write(baz)
+let a = "hello"
+let b = substring(of : a, startingAt : 1, endingBefore : 4)
+write(b)
