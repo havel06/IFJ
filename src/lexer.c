@@ -217,11 +217,56 @@ static lexerResult lexNumberToken(token* newToken) {
 
 bool isHexDigit(char c) { return isdigit(c) || ((c >= 'a') && (c <= 'f')) || ((c >= 'A') && (c <= 'F')); }
 
+static lexerResult lexMultiLineStringToken(token* newToken) {
+	int len = 0;
+	while (true) {
+		int c = getchar();
+		// check for file end
+		if (c == EOF) {
+			return LEXER_ERROR;
+		}
+
+		// check for string end
+		if (c == '\n') {
+			int c1 = getchar();
+			int c2 = getchar();
+			int c3 = getchar();
+			if (c1 == '\"' && c2 == '\"' && c3 == '\"') {
+				break;
+			} else {
+				ungetc(c3, stdin);
+				ungetc(c2, stdin);
+				ungetc(c1, stdin);
+			}
+		}
+
+		newToken->content[len++] = c;
+		if (len > 2047) {
+			// TODO - emit warning
+			return LEXER_INTERNAL_ERROR;
+		}
+	}
+
+	return LEXER_OK;
+}
+
 static lexerResult lexStringToken(token* newToken) {
 	newToken->type = TOKEN_STR_LITERAL;
 	newToken->content = calloc(2048, sizeof(char));
 	if (!newToken->content) {
 		return 1;
+	}
+
+	int cq1 = getchar();
+	int cq2 = getchar();
+	int cq3 = getchar();
+
+	if (cq1 == '\"' && cq2 == '\"' && cq3 == '\n') {
+		return lexMultiLineStringToken(newToken);
+	} else {
+		ungetc(cq3, stdin);
+		ungetc(cq2, stdin);
+		ungetc(cq1, stdin);
 	}
 
 	int len = 0;
