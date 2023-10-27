@@ -1,0 +1,23 @@
+<program> ::= (<statement> | <function_definition>)*
+<statement> ::= <variable_definition> | <assignment> | <conditional> | <iteration> | <function_call> | <procedure_call> | <return>
+
+<variable_definition> ::= ("let" | "var") <id> [":" <type>] "=" (<expression> | <call>)
+<letter> ::= /[a-z]/ | /[A-Z]/
+<digit> ::= /[0-9]/
+<alphanumeric> ::= <letter> | <digit>
+<id> ::= ("_" | <letter>) (<alphanumeric>)+
+<type> ::= ("Double" | "Int" | "String") ["?"]
+<call> ::= <id> "(" [ <call_parameter_list> ] ")"
+<call_parameter_list> ::= <call_parameter> ("," <call_parameter>)*
+<call_parameter> ::= [<id> ":"] <term>
+<term> ::= <id> | "nil" | <int_literal> | <double_literal> | <string_literal>
+<int_literal> ::= #TODO
+<double_literal> ::= #TODO
+<string_literal> ::= #TODO
+<expression> ::= #TODO
+<assignment> ::= <id> "=" <expression>
+<conditional> ::= "if" <expression> "{" <statement>* "}" "else" "{" <statement>* "}"
+<iteration> ::= "while" <expression> "{" <statement>* "}"
+<function_call> ::= #TODO
+<procedure_call> ::= #TODO
+<return> ::= "return" [<expression>]
