@@ -763,6 +763,10 @@ parseResult parseProgram(astProgram* program) {
 		} else if (nextToken.type == TOKEN_KEYWORD_FUNC) {
 			topStatement.type = AST_TOP_FUNCTION;
 			TRY_PARSE(parseFunctionDefinition(&topStatement.functionDef), { tokenDestroy(&nextToken); });
+		} else if (nextToken.type == TOKEN_KEYWORD_RETURN) {
+			// Return statements are forbidden in global scope
+			tokenDestroy(&nextToken);
+			return PARSE_ERROR;
 		} else {
 			topStatement.type = AST_TOP_STATEMENT;
 			TRY_PARSE(parseStatement(&topStatement.statement, &nextToken, false), { tokenDestroy(&nextToken); });
