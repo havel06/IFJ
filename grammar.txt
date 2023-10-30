@@ -1,6 +1,6 @@
 <program> ::= (<statement> | <function_definition>)*
 <statement> ::= <variable_definition> | <assignment> | <conditional> | <iteration> | <function_call> | <procedure_call> | <return>
-
+<statement_block> ::= "{" <statement>* "}"
 <variable_definition> ::= ("let" | "var") <id> [":" <type>] "=" (<expression> | <call>)
 <letter> ::= /[a-z]/ | /[A-Z]/
 <digit> ::= /[0-9]/
@@ -14,10 +14,18 @@
 <int_literal> ::= #TODO
 <double_literal> ::= #TODO
 <string_literal> ::= #TODO
-<expression> ::= #TODO
+<expression> ::= <term> | <binary_epxpression> | <unwrap_expression> | "(" <expression> ")"
+<binary_operator> ::= "*" | "/" | "+" | "-" | "==" | "!=" | "<" | ">" | "<=" | ">=" | "??"
+<binary_epxpression> ::= <expression> <binary_operator> <expression>
+<unwrap_expression> ::= <expression> "!"
 <assignment> ::= <id> "=" <expression>
 <conditional> ::= "if" <expression> "{" <statement>* "}" "else" "{" <statement>* "}"
 <iteration> ::= "while" <expression> "{" <statement>* "}"
-<function_call> ::= #TODO
-<procedure_call> ::= #TODO
+<function_call_parameter> ::= [<id> ":"] <term>
+<function_call_parameter_list> ::= <function_call_parameter> ("," <function_call_parameter>)*
+<function_call> ::= <id> "=" <procedure_call>
+<procedure_call> ::= <id> "(" <function_call_parameter_list> ")"
 <return> ::= "return" [<expression>]
+<function_parameter_definition> ::= " (<id> | "_") <id> ":" <type>;
+<function_parameter_list> ::= <function_parameter_definition> ("," <function_parameter_definition>)*
+<function_definition> ::= func <id> "(" <function_call_parameter_list> ")" <statement_block>
