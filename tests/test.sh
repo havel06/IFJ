@@ -37,7 +37,7 @@ execTest "Variable name as keyword" "input/variable_name_keyword.swift" "output/
 execTest "Legal nil initialization" "input/nil_init.swift" "output/empty.txt" 0
 execTest "Illegal nil initialization" "input/nil_init_illegal.swift" "output/empty.txt" 7
 execTest "Type deduction" "input/type_deduction.swift" "output/empty.txt" 0
-execTest "Nil type deduction" "input/nil_type_deduction.swift" "output/empty.txt" 7
+execTest "Nil type deduction" "input/nil_type_deduction.swift" "output/empty.txt" 8
 execTest "Comments" "input/comments.swift" "output/empty.txt" 0
 execTest "Variable redefinition" "input/variable_redefinition.swift" "output/empty.txt" 3
 execTest "Variable shadowing" "input/variable_shadowing.swift" "output/variable_shadowing.txt" 0
@@ -65,3 +65,9 @@ execTest "Try to return without value from function" "input/func_return_without_
 execTest "Return wrong type from function" "input/func_wrong_return_type.swift" "output/empty.txt" 6
 execTest "Return statement in global scope" "input/return_in_global_scope.swift" "output/empty.txt" 2
 execTest "Return statement in global scope" "input/return_in_global_scope_with_value.swift" "output/empty.txt" 2
+execTest "Modify constant" "input/modify_const_variable.swift" "output/empty.txt" 9
+execTest "Incomplete variable declaration" "input/incomplete_variabe_decl.swift" "output/empty.txt" 2
+execTest "Wrong variable init type" "input/wrong_init_type.swift" "output/empty.txt" 7
+execTest "Omit variable value in deifinition" "input/variable_omit_value.swift" "output/empty.txt" 0
+#TODO - tests for uninitialised variables
+#TODO - tests for variable assignment

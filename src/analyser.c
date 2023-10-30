@@ -484,7 +484,7 @@ static analysisResult analyseVariableDef(const astVariableDefinition* definition
 			if (initValueType.type == AST_TYPE_NIL) {
 				fprintf(stderr, "Cannot deduce nil type in initialisation of variable %s\n",
 						definition->variableName.name);
-				return ANALYSIS_WRONG_BINARY_TYPES;
+				return ANALYSIS_TYPE_DEDUCTION;
 			}
 
 			variableType = initValueType;
