@@ -71,3 +71,10 @@ execTest "Wrong variable init type" "input/wrong_init_type.swift" "output/empty.
 execTest "Omit variable value in deifinition" "input/variable_omit_value.swift" "output/empty.txt" 0
 execTest "Assignment with wrong type" "input/assignment_wrong_type.swift" "output/empty.txt" 7
 execTest "Assignment" "input/assignment.swift" "output/assignment.txt" 0
+execTest "Assign to const variable" "input/assign_const.swift" "output/empty.txt" 9
+execTest "If statement" "input/if_statement.swift" "output/if_statement.txt" 0
+execTest "If statement with wrong condition type" "input/if_statement_no_bool.swift" "output/empty.txt" 7
+execTest "If let statement" "input/if_let.swift" "output/if_let.txt" 0
+execTest "If let statement with non-null variable" "input/if_let_nonull.swift" "output/empty.txt" 9
+execTest "If let statement modify attempt" "input/if_let_modify.swift" "output/empty.txt" 9
+# TODO - while loops
