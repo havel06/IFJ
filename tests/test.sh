@@ -69,5 +69,5 @@ execTest "Modify constant" "input/modify_const_variable.swift" "output/empty.txt
 execTest "Incomplete variable declaration" "input/incomplete_variabe_decl.swift" "output/empty.txt" 2
 execTest "Wrong variable init type" "input/wrong_init_type.swift" "output/empty.txt" 7
 execTest "Omit variable value in deifinition" "input/variable_omit_value.swift" "output/empty.txt" 0
-#TODO - tests for uninitialised variables
-#TODO - tests for variable assignment
+execTest "Assignment with wrong type" "input/assignment_wrong_type.swift" "output/empty.txt" 7
+execTest "Assignment" "input/assignment.swift" "output/assignment.txt" 0
