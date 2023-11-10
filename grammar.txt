@@ -11,9 +11,9 @@
 <call_parameter_list> ::= <call_parameter> ("," <call_parameter>)*
 <call_parameter> ::= [<id> ":"] <term>
 <term> ::= <id> | "nil" | <int_literal> | <double_literal> | <string_literal>
-<int_literal> ::= #TODO
-<double_literal> ::= #TODO
-<string_literal> ::= #TODO
+<int_literal> ::= (<digit>)+
+<double_literal> ::= (<digit>)+ "." (<digit>)+ [ ("e" | "E") [ "+" | "-" ] (<digit>)+ ]
+<string_literal> ::= ('"' .* '"') | ('"""' .* '"""')
 <expression> ::= <term> | <binary_epxpression> | <unwrap_expression> | "(" <expression> ")"
 <binary_operator> ::= "*" | "/" | "+" | "-" | "==" | "!=" | "<" | ">" | "<=" | ">=" | "??"
 <binary_epxpression> ::= <expression> <binary_operator> <expression>
