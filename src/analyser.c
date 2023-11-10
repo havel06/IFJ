@@ -407,7 +407,7 @@ static analysisResult analyseFunctionCall(const astFunctionCall* call, bool igno
 
 		if (!isTriviallyConvertible(varSlot->variable.type, returnType)) {
 			fputs("Wrong return type.\n", stderr);
-			return ANALYSIS_WRONG_RETURN;
+			return ANALYSIS_WRONG_BINARY_TYPES;
 		}
 	}
 
@@ -472,6 +472,12 @@ static analysisResult analyseVariableDef(const astVariableDefinition* definition
 			// find function type in symtable
 			symbolTableSlot* funcSlot = symTableLookup(FUNC_SYM_TABLE, definition->value.call.funcName.name);
 			assert(funcSlot);
+
+			if (funcSlot->function.returnType.type == AST_TYPE_NIL) {
+				fprintf(stderr, "Cannot assign from procedure to variable %s\n", definition->variableName.name);
+				return ANALYSIS_WRONG_BINARY_TYPES;
+			}
+
 			initValueType = funcSlot->function.returnType;
 		}
 

@@ -77,4 +77,10 @@ execTest "If statement with wrong condition type" "input/if_statement_no_bool.sw
 execTest "If let statement" "input/if_let.swift" "output/if_let.txt" 0
 execTest "If let statement with non-null variable" "input/if_let_nonull.swift" "output/empty.txt" 9
 execTest "If let statement modify attempt" "input/if_let_modify.swift" "output/empty.txt" 9
-# TODO - while loops
+execTest "While loop" "input/while.swift" "output/while.txt" 0
+execTest "While loop with wrong condition type" "input/while_no_bool.swift" "output/empty.txt" 7
+execTest "Discard function return value" "input/func_call_discard_return.swift" "output/empty.txt" 0
+execTest "Call function, assign to wrong variable type" "input/func_call_wrong_assign.swift" "output/empty.txt" 7
+execTest "Call procedure, try to assign" "input/proc_call_assign.swift" "output/empty.txt" 7
+execTest "Call procedure, try to init" "input/proc_call_init.swift" "output/empty.txt" 7
+#TODO - expression tests
