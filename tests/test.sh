@@ -84,3 +84,5 @@ execTest "Call function, assign to wrong variable type" "input/func_call_wrong_a
 execTest "Call procedure, try to assign" "input/proc_call_assign.swift" "output/empty.txt" 7
 execTest "Call procedure, try to init" "input/proc_call_init.swift" "output/empty.txt" 7
 #TODO - expression tests
+#TODO - builtin functions
+execTest "Substring" "input/substring.swift" "output/substring.txt" 0

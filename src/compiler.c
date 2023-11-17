@@ -318,7 +318,24 @@ static void compileBuiltInSubstring() {
 	puts("POPS TF@start");
 	puts("DEFVAR TF@end");
 	puts("POPS TF@end");
-	// TODO - parameter errors
+
+	// parameter errors
+	int errorLabel = newLabelName();
+	puts("DEFVAR TF@error_temp");
+	puts("DEFVAR TF@len");
+	puts("STRLEN TF@len TF@str");
+	// start < 0
+	puts("LT TF@error_temp TF@start int@0");
+	printf("JUMPIFEQ l%d TF@error_temp bool@true\n", errorLabel);
+	// end < 0
+	puts("LT TF@error_temp TF@end int@0");
+	printf("JUMPIFEQ l%d TF@error_temp bool@true\n", errorLabel);
+	// start >= end
+	puts("LT TF@error_temp TF@start TF@end");  // !(start < end)
+	printf("JUMPIFEQ l%d TF@error_temp bool@false\n", errorLabel);
+	// start >= length
+	puts("LT TF@error_temp TF@start TF@len");  // !(start < length)
+	printf("JUMPIFEQ l%d TF@error_temp bool@false\n", errorLabel);
 
 	// create string of final length
 	puts("DEFVAR TF@result");
@@ -334,9 +351,16 @@ static void compileBuiltInSubstring() {
 	puts("ADD TF@index TF@index int@1");
 	printf("JUMPIFNEQ l%d TF@index TF@end\n", loop1);
 
-	// TODO - copy characters one by one
-
+	// return value
 	puts("PUSHS TF@result");
+	int noErrorLabel = newLabelName();
+	printf("JUMP l%d\n", noErrorLabel);
+
+	// return nil on error
+	printf("LABEL l%d\n", errorLabel);
+	puts("PUSHS nil@nil");
+
+	printf("LABEL l%d\n", noErrorLabel);
 }
 
 static void compileBuiltInOrd() {
