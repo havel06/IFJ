@@ -39,8 +39,8 @@ typedef struct {
 
 void symTableCreate(symbolTable*);
 // void symTableDestroy(symbolTable*);
-void symTableInsertVar(symbolTable*, symbolVariable, const char* name);
-void symTableInsertFunc(symbolTable*, symbolFunc, const char* name);
+bool symTableInsertVar(symbolTable*, symbolVariable, const char* name);
+bool symTableInsertFunc(symbolTable*, symbolFunc, const char* name);
 symbolTableSlot* symTableLookup(symbolTable*, const char* name);
 
 void symStackCreate(symbolTableStack*);

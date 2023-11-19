@@ -83,6 +83,12 @@ execTest "Discard function return value" "input/func_call_discard_return.swift" 
 execTest "Call function, assign to wrong variable type" "input/func_call_wrong_assign.swift" "output/empty.txt" 7
 execTest "Call procedure, try to assign" "input/proc_call_assign.swift" "output/empty.txt" 7
 execTest "Call procedure, try to init" "input/proc_call_init.swift" "output/empty.txt" 7
-#TODO - expression tests
+execTest "Arithmetic" "input/arithmetic.swift" "output/arithmetic.txt" 0
+execTest "Wrong binary types" "input/binary_wrong_types.swift" "output/empty.txt" 7
+execTest "Non null lhs in coalescence" "input/coal_lhs_non_null.swift" "output/empty.txt" 7
+execTest "Non-matching types in nil coalescence" "input/coal_wrong_types.swift" "output/empty.txt" 7
+execTest "Force unwrapping of non-nullable variable" "input/unwrap_non_nullable.swift" "output/empty.txt" 7
+#TODO - relational expressions
+#TODO - operator precedence
 #TODO - builtin functions
 execTest "Substring" "input/substring.swift" "output/substring.txt" 0

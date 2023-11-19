@@ -414,7 +414,9 @@ static parseResult parseFunctionCallParams(astInputParameterList* params) {
 		// parse next parameter
 		astInputParameter param;
 		TRY_PARSE(parseFunctionCallParameter(&param), {});
-		astInputParameterListAdd(params, param);
+		if (astInputParameterListAdd(params, param)) {
+			return PARSE_INTERNAL_ERROR;
+		}
 	}
 
 	return PARSE_OK;
@@ -692,7 +694,9 @@ static parseResult parseParameterList(astParameterList* list) {
 
 	astParameter firstParam;
 	TRY_PARSE(parseParameter(&firstParam), {});
-	astParameterListAdd(list, firstParam);
+	if (astParameterListAdd(list, firstParam)) {
+		return PARSE_INTERNAL_ERROR;
+	}
 
 	while (1) {
 		// check for comma
@@ -707,7 +711,9 @@ static parseResult parseParameterList(astParameterList* list) {
 		// parse next parameter
 		astParameter param;
 		TRY_PARSE(parseParameter(&param), {});
-		astParameterListAdd(list, param);
+		if (astParameterListAdd(list, param)) {
+			return PARSE_INTERNAL_ERROR;
+		}
 	}
 
 	return PARSE_OK;

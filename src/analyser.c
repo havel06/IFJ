@@ -120,10 +120,10 @@ static analysisResult analyseBinaryExpression(const astBinaryExpression* express
 		case AST_BINARY_NIL_COAL:
 			if (!lhsType.nullable) {
 				fputs("Left side of nil coalescing operator must be nullable.", stderr);
-				return ANALYSIS_OTHER_ERROR;  // TODO - is this correct?
+				return ANALYSIS_WRONG_BINARY_TYPES;
 			}
 			if (lhsType.type != rhsType.type) {
-				return ANALYSIS_WRONG_BINARY_TYPES;	 // TODO - is this correct?
+				return ANALYSIS_WRONG_BINARY_TYPES;
 			}
 			break;
 	}
@@ -136,7 +136,7 @@ static analysisResult analyseUnwrapExpression(const astUnwrapExpression* express
 
 	if (!outType->nullable) {
 		fputs("Cannot unwrap non-nullable value.", stderr);
-		return ANALYSIS_OTHER_ERROR;
+		return ANALYSIS_WRONG_BINARY_TYPES;
 	}
 
 	outType->nullable = false;
@@ -231,7 +231,9 @@ static analysisResult analyseFunctionDef(const astFunctionDefinition* def) {
 	for (int i = 0; i < def->params.count; i++) {
 		astParameter* param = &def->params.data[i];
 		symbolVariable symbol = {param->dataType, true, symStackCurrentScope(&VAR_SYM_STACK)};
-		symTableInsertVar(symStackCurrentScope(&VAR_SYM_STACK), symbol, param->insideName.name);
+		if (!symTableInsertVar(symStackCurrentScope(&VAR_SYM_STACK), symbol, param->insideName.name)) {
+			return ANALYSIS_INTERNAL_ERROR;
+		}
 	}
 	ANALYSE(analyseStatementBlock(&def->body), {});
 	if (def->hasReturnValue && !returnsInAllPaths(&def->body)) {
@@ -312,7 +314,9 @@ static analysisResult analyseConditional(const astConditional* conditional) {
 		newVar.type = varSlot->variable.type;
 		newVar.type.nullable = false;
 		newVar.initialisedInScope = varSlot->variable.initialisedInScope;
-		symTableInsertVar(symStackCurrentScope(&VAR_SYM_STACK), newVar, varName);
+		if (!symTableInsertVar(symStackCurrentScope(&VAR_SYM_STACK), newVar, varName)) {
+			return ANALYSIS_INTERNAL_ERROR;
+		}
 
 		ANALYSE(analyseStatementBlock(&conditional->body), {});
 		symStackPop(&VAR_SYM_STACK);
@@ -502,7 +506,9 @@ static analysisResult analyseVariableDef(const astVariableDefinition* definition
 	// insert into symtable
 	symbolVariable newVar = {variableType, definition->immutable,
 							 initialised ? symStackCurrentScope(&VAR_SYM_STACK) : NULL};
-	symTableInsertVar(symStackCurrentScope(&VAR_SYM_STACK), newVar, definition->variableName.name);
+	if (!symTableInsertVar(symStackCurrentScope(&VAR_SYM_STACK), newVar, definition->variableName.name)) {
+		return ANALYSIS_INTERNAL_ERROR;
+	}
 
 	return ANALYSIS_OK;
 }
@@ -567,29 +573,31 @@ static analysisResult registerFunction(const astFunctionDefinition* def) {
 	// add function to symbol table
 	astDataType nullType = {AST_TYPE_NIL, false};
 	symbolFunc newSymbol = {&def->params, def->hasReturnValue ? def->returnType : nullType};
-	symTableInsertFunc(FUNC_SYM_TABLE, newSymbol, def->name.name);
+	if (!symTableInsertFunc(FUNC_SYM_TABLE, newSymbol, def->name.name)) {
+		return ANALYSIS_INTERNAL_ERROR;
+	}
 	return ANALYSIS_OK;
 }
 
-static void registerReadString() {
+static bool registerReadString() {
 	astDataType returnType = {AST_TYPE_STRING, true};
 	symbolFunc symbol = {&EMPTY_PARAMS, returnType};
-	symTableInsertFunc(FUNC_SYM_TABLE, symbol, "readString");
+	return symTableInsertFunc(FUNC_SYM_TABLE, symbol, "readString");
 }
 
-static void registerReadInt() {
+static bool registerReadInt() {
 	astDataType returnType = {AST_TYPE_INT, true};
 	symbolFunc symbol = {&EMPTY_PARAMS, returnType};
-	symTableInsertFunc(FUNC_SYM_TABLE, symbol, "readInt");
+	return symTableInsertFunc(FUNC_SYM_TABLE, symbol, "readInt");
 }
 
-static void registerReadDouble() {
+static bool registerReadDouble() {
 	astDataType returnType = {AST_TYPE_DOUBLE, true};
 	symbolFunc symbol = {&EMPTY_PARAMS, returnType};
-	symTableInsertFunc(FUNC_SYM_TABLE, symbol, "readDouble");
+	return symTableInsertFunc(FUNC_SYM_TABLE, symbol, "readDouble");
 }
 
-static void registerInt2Double() {
+static bool registerInt2Double() {
 	astParameterListCreate(&INT2DOUBLE_PARAMS);
 	astParameter term;
 	term.dataType.type = AST_TYPE_INT;
@@ -597,14 +605,16 @@ static void registerInt2Double() {
 	term.requiresName = false;
 	term.outsideName.name = NULL;
 	term.insideName.name = NULL;
-	astParameterListAdd(&INT2DOUBLE_PARAMS, term);
+	if (astParameterListAdd(&INT2DOUBLE_PARAMS, term)) {
+		return false;
+	}
 
 	astDataType returnType = {AST_TYPE_DOUBLE, false};
 	symbolFunc symbol = {&INT2DOUBLE_PARAMS, returnType};
-	symTableInsertFunc(FUNC_SYM_TABLE, symbol, "Int2Double");
+	return symTableInsertFunc(FUNC_SYM_TABLE, symbol, "Int2Double");
 }
 
-static void registerDouble2Int() {
+static bool registerDouble2Int() {
 	astParameterListCreate(&DOUBLE2INT_PARAMS);
 	astParameter term;
 	term.dataType.type = AST_TYPE_DOUBLE;
@@ -612,14 +622,16 @@ static void registerDouble2Int() {
 	term.requiresName = false;
 	term.outsideName.name = NULL;
 	term.insideName.name = NULL;
-	astParameterListAdd(&DOUBLE2INT_PARAMS, term);
+	if (astParameterListAdd(&DOUBLE2INT_PARAMS, term)) {
+		return false;
+	}
 
 	astDataType returnType = {AST_TYPE_INT, false};
 	symbolFunc symbol = {&DOUBLE2INT_PARAMS, returnType};
-	symTableInsertFunc(FUNC_SYM_TABLE, symbol, "Double2Int");
+	return symTableInsertFunc(FUNC_SYM_TABLE, symbol, "Double2Int");
 }
 
-static void registerLength() {
+static bool registerLength() {
 	astParameterListCreate(&LENGTH_PARAMS);
 	astParameter s;
 	s.dataType.type = AST_TYPE_STRING;
@@ -627,14 +639,16 @@ static void registerLength() {
 	s.requiresName = false;
 	s.outsideName.name = NULL;
 	s.insideName.name = NULL;
-	astParameterListAdd(&LENGTH_PARAMS, s);
+	if (astParameterListAdd(&LENGTH_PARAMS, s)) {
+		return false;
+	}
 
 	astDataType returnType = {AST_TYPE_INT, false};
 	symbolFunc symbol = {&LENGTH_PARAMS, returnType};
-	symTableInsertFunc(FUNC_SYM_TABLE, symbol, "Double2Int");
+	return symTableInsertFunc(FUNC_SYM_TABLE, symbol, "Double2Int");
 }
 
-static void registerSubstring() {
+static bool registerSubstring() {
 	astParameterListCreate(&SUBSTRING_PARAMS);
 
 	astParameter of;
@@ -643,7 +657,9 @@ static void registerSubstring() {
 	of.requiresName = true;
 	of.outsideName.name = "of";
 	of.insideName.name = NULL;
-	astParameterListAdd(&SUBSTRING_PARAMS, of);
+	if (astParameterListAdd(&SUBSTRING_PARAMS, of)) {
+		return false;
+	}
 
 	astParameter startingAt;
 	startingAt.dataType.type = AST_TYPE_INT;
@@ -651,7 +667,9 @@ static void registerSubstring() {
 	startingAt.requiresName = true;
 	startingAt.outsideName.name = "startingAt";
 	startingAt.insideName.name = NULL;
-	astParameterListAdd(&SUBSTRING_PARAMS, startingAt);
+	if (astParameterListAdd(&SUBSTRING_PARAMS, startingAt)) {
+		return false;
+	}
 
 	astParameter endingBefore;
 	endingBefore.dataType.type = AST_TYPE_INT;
@@ -659,14 +677,16 @@ static void registerSubstring() {
 	endingBefore.requiresName = true;
 	endingBefore.outsideName.name = "endingBefore";
 	endingBefore.insideName.name = NULL;
-	astParameterListAdd(&SUBSTRING_PARAMS, endingBefore);
+	if (astParameterListAdd(&SUBSTRING_PARAMS, endingBefore)) {
+		return false;
+	}
 
 	astDataType returnType = {AST_TYPE_STRING, true};
 	symbolFunc symbol = {&SUBSTRING_PARAMS, returnType};
-	symTableInsertFunc(FUNC_SYM_TABLE, symbol, "substring");
+	return symTableInsertFunc(FUNC_SYM_TABLE, symbol, "substring");
 }
 
-static void registerOrd() {
+static bool registerOrd() {
 	astParameterListCreate(&ORD_PARAMS);
 	astParameter c;
 	c.dataType.type = AST_TYPE_STRING;
@@ -674,14 +694,16 @@ static void registerOrd() {
 	c.requiresName = false;
 	c.outsideName.name = NULL;
 	c.insideName.name = NULL;
-	astParameterListAdd(&ORD_PARAMS, c);
+	if (astParameterListAdd(&ORD_PARAMS, c)) {
+		return false;
+	}
 
 	astDataType returnType = {AST_TYPE_INT, false};
 	symbolFunc symbol = {&ORD_PARAMS, returnType};
-	symTableInsertFunc(FUNC_SYM_TABLE, symbol, "ord");
+	return symTableInsertFunc(FUNC_SYM_TABLE, symbol, "ord");
 }
 
-static void registerChr() {
+static analysisResult registerChr() {
 	astParameterListCreate(&CHR_PARAMS);
 	astParameter i;
 	i.dataType.type = AST_TYPE_INT;
@@ -689,25 +711,20 @@ static void registerChr() {
 	i.requiresName = false;
 	i.outsideName.name = NULL;
 	i.insideName.name = NULL;
-	astParameterListAdd(&CHR_PARAMS, i);
+	if (astParameterListAdd(&CHR_PARAMS, i)) {
+		return false;
+	}
 
 	astDataType returnType = {AST_TYPE_STRING, false};
 	symbolFunc symbol = {&CHR_PARAMS, returnType};
-	symTableInsertFunc(FUNC_SYM_TABLE, symbol, "chr");
+	return symTableInsertFunc(FUNC_SYM_TABLE, symbol, "chr");
 }
 
-static void registerBuiltinFunctions() {
+static bool registerBuiltinFunctions() {
 	astParameterListCreate(&EMPTY_PARAMS);
 
-	registerReadString();
-	registerReadDouble();
-	registerReadInt();
-	registerInt2Double();
-	registerDouble2Int();
-	registerLength();
-	registerSubstring();
-	registerOrd();
-	registerChr();
+	return (registerReadString() && registerReadDouble() && registerReadInt() && registerInt2Double() &&
+			registerDouble2Int() && registerLength() && registerSubstring() && registerOrd() && registerChr());
 }
 
 static void cleanUpBuiltinFunctions() {
@@ -722,11 +739,11 @@ static void cleanUpBuiltinFunctions() {
 
 analysisResult analyseProgram(const astProgram* program, symbolTable* functionTable) {
 	FUNC_SYM_TABLE = functionTable;
-	registerBuiltinFunctions();
+	if (!registerBuiltinFunctions()) {
+		return ANALYSIS_INTERNAL_ERROR;
+	}
 	symStackCreate(&VAR_SYM_STACK);
 	symStackPush(&VAR_SYM_STACK);  // global scope
-	// TODO - pop global scope and destroy symbol stack after usage
-
 	// first pass - register all functions
 	for (int i = 0; i < program->count; i++) {
 		const astTopLevelStatement* topStatement = &program->statements[i];

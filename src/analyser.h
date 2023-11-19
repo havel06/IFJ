@@ -12,7 +12,8 @@ typedef enum {
 	ANALYSIS_WRONG_RETURN,
 	ANALYSIS_WRONG_BINARY_TYPES,
 	ANALYSIS_TYPE_DEDUCTION,
-	ANALYSIS_OTHER_ERROR
+	ANALYSIS_OTHER_ERROR,
+	ANALYSIS_INTERNAL_ERROR
 } analysisResult;
 
 analysisResult analyseProgram(const astProgram*, symbolTable* functionTable);

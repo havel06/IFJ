@@ -25,37 +25,44 @@ void symTableCreate(symbolTable* table) {
 	table->id = LAST_TABLE_ID++;
 }
 
-static void symTableInsertSlot(symbolTable* table, symbolTableSlot slot) {
+static bool symTableInsertSlot(symbolTable* table, symbolTableSlot slot) {
 	int pos = hashFunc(slot.name);
+	const int startingPos = pos;
 
 	while (table->data[pos].taken) {
 		pos++;
-		assert(pos <= SYM_TABLE_CAPACITY);	// TODO - propagate error
+		pos %= SYM_TABLE_CAPACITY;
+		if (pos == startingPos) {
+			// already searched the full table
+			return false;
+		}
 	}
 
 	table->data[pos] = slot;
+	return true;
 }
 
-void symTableInsertVar(symbolTable* table, symbolVariable var, const char* name) {
+bool symTableInsertVar(symbolTable* table, symbolVariable var, const char* name) {
 	symbolTableSlot slot;
 	slot.variable = var;
 	slot.name = name;
 	slot.taken = true;
-	symTableInsertSlot(table, slot);
+	return symTableInsertSlot(table, slot);
 }
 
-void symTableInsertFunc(symbolTable* table, symbolFunc func, const char* name) {
+bool symTableInsertFunc(symbolTable* table, symbolFunc func, const char* name) {
 	symbolTableSlot slot;
 	slot.function = func;
 	slot.name = name;
 	slot.taken = true;
-	symTableInsertSlot(table, slot);
+	return symTableInsertSlot(table, slot);
 }
 
 symbolTableSlot* symTableLookup(symbolTable* table, const char* name) {
 	int pos = hashFunc(name);
+	const int startingPos = pos;
 
-	while (pos <= 1023) {
+	while (true) {
 		if (table->data[pos].taken == false) {
 			return NULL;
 		}
@@ -63,7 +70,13 @@ symbolTableSlot* symTableLookup(symbolTable* table, const char* name) {
 		if (strcmp(table->data[pos].name, name) == 0) {
 			return &table->data[pos];
 		}
+
 		pos++;
+		pos %= SYM_TABLE_CAPACITY;
+		if (pos == startingPos) {
+			// already searched the whole table
+			return NULL;
+		}
 	}
 
 	return NULL;

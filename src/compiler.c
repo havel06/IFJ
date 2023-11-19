@@ -105,13 +105,25 @@ static astDataType compileBinaryExpression(const astBinaryExpression* expr) {
 	astDataType resultType;
 	resultType.nullable = false;
 
-	// perform conversion
-	if (lhsType.type == rhsType.type) {
-		// do nothing
-	} else if (lhsType.type == AST_TYPE_INT) {
-		puts("INT2FLOAT TF@lhs TF@lhs");
-	} else if (rhsType.type == AST_TYPE_INT) {
-		puts("INT2FLOAT TF@rhs TF@rhs");
+	if (expr->op != AST_BINARY_NIL_COAL) {
+		// perform conversion
+		if (lhsType.type == rhsType.type) {
+			// do nothing
+		} else if (lhsType.type == AST_TYPE_INT) {
+			puts("INT2FLOAT TF@lhs TF@lhs");
+		} else if (rhsType.type == AST_TYPE_INT) {
+			puts("INT2FLOAT TF@rhs TF@rhs");
+		}
+	}
+
+	// division - implicit conversion of both to double
+	if (expr->op == AST_BINARY_DIV) {
+		if (lhsType.type == AST_TYPE_INT) {
+			puts("INT2FLOAT TF@lhs TF@lhs");
+		}
+		if (rhsType.type == AST_TYPE_INT) {
+			puts("INT2FLOAT TF@rhs TF@rhs");
+		}
 	}
 
 	switch (expr->op) {

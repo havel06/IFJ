@@ -75,6 +75,8 @@ int main() {
 			END(8);
 		case ANALYSIS_OTHER_ERROR:
 			END(9);
+		case ANALYSIS_INTERNAL_ERROR:
+			END(99);
 		case ANALYSIS_OK:
 			break;
 	}
