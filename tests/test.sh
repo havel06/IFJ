@@ -88,7 +88,10 @@ execTest "Wrong binary types" "input/binary_wrong_types.swift" "output/empty.txt
 execTest "Non null lhs in coalescence" "input/coal_lhs_non_null.swift" "output/empty.txt" 7
 execTest "Non-matching types in nil coalescence" "input/coal_wrong_types.swift" "output/empty.txt" 7
 execTest "Force unwrapping of non-nullable variable" "input/unwrap_non_nullable.swift" "output/empty.txt" 7
-#TODO - relational expressions
+execTest "Comparison of different types" "input/rel_wrong_type.swift" "output/empty.txt" 7
+execTest "Comparison of non-nil and nil types" "input/rel_wrong_type_nil.swift" "output/empty.txt" 7
+execTest "Comparison of strings" "input/rel_string.swift" "output/rel_string.txt" 0
+execTest "Relational operators" "input/rel.swift" "output/rel.txt" 0
 #TODO - operator precedence
 #TODO - builtin functions
 execTest "Substring" "input/substring.swift" "output/substring.txt" 0

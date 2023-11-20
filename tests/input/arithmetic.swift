@@ -11,9 +11,8 @@ let cf = 20.1 - 1.1
 write(af, "\n", bf, "\n", cf, "\n")
 
 let da = 25.0 / 5.0
-let db = 25 / 5
 
-write(da, "\n", db, "\n")
+write(da, "\n")
 
 // automatic conversion
 let ac = 1 + 2.0
