@@ -1,6 +1,7 @@
 #!/bin/bash
 
 testNum=1
+compilerPath="../bin/compiler"
 
 # arguments:
 # 1. name of test
@@ -9,7 +10,7 @@ testNum=1
 # 4. expected return code
 execTest () {
 	echo -e "\e[33m--------------------------------\e[0m"
-	bash -c "../bin/compiler < $2 > tmp_output.txt 2>&1"
+	bash -c "$compilerPath < $2 > tmp_output.txt 2>&1"
 	returnCode=$?
 	touch tmp_output2.txt
 	if [ "$returnCode" = "0" ]; then
