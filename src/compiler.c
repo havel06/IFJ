@@ -313,7 +313,7 @@ static void compileBuiltInWrite(int parameterCount) {
 
 static void compileBuiltInInt2Double() { puts("INT2FLOATS"); }
 
-static void compileBuiltInDouble2Int() { puts("DOUBLE2FLOATS"); }
+static void compileBuiltInDouble2Int() { puts("FLOAT2INTS"); }
 
 static void compileBuiltInLength() {
 	puts("CREATEFRAME");
@@ -382,7 +382,7 @@ static void compileBuiltInOrd() {
 	puts("DEFVAR TF@res");
 	puts("DEFVAR TF@str");
 	puts("POPS TF@str");
-	puts("STR2INT TF@res TF@str 0");
+	puts("STRI2INT TF@res TF@str INT@0");
 	puts("PUSHS TF@res");
 }
 

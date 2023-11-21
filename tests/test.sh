@@ -93,5 +93,11 @@ execTest "Comparison of non-nil and nil types" "input/rel_wrong_type_nil.swift" 
 execTest "Comparison of strings" "input/rel_string.swift" "output/rel_string.txt" 0
 execTest "Relational operators" "input/rel.swift" "output/rel.txt" 0
 execTest "Operator precedence" "input/precedence.swift" "output/precedence.txt" 0
-#TODO - builtin functions
+execTest "Builtin conversion functions" "input/builtin_convert.swift" "output/builtin_convert.txt" 0
+execTest "Int2Double with wrong type" "input/int2double_wrong.swift" "output/empty.txt" 4
+execTest "Double2Int with wrong type" "input/double2int_wrong.swift" "output/empty.txt" 4
+execTest "Builtin Length function" "input/builtin_length.swift" "output/builtin_length.txt" 0
+execTest "Builtin Length function with wrong type" "input/builtin_length_wrong.swift" "output/empty.txt" 4
 execTest "Substring" "input/substring.swift" "output/substring.txt" 0
+execTest "Builtin ord function" "input/builtin_ord.swift" "output/builtin_ord.txt" 0
+execTest "Builtin chr function" "input/builtin_chr.swift" "output/builtin_chr.txt" 0

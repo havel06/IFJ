@@ -649,7 +649,7 @@ static bool registerLength() {
 
 	astDataType returnType = {AST_TYPE_INT, false};
 	symbolFunc symbol = {&LENGTH_PARAMS, returnType};
-	return symTableInsertFunc(FUNC_SYM_TABLE, symbol, "Double2Int");
+	return symTableInsertFunc(FUNC_SYM_TABLE, symbol, "length");
 }
 
 static bool registerSubstring() {
