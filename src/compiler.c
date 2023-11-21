@@ -172,6 +172,7 @@ static astDataType compileBinaryExpression(const astBinaryExpression* expr) {
 		case AST_BINARY_GREATER_EQ:
 			puts("LT TF@res TF@lhs TF@rhs");
 			puts("NOT TF@res TF@res");
+			resultType.type = AST_TYPE_BOOL;
 			break;
 		case AST_BINARY_NIL_COAL: {
 			int coalLabel = newLabelName();
@@ -179,6 +180,7 @@ static astDataType compileBinaryExpression(const astBinaryExpression* expr) {
 			printf("JUMPIFNEQ l%d TF@res nil@nil\n", coalLabel);
 			puts("MOVE TF@res TF@rhs");
 			printf("LABEL l%d\n", coalLabel);
+			resultType.type = rhsType.type;
 			break;
 		}
 	}

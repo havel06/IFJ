@@ -278,16 +278,15 @@ static parseResult parseExpression(astExpression* expression, const token* exprF
 		tokenDestroy(&subExprFirstToken);
 	}
 
-	// TODO - operator associativity?
 	while (operatorCount > 0) {
 		// apply operator precedence
 		int maxPrecedence = 0;
 		int maxPrecedenceIndex = 0;
 		// scan operators for highest precedence
 		for (int i = 0; i < operatorCount; i++) {
-			int precednece = operatorPrecedence(operators[i]);
-			if (precednece > maxPrecedence) {
-				maxPrecedence = precednece;
+			int precedence = operatorPrecedence(operators[i]);
+			if (precedence > maxPrecedence) {
+				maxPrecedence = precedence;
 				maxPrecedenceIndex = i;
 			}
 		}
@@ -301,7 +300,7 @@ static parseResult parseExpression(astExpression* expression, const token* exprF
 			subExpressions[i] = subExpressions[i + 1];
 		}
 		// rotate the rest of the operators to the left to remove used operator
-		for (int i = maxPrecedenceIndex + 1; i < operatorCount - 1; i++) {
+		for (int i = maxPrecedenceIndex; i < operatorCount - 1; i++) {
 			operators[i] = operators[i + 1];
 		}
 

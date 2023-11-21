@@ -92,6 +92,6 @@ execTest "Comparison of different types" "input/rel_wrong_type.swift" "output/em
 execTest "Comparison of non-nil and nil types" "input/rel_wrong_type_nil.swift" "output/empty.txt" 7
 execTest "Comparison of strings" "input/rel_string.swift" "output/rel_string.txt" 0
 execTest "Relational operators" "input/rel.swift" "output/rel.txt" 0
-#TODO - operator precedence
+execTest "Operator precedence" "input/precedence.swift" "output/precedence.txt" 0
 #TODO - builtin functions
 execTest "Substring" "input/substring.swift" "output/substring.txt" 0

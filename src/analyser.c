@@ -127,6 +127,8 @@ static analysisResult analyseBinaryExpression(const astBinaryExpression* express
 			if (lhsType.type != rhsType.type) {
 				return ANALYSIS_WRONG_BINARY_TYPES;
 			}
+			outType->type = rhsType.type;
+			outType->nullable = rhsType.nullable;
 			break;
 	}
 
