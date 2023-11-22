@@ -67,6 +67,7 @@ execTest "Return wrong type from function" "input/func_wrong_return_type.swift" 
 execTest "Return statement in global scope" "input/return_in_global_scope.swift" "output/empty.txt" 2
 execTest "Return statement in global scope" "input/return_in_global_scope_with_value.swift" "output/empty.txt" 2
 execTest "Modify constant" "input/modify_const_variable.swift" "output/empty.txt" 9
+execTest "Set constant after definition" "input/immutable_deferred_init.swift" "output/immutable_deferred_init.txt" 0
 execTest "Incomplete variable declaration" "input/incomplete_variabe_decl.swift" "output/empty.txt" 2
 execTest "Wrong variable init type" "input/wrong_init_type.swift" "output/empty.txt" 7
 execTest "Omit variable value in deifinition" "input/variable_omit_value.swift" "output/empty.txt" 0

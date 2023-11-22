@@ -257,7 +257,7 @@ static analysisResult analyseAssignment(const astAssignment* assignment) {
 		return ANALYSIS_UNDEFINED_VAR;
 	}
 	// check if variable is mutable
-	if (slot->variable.immutable) {
+	if (slot->variable.immutable && slot->variable.initialisedInScope) {
 		fprintf(stderr, "Modification of immutable variable %s\n", assignment->variableName.name);
 		return ANALYSIS_OTHER_ERROR;  // TODO - is this correct?
 	}
