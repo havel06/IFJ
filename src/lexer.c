@@ -286,6 +286,8 @@ static lexerResult lexStringToken(token* newToken) {
 			int c2 = getchar();
 			if (c2 == '\\') {
 				newToken->content[len++] = '\\';
+			} else if (c2 == '"') {
+				newToken->content[len++] = '\"';
 			} else if (c2 == 'n') {
 				newToken->content[len++] = '\n';
 			} else if (c2 == 'r') {
