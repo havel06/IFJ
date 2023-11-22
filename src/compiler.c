@@ -1,3 +1,13 @@
+/*
+ * Implementace překladače imperativního jazyka IFJ23
+ *
+ * Michal Havlíček (xhavli65)
+ * Adam Krška (xkrska08)
+ * Tomáš Sitarčík (xsitar06)
+ * Jan Šemora (xsemor01)
+ *
+ */
+
 #include "compiler.h"
 
 #include <assert.h>
