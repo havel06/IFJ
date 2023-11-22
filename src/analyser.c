@@ -60,6 +60,8 @@ static analysisResult analyseBinaryExpression(const astBinaryExpression* express
 	astDataType rhsType;
 	ANALYSE(analyseExpression(expression->lhs, &lhsType), {});
 	ANALYSE(analyseExpression(expression->rhs, &rhsType), {});
+	bool lhsIsLiteral = expression->lhs->type == AST_EXPR_TERM && expression->lhs->term.type != AST_TERM_ID;
+	bool rhsIsLiteral = expression->rhs->type == AST_EXPR_TERM && expression->rhs->term.type != AST_TERM_ID;
 
 	switch (expression->op) {
 		case AST_BINARY_PLUS:
@@ -75,9 +77,15 @@ static analysisResult analyseBinaryExpression(const astBinaryExpression* express
 				printBinaryOperator(expression->op, stderr);
 				return ANALYSIS_WRONG_BINARY_TYPES;
 			}
-			if (lhsType.type == AST_TYPE_INT && rhsType.type == AST_TYPE_INT) {
-				outType->type = AST_TYPE_INT;
+			if (lhsType.type == rhsType.type) {
+				// ok
+				outType->type = lhsType.type;
 			} else {
+				if ((lhsType.type == AST_TYPE_DOUBLE && !rhsIsLiteral) ||
+					(rhsType.type == AST_TYPE_DOUBLE && !lhsIsLiteral)) {
+					fputs("Illegal implicit conversion.", stderr);
+					return ANALYSIS_WRONG_BINARY_TYPES;
+				}
 				outType->type = AST_TYPE_DOUBLE;
 			}
 			outType->nullable = false;
@@ -111,7 +119,10 @@ static analysisResult analyseBinaryExpression(const astBinaryExpression* express
 			break;
 		case AST_BINARY_EQ:
 		case AST_BINARY_NEQ:
-			if ((lhsType.type != rhsType.type) && !(isNumberType(lhsType) && isNumberType(rhsType))) {
+			if (lhsType.type == rhsType.type) {
+				// OK
+			} else if ((lhsType.type == AST_TYPE_DOUBLE && !rhsIsLiteral) ||
+					   (rhsType.type == AST_TYPE_DOUBLE && !lhsIsLiteral)) {
 				fputs("Incompatible types for binary operation. ", stderr);
 				printBinaryOperator(expression->op, stderr);
 				return ANALYSIS_WRONG_BINARY_TYPES;

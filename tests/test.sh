@@ -86,6 +86,7 @@ execTest "Call function, assign to wrong variable type" "input/func_call_wrong_a
 execTest "Call procedure, try to assign" "input/proc_call_assign.swift" "output/empty.txt" 7
 execTest "Call procedure, try to init" "input/proc_call_init.swift" "output/empty.txt" 7
 execTest "Arithmetic" "input/arithmetic.swift" "output/arithmetic.txt" 0
+execTest "Implicit conversion of non-literal" "input/implicit_convert_non_literal.swift" "output/empty.txt" 7
 execTest "Wrong binary types" "input/binary_wrong_types.swift" "output/empty.txt" 7
 execTest "Non null lhs in coalescence" "input/coal_lhs_non_null.swift" "output/empty.txt" 7
 execTest "Non-matching types in nil coalescence" "input/coal_wrong_types.swift" "output/empty.txt" 7
@@ -94,6 +95,7 @@ execTest "Comparison of different types" "input/rel_wrong_type.swift" "output/em
 execTest "Comparison of non-nil and nil types" "input/rel_wrong_type_nil.swift" "output/empty.txt" 7
 execTest "Comparison of strings" "input/rel_string.swift" "output/rel_string.txt" 0
 execTest "Relational operators" "input/rel.swift" "output/rel.txt" 0
+execTest "Relational operator with illegal implicit conversion" "input/rel_wrong_convert.swift" "output/empty.txt" 7
 execTest "Operator precedence" "input/precedence.swift" "output/precedence.txt" 0
 execTest "Builtin conversion functions" "input/builtin_convert.swift" "output/builtin_convert.txt" 0
 execTest "Int2Double with wrong type" "input/int2double_wrong.swift" "output/empty.txt" 4
