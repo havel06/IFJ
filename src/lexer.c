@@ -282,7 +282,6 @@ static lexerResult lexStringToken(token* newToken) {
 		} else if (c == '"') {
 			break;
 		} else if (c == '\\') {
-			// TODO - numbered escape sequences
 			int c2 = getchar();
 			if (c2 == '\\') {
 				newToken->content[len++] = '\\';
@@ -313,8 +312,7 @@ static lexerResult lexStringToken(token* newToken) {
 				int code = strtol(charCode, NULL, 16);
 				newToken->content[len++] = code;
 			} else {
-				ungetc(c2, stdin);
-				newToken->content[len++] = '\\';
+				return LEXER_ERROR;
 			}
 		} else {
 			newToken->content[len++] = c;

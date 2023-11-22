@@ -71,6 +71,7 @@ static analysisResult analyseBinaryExpression(const astBinaryExpression* express
 			}
 			__attribute__((fallthrough));
 		case AST_BINARY_MUL:
+		case AST_BINARY_DIV:
 		case AST_BINARY_MINUS:
 			if (!isNoNullNumberType(lhsType) || !isNoNullNumberType(rhsType)) {
 				fputs("Incompatible types for binary operation. ", stderr);
@@ -88,14 +89,6 @@ static analysisResult analyseBinaryExpression(const astBinaryExpression* express
 				}
 				outType->type = AST_TYPE_DOUBLE;
 			}
-			outType->nullable = false;
-			break;
-		case AST_BINARY_DIV:
-			if (!isNoNullNumberType(lhsType) || !isNoNullNumberType(rhsType)) {
-				fputs("Incompatible types for binary operation (/).", stderr);
-				return ANALYSIS_WRONG_BINARY_TYPES;
-			}
-			outType->type = AST_TYPE_DOUBLE;
 			outType->nullable = false;
 			break;
 		case AST_BINARY_LESS_EQ:
