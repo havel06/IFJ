@@ -689,6 +689,7 @@ static parseResult parseParameter(astParameter* param) {
 	token insideNameToken;
 	GET_TOKEN_ASSUME_TYPE(insideNameToken, TOKEN_IDENTIFIER, {});
 	TRY_PARSE(parseIdentifier(&insideNameToken, &(param->insideName)), { tokenDestroy(&insideNameToken); });
+	tokenDestroy(&insideNameToken);
 
 	CONSUME_TOKEN_ASSUME_TYPE(TOKEN_COLON, {});
 
