@@ -126,23 +126,17 @@ static astDataType compileBinaryExpression(const astBinaryExpression* expr) {
 		}
 	}
 
-	// division - implicit conversion of both to double
-	if (expr->op == AST_BINARY_DIV) {
-		if (lhsType.type == AST_TYPE_INT) {
-			puts("INT2FLOAT TF@lhs TF@lhs");
-		}
-		if (rhsType.type == AST_TYPE_INT) {
-			puts("INT2FLOAT TF@rhs TF@rhs");
-		}
-	}
-
 	switch (expr->op) {
 		case AST_BINARY_MUL:
 			puts("MUL TF@res TF@lhs TF@rhs");
 			resultType.type = lhsType.type;
 			break;
 		case AST_BINARY_DIV:
-			puts("DIV TF@res TF@lhs TF@rhs");
+			if (lhsType.type == AST_TYPE_INT) {
+				puts("IDIV TF@res TF@lhs TF@rhs");
+			} else {
+				puts("DIV TF@res TF@lhs TF@rhs");
+			}
 			resultType.type = AST_TYPE_DOUBLE;
 			break;
 		case AST_BINARY_PLUS:
