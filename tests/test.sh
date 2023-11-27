@@ -105,3 +105,5 @@ execTest "Builtin Length function with wrong type" "input/builtin_length_wrong.s
 execTest "Substring" "input/substring.swift" "output/substring.txt" 0
 execTest "Builtin ord function" "input/builtin_ord.swift" "output/builtin_ord.txt" 0
 execTest "Builtin chr function" "input/builtin_chr.swift" "output/builtin_chr.txt" 0
+execTest "Init variable in while loop" "input/while_init.swift" "output/empty.txt" 0
+execTest "Init variable in while loop - nested" "input/while_init_nested.swift" "output/while_init_nested.txt" 0

@@ -37,7 +37,8 @@ static int newLabelName() { return LAST_LABEL_NAME++; }
 
 // forward decl
 static astDataType compileExpression(const astExpression*);
-static void compileStatement(const astStatement*);
+static void compileStatement(const astStatement*, bool noDeclareVars);
+static void compileVariableDef(const astVariableDefinition* def, bool assignmentOnly);
 
 static void emitNewVariableId(const astIdentifier* var) {
 	symbolTable* currentScope = symStackCurrentScope(&VAR_SYM_STACK);
@@ -215,10 +216,10 @@ static void compileAssignment(const astAssignment* assignment) {
 	puts("");
 }
 
-static void compileStatementBlock(const astStatementBlock* block) {
+static void compileStatementBlock(const astStatementBlock* block, bool noDeclareVars) {
 	symStackPush(&VAR_SYM_STACK);
 	for (int i = 0; i < block->count; i++) {
-		compileStatement(&block->statements[i]);
+		compileStatement(&block->statements[i], noDeclareVars);
 	}
 	symStackPop(&VAR_SYM_STACK);
 }
@@ -232,7 +233,7 @@ static void compileOptionalBinding(const astOptionalBinding* binding) {
 	puts("NOTS");
 }
 
-static void compileConditional(const astConditional* conditional) {
+static void compileConditional(const astConditional* conditional, bool noDeclareVars) {
 	astConditionType conditionType = conditional->condition.type;
 	if (conditionType == AST_CONDITION_EXPRESSION) {
 		compileExpression(&conditional->condition.expression);
@@ -244,7 +245,7 @@ static void compileConditional(const astConditional* conditional) {
 	puts("PUSHS bool@true");
 	printf("JUMPIFNEQS l%d\n", label1);
 
-	compileStatementBlock(&conditional->body);
+	compileStatementBlock(&conditional->body, noDeclareVars);
 
 	if (!conditional->hasElse) {
 		printf("LABEL l%d\n", label1);
@@ -256,19 +257,49 @@ static void compileConditional(const astConditional* conditional) {
 	printf("JUMP l%d\n", label2);
 	printf("LABEL l%d\n", label1);
 
-	compileStatementBlock(&conditional->bodyElse);
+	compileStatementBlock(&conditional->bodyElse, noDeclareVars);
 
 	printf("LABEL l%d\n", label2);
 	puts("CLEARS");
 }
 
-static void compileIteration(const astIteration* iteration) {
+static void precompileVariableDefs(const astStatementBlock* block) {
+	for (int i = 0; i < block->count; i++) {
+		const astStatement* statement = &block->statements[i];
+		switch (statement->type) {
+			case AST_STATEMENT_VAR_DEF: {
+				compileVariableDef(&statement->variableDef, false);
+				break;
+			}
+
+			case AST_STATEMENT_COND:
+				precompileVariableDefs(&statement->conditional.body);
+				if (statement->conditional.hasElse) {
+					precompileVariableDefs(&statement->conditional.bodyElse);
+				}
+				break;
+
+			case AST_STATEMENT_ITER:
+				precompileVariableDefs(&statement->iteration.body);
+				break;
+
+			default:
+				// nothing
+				break;
+		}
+	}
+}
+
+static void compileIteration(const astIteration* iteration, bool noDeclareVars) {
+	if (!noDeclareVars) {
+		precompileVariableDefs(&iteration->body);
+	}
 	int startLabel = newLabelName();
 	int condLabel = newLabelName();
 	printf("JUMP l%d\n", condLabel);
 	printf("LABEL l%d\n", startLabel);
 	// body
-	compileStatementBlock(&iteration->body);
+	compileStatementBlock(&iteration->body, true);
 	// condition
 	printf("LABEL l%d\n", condLabel);
 	compileExpression(&iteration->condition);
@@ -449,17 +480,23 @@ static void compileFunctionCall(const astFunctionCall* call, bool newVariable) {
 	puts("CLEARS");
 }
 
-static void compileVariableDef(const astVariableDefinition* def) {
-	printf("DEFVAR ");
-	emitNewVariableId(&def->variableName);
-	puts("");
+static void compileVariableDef(const astVariableDefinition* def, bool assignmentOnly) {
+	if (!assignmentOnly) {
+		printf("DEFVAR ");
+		emitNewVariableId(&def->variableName);
+		puts("");
+	}
 
 	astDataType variableType = def->variableType;
 	if (def->hasInitValue) {
 		if (def->value.type == AST_VAR_INIT_EXPR) {
 			variableType = compileExpression(&def->value.expr);
 			printf("POPS ");
-			emitNewVariableId(&def->variableName);
+			if (assignmentOnly) {
+				emitVariableId(&def->variableName);
+			} else {
+				emitNewVariableId(&def->variableName);
+			}
 			puts("");
 		} else {
 			const symbolTableSlot* funcSlot =
@@ -475,24 +512,26 @@ static void compileVariableDef(const astVariableDefinition* def) {
 		puts(" nil@nil");
 	}
 
-	// insert into symtable
-	symbolVariable newVar = {variableType, def->immutable, NULL};
-	symTableInsertVar(symStackCurrentScope(&VAR_SYM_STACK), newVar, def->variableName.name);
+	if (!assignmentOnly) {
+		// insert into symtable
+		symbolVariable newVar = {variableType, def->immutable, NULL};
+		symTableInsertVar(symStackCurrentScope(&VAR_SYM_STACK), newVar, def->variableName.name);
+	}
 }
 
-static void compileStatement(const astStatement* statement) {
+static void compileStatement(const astStatement* statement, bool noDeclareVars) {
 	switch (statement->type) {
 		case AST_STATEMENT_VAR_DEF:
-			compileVariableDef(&statement->variableDef);
+			compileVariableDef(&statement->variableDef, noDeclareVars);
 			break;
 		case AST_STATEMENT_ASSIGN:
 			compileAssignment(&statement->assignment);
 			break;
 		case AST_STATEMENT_COND:
-			compileConditional(&statement->conditional);
+			compileConditional(&statement->conditional, noDeclareVars);
 			break;
 		case AST_STATEMENT_ITER:
-			compileIteration(&statement->iteration);
+			compileIteration(&statement->iteration, noDeclareVars);
 			break;
 		case AST_STATEMENT_FUNC_CALL:
 			compileFunctionCall(&statement->functionCall, false);
@@ -528,7 +567,7 @@ void compileFunctionDef(const astFunctionDefinition* def) {
 		emitVariableId(&(param->insideName));
 		puts("");
 	}
-	compileStatementBlock(&def->body);
+	compileStatementBlock(&def->body, false);
 	symStackPop(&VAR_SYM_STACK);
 	POP_FRAME();
 	puts("RETURN");
@@ -543,7 +582,7 @@ void compileProgram(const astProgram* program, const symbolTable* functionTable)
 	for (int i = 0; i < program->count; i++) {
 		const astTopLevelStatement* topStatement = &program->statements[i];
 		if (topStatement->type == AST_TOP_STATEMENT) {
-			compileStatement(&topStatement->statement);
+			compileStatement(&topStatement->statement, false);
 		} else {
 			compileFunctionDef(&topStatement->functionDef);
 		}

@@ -40,6 +40,9 @@ static bool symTableInsertSlot(symbolTable* table, symbolTableSlot slot) {
 	const int startingPos = pos;
 
 	while (table->data[pos].taken) {
+		if (strcmp(table->data[pos].name, slot.name) == 0) {
+			return false;  // redefinition
+		}
 		pos++;
 		pos %= SYM_TABLE_CAPACITY;
 		if (pos == startingPos) {
