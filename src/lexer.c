@@ -34,7 +34,7 @@ void tokenDestroy(token* tok) {
 	}
 }
 
-// Returns 0 if no comments were skipped
+// Returns 0 if no comments were skipped, -1 on error
 static int skipComments() {
 	int skipped = 0;
 	int counter = 0;
@@ -69,13 +69,14 @@ static int skipComments() {
 		}
 		int nextC = getchar();
 		counter++;
-		while (1) {
+		while (1) {	 // find matching
 			int c = nextC;
 			nextC = getchar();
-			if (c == '/' && nextC == '*') {
+			if (c == EOF || nextC == EOF) {
+				return -1;
+			} else if (c == '/' && nextC == '*') {
 				counter++;
-			}
-			if (c == '*' && nextC == '/') {
+			} else if (c == '*' && nextC == '/') {
 				counter--;
 				if (counter == 0) {
 					break;
@@ -342,7 +343,21 @@ lexerResult getNextToken(token* newToken) {
 	}
 
 	newToken->content = NULL;
-	while (skipWhiteSpace() || skipComments()) {
+
+	while (true) {
+		if (skipWhiteSpace()) {
+			continue;
+			;
+		}
+
+		int skipCommentsResult = skipComments();
+		if (skipCommentsResult == -1) {
+			return LEXER_ERROR;
+		} else if (skipCommentsResult > 0) {
+			continue;
+		}
+
+		break;
 	}
 
 	int c = getchar();
