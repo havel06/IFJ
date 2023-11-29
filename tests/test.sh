@@ -111,3 +111,10 @@ execTest "Init variable in while loop - nested" "input/while_init_nested.swift" 
 execTest "Illegal token instead of data type" "input/illegal_typename.swift" "output/empty.txt" 2
 execTest "String literal with newline character" "input/string_literal_newline.swift" "output/empty.txt" 1
 execTest "Init Double variable with int literal" "input/double_int_init.swift" "output/empty.txt" 0
+execTest "Basic multiline string" "input/multiline_string.swift" "output/multiline_string.txt" 0
+execTest "Multiline string with indent" "input/multiline_string_indent.swift" "output/multiline_string_indent.txt" 0
+execTest "Empty multiline string" "input/multiline_string_empty.swift" "output/multiline_string_empty.txt" 0
+execTest "Multiline string with empty line" "input/multiline_string_empty_line.swift" "output/multiline_string_empty_line.txt" 0
+execTest "Multiline string with indent and empty line" "input/multiline_string_indent_empty_line.swift" "output/multiline_string_indent_empty_line.txt" 0
+execTest "Multiline string with bad indent" "input/multiline_string_indent_illegal.swift" "output/empty.txt" 1
+execTest "Multiline string with closing quotes not on unique line" "input/multiline_string_wrong_close.swift" "output/empty.txt" 1

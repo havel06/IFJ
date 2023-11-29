@@ -228,6 +228,20 @@ static lexerResult lexNumberToken(token* newToken) {
 
 bool isHexDigit(char c) { return isdigit(c) || ((c >= 'a') && (c <= 'f')) || ((c >= 'A') && (c <= 'F')); }
 
+void leftShiftString(char* string, int start, int len) {
+	for (int i = start; i < start + len - 1; i++) {
+		string[i] = string[i + 1];
+	}
+	string[start + len - 1] = 0;
+}
+
+void leftShiftStringBy(char* string, int start, int len, int count) {
+	for (int i = 0; i < count; i++) {
+		leftShiftString(string, start, len);
+		len--;
+	}
+}
+
 static lexerResult lexMultiLineStringToken(token* newToken) {
 	int len = 0;
 	while (true) {
@@ -237,15 +251,13 @@ static lexerResult lexMultiLineStringToken(token* newToken) {
 			return LEXER_ERROR;
 		}
 
-		// check for string end
-		if (c == '\n') {
+		if (c == '"') {
+			// check for string end
 			int c1 = getchar();
 			int c2 = getchar();
-			int c3 = getchar();
-			if (c1 == '\"' && c2 == '\"' && c3 == '\"') {
+			if (c1 == '\"' && c2 == '\"') {
 				break;
 			} else {
-				ungetc(c3, stdin);
 				ungetc(c2, stdin);
 				ungetc(c1, stdin);
 			}
@@ -255,6 +267,44 @@ static lexerResult lexMultiLineStringToken(token* newToken) {
 		if (len > 2047) {
 			// TODO - emit warning
 			return LEXER_INTERNAL_ERROR;
+		}
+	}
+
+	// get number of ignored spaces in indent
+	int ignoredSpaces = 0;
+	for (int i = len - 1; i > 0; i--) {
+		if (newToken->content[i] == '\n') {
+			break;
+		} else if (newToken->content[i] == ' ') {
+			ignoredSpaces++;
+		} else {
+			return LEXER_ERROR;	 // non-space symbol before closing quotes
+		}
+	}
+
+	// remove whitespace and newline before closing quotes
+	len -= ignoredSpaces + 1;
+
+	// remove ignored spaces from each line
+	if (ignoredSpaces > 0) {
+		// we start at -1 because first line does not have a newline in front
+		for (int i = -1; i < len; i++) {
+			if (i == -1 || newToken->content[i] == '\n') {
+				// remove empty lines
+				while (newToken->content[i + 1] == '\n') {
+					// empty line
+					i++;
+				}
+
+				// check that the line actually contains the indentation
+				for (int j = 0; j < ignoredSpaces; j++) {
+					if (newToken->content[i + j + 1] != ' ') {
+						return LEXER_ERROR;
+					}
+				}
+				leftShiftStringBy(newToken->content, i + 1, len - i - 1, ignoredSpaces);
+				len -= ignoredSpaces;
+			}
 		}
 	}
 
