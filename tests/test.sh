@@ -108,3 +108,4 @@ execTest "Builtin ord function" "input/builtin_ord.swift" "output/builtin_ord.tx
 execTest "Builtin chr function" "input/builtin_chr.swift" "output/builtin_chr.txt" 0
 execTest "Init variable in while loop" "input/while_init.swift" "output/empty.txt" 0
 execTest "Init variable in while loop - nested" "input/while_init_nested.swift" "output/while_init_nested.txt" 0
+execTest "Illegal token instead of data type" "input/illegal_typename.swift" "output/empty.txt" 2

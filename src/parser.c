@@ -77,16 +77,21 @@ static parseResult parseExpression(astExpression* expression, const token* first
 		}                            \
 	} while (0)
 
-static astBasicDataType keywordToDataType(tokenType type) {
+static parseResult keywordToDataType(tokenType type, astBasicDataType* output) {
 	switch (type) {
 		case TOKEN_KEYWORD_INT:
-			return AST_TYPE_INT;
+			*output = AST_TYPE_INT;
+			return PARSE_OK;
+
 		case TOKEN_KEYWORD_DOUBLE:
-			return AST_TYPE_DOUBLE;
+			*output = AST_TYPE_DOUBLE;
+			return PARSE_OK;
+
 		case TOKEN_KEYWORD_STRING:
-			return AST_TYPE_STRING;
+			*output = AST_TYPE_STRING;
+			return PARSE_OK;
 		default:
-			assert(false);	// TODO - propagate error
+			return PARSE_ERROR;
 	}
 }
 
@@ -325,7 +330,7 @@ static parseResult parseExpression(astExpression* expression, const token* exprF
 static parseResult parseDataType(astDataType* dataType) {
 	token tok;
 	GET_TOKEN(tok, {});
-	dataType->type = keywordToDataType(tok.type);
+	TRY_PARSE(keywordToDataType(tok.type, &(dataType->type)), {});
 	tokenDestroy(&tok);
 
 	token optToken;
