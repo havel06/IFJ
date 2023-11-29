@@ -263,6 +263,7 @@ static lexerResult lexMultiLineStringToken(token* newToken) {
 
 static lexerResult lexStringToken(token* newToken) {
 	newToken->type = TOKEN_STR_LITERAL;
+	// TODO - unlimited size
 	newToken->content = calloc(2048, sizeof(char));
 	if (!newToken->content) {
 		return 1;
@@ -287,7 +288,7 @@ static lexerResult lexStringToken(token* newToken) {
 			return LEXER_INTERNAL_ERROR;
 		}
 		int c = getchar();
-		if (c == EOF) {
+		if (c == EOF || c <= 31 || c >= 127) {
 			// TODO - emit warning
 			return LEXER_ERROR;
 		} else if (c == '"') {
