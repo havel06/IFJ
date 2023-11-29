@@ -491,6 +491,11 @@ static void compileVariableDef(const astVariableDefinition* def, bool assignment
 	if (def->hasInitValue) {
 		if (def->value.type == AST_VAR_INIT_EXPR) {
 			variableType = compileExpression(&def->value.expr);
+			// convert int to double if needed
+			if (def->hasExplicitType && def->variableType.type == AST_TYPE_DOUBLE &&
+				variableType.type == AST_TYPE_INT) {
+				puts("INT2FLOATS");
+			}
 			printf("POPS ");
 			if (assignmentOnly) {
 				emitVariableId(&def->variableName);

@@ -504,7 +504,13 @@ static analysisResult analyseVariableDef(const astVariableDefinition* definition
 		}
 
 		if (definition->hasExplicitType) {
-			if (!isTriviallyConvertible(definition->variableType, initValueType)) {
+			if (isTriviallyConvertible(definition->variableType, initValueType)) {
+				// OK
+			} else if (definition->variableType.type == AST_TYPE_DOUBLE &&
+					   definition->value.type == AST_VAR_INIT_EXPR && definition->value.expr.type == AST_EXPR_TERM &&
+					   definition->value.expr.term.type == AST_TERM_INT) {
+				// OK - convert from int to double
+			} else {
 				fprintf(stderr, "Wrong type in initialisation of variable %s\n", definition->variableName.name);
 				return ANALYSIS_WRONG_BINARY_TYPES;
 			}

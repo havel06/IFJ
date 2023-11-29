@@ -110,3 +110,4 @@ execTest "Init variable in while loop" "input/while_init.swift" "output/empty.tx
 execTest "Init variable in while loop - nested" "input/while_init_nested.swift" "output/while_init_nested.txt" 0
 execTest "Illegal token instead of data type" "input/illegal_typename.swift" "output/empty.txt" 2
 execTest "String literal with newline character" "input/string_literal_newline.swift" "output/empty.txt" 1
+execTest "Init Double variable with int literal" "input/double_int_init.swift" "output/empty.txt" 0
