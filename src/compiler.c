@@ -515,7 +515,7 @@ static void compileVariableDef(const astVariableDefinition* def, bool assignment
 				symTableLookup((symbolTable*)FUNC_SYM_TABLE, def->value.call.funcName.name);
 			assert(funcSlot);
 			variableType = funcSlot->function.returnType;
-			compileFunctionCall(&def->value.call, true);
+			compileFunctionCall(&def->value.call, !assignmentOnly);
 		}
 	} else if (def->variableType.nullable) {
 		// default nil init

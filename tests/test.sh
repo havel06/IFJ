@@ -123,3 +123,4 @@ execTest "Multiline string with closing quotes not on unique line" "input/multil
 execTest "Equality comparison with nil literal" "input/nil_eq.swift" "output/nil_eq.txt" 0
 execTest "Example - concat" "input/example_concat.swift" "output/example_concat.txt" 0
 execTest "Example - factorial (iterative)" "input/example_factorial_iter.swift" "output/example_factorial_iter.txt" 0
+execTest "Example - factorial (recursive)" "input/example_factorial_rec.swift" "output/example_factorial_rec.txt" 0
