@@ -120,6 +120,10 @@ static astDataType compileBinaryExpression(const astBinaryExpression* expr) {
 		// perform conversion
 		if (lhsType.type == rhsType.type) {
 			// do nothing
+		} else if (lhsType.nullable && rhsType.type == AST_TYPE_NIL) {
+			// do nothing (for equality comparisons)
+		} else if (rhsType.nullable && lhsType.type == AST_TYPE_NIL) {
+			// do nothing (for equality comparisons)
 		} else if (lhsType.type == AST_TYPE_INT) {
 			puts("INT2FLOAT TF@lhs TF@lhs");
 		} else if (rhsType.type == AST_TYPE_INT) {
@@ -490,10 +494,13 @@ static void compileVariableDef(const astVariableDefinition* def, bool assignment
 	astDataType variableType = def->variableType;
 	if (def->hasInitValue) {
 		if (def->value.type == AST_VAR_INIT_EXPR) {
-			variableType = compileExpression(&def->value.expr);
+			astDataType expressionType = compileExpression(&def->value.expr);
+			if (!def->hasExplicitType) {
+				variableType = expressionType;
+			}
 			// convert int to double if needed
 			if (def->hasExplicitType && def->variableType.type == AST_TYPE_DOUBLE &&
-				variableType.type == AST_TYPE_INT) {
+				expressionType.type == AST_TYPE_INT) {
 				puts("INT2FLOATS");
 			}
 			printf("POPS ");

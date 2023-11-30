@@ -94,6 +94,7 @@ execTest "Non null lhs in coalescence" "input/coal_lhs_non_null.swift" "output/e
 execTest "Non-matching types in nil coalescence" "input/coal_wrong_types.swift" "output/empty.txt" 7
 execTest "Force unwrapping of non-nullable variable" "input/unwrap_non_nullable.swift" "output/empty.txt" 7
 execTest "Comparison of different types" "input/rel_wrong_type.swift" "output/empty.txt" 7
+execTest "Comparison of convertible types" "input/rel_implicit_convert.swift" "output/empty.txt" 0
 execTest "Comparison of non-nil and nil types" "input/rel_wrong_type_nil.swift" "output/empty.txt" 0
 execTest "Comparison of strings" "input/rel_string.swift" "output/rel_string.txt" 0
 execTest "Relational operators" "input/rel.swift" "output/rel.txt" 0
@@ -120,3 +121,5 @@ execTest "Multiline string with indent and empty line" "input/multiline_string_i
 execTest "Multiline string with bad indent" "input/multiline_string_indent_illegal.swift" "output/empty.txt" 1
 execTest "Multiline string with closing quotes not on unique line" "input/multiline_string_wrong_close.swift" "output/empty.txt" 1
 execTest "Equality comparison with nil literal" "input/nil_eq.swift" "output/nil_eq.txt" 0
+execTest "Example - concat" "input/example_concat.swift" "output/example_concat.txt" 0
+execTest "Example - factorial (iterative)" "input/example_factorial_iter.swift" "output/example_factorial_iter.txt" 0

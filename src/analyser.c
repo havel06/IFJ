@@ -89,6 +89,7 @@ static analysisResult analyseBinaryExpression(const astBinaryExpression* express
 		case AST_BINARY_PLUS:
 			if (lhsType.type == AST_TYPE_STRING && rhsType.type == AST_TYPE_STRING) {
 				outType->type = AST_TYPE_STRING;
+				outType->nullable = false;
 				break;
 			}
 			__attribute__((fallthrough));
@@ -117,18 +118,25 @@ static analysisResult analyseBinaryExpression(const astBinaryExpression* express
 		case AST_BINARY_GREATER_EQ:
 		case AST_BINARY_LESS:
 		case AST_BINARY_GREATER:
-			if (lhsType.type != rhsType.type) {
-				fputs("Incompatible types for binary operation. ", stderr);
-				printBinaryOperator(expression->op, stderr);
-				return ANALYSIS_WRONG_BINARY_TYPES;
-			}
-			if (lhsType.type == AST_TYPE_STRING && !lhsType.nullable && !rhsType.nullable) {
+			if (lhsType.type == AST_TYPE_STRING && rhsType.type == AST_TYPE_STRING && !lhsType.nullable &&
+				!rhsType.nullable) {
 				// string compare, OK
 			} else if (!isNoNullNumberType(lhsType) || !isNoNullNumberType(rhsType)) {
 				fputs("Incompatible types for binary operation. ", stderr);
 				printBinaryOperator(expression->op, stderr);
 				return ANALYSIS_WRONG_BINARY_TYPES;
 			}
+
+			if (lhsType.type == rhsType.type) {
+				// two ints or two doubles, ok
+			} else {
+				if ((lhsType.type == AST_TYPE_DOUBLE && !rhsIsLiteral) ||
+					(rhsType.type == AST_TYPE_DOUBLE && !lhsIsLiteral)) {
+					fputs("Illegal implicit conversion.", stderr);
+					return ANALYSIS_WRONG_BINARY_TYPES;
+				}
+			}
+
 			outType->type = AST_TYPE_BOOL;
 			outType->nullable = false;
 			break;
