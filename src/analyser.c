@@ -61,6 +61,18 @@ bool isTriviallyConvertible(astDataType to, astDataType from) {
 	return to.type == from.type;
 }
 
+bool containsVariable(const astExpression* expr) {
+	switch (expr->type) {
+		case AST_EXPR_TERM:
+			return (expr->term.type == AST_TERM_ID);
+		case AST_EXPR_BINARY:
+			return (containsVariable(expr->binary.lhs) || containsVariable(expr->binary.rhs));
+		case AST_EXPR_UNWRAP:
+			return containsVariable(expr->unwrap.innerExpr);
+	}
+	assert(false);
+}
+
 bool isNumberType(astDataType type) { return (type.type == AST_TYPE_INT || type.type == AST_TYPE_DOUBLE); }
 
 bool isNoNullNumberType(astDataType type) { return !type.nullable && isNumberType(type); }
@@ -70,8 +82,8 @@ static analysisResult analyseBinaryExpression(const astBinaryExpression* express
 	astDataType rhsType;
 	ANALYSE(analyseExpression(expression->lhs, &lhsType), {});
 	ANALYSE(analyseExpression(expression->rhs, &rhsType), {});
-	bool lhsIsLiteral = expression->lhs->type == AST_EXPR_TERM && expression->lhs->term.type != AST_TERM_ID;
-	bool rhsIsLiteral = expression->rhs->type == AST_EXPR_TERM && expression->rhs->term.type != AST_TERM_ID;
+	bool lhsIsLiteral = !containsVariable(expression->lhs);
+	bool rhsIsLiteral = !containsVariable(expression->rhs);
 
 	switch (expression->op) {
 		case AST_BINARY_PLUS:

@@ -87,6 +87,7 @@ execTest "Call function, assign to wrong variable type" "input/func_call_wrong_a
 execTest "Call procedure, try to assign" "input/proc_call_assign.swift" "output/empty.txt" 7
 execTest "Call procedure, try to init" "input/proc_call_init.swift" "output/empty.txt" 7
 execTest "Arithmetic" "input/arithmetic.swift" "output/arithmetic.txt" 0
+execTest "Implicit conversion of literal" "input/implicit_convert_literal.swift" "output/implicit_convert_literal.txt" 0
 execTest "Implicit conversion of non-literal" "input/implicit_convert_non_literal.swift" "output/empty.txt" 7
 execTest "Wrong binary types" "input/binary_wrong_types.swift" "output/empty.txt" 7
 execTest "Non null lhs in coalescence" "input/coal_lhs_non_null.swift" "output/empty.txt" 7
