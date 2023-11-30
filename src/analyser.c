@@ -124,6 +124,9 @@ static analysisResult analyseBinaryExpression(const astBinaryExpression* express
 		case AST_BINARY_NEQ:
 			if (lhsType.type == rhsType.type) {
 				// OK
+			} else if ((lhsType.nullable && rhsType.type == AST_TYPE_NIL) ||
+					   (rhsType.nullable && lhsType.type == AST_TYPE_NIL)) {
+				// OK
 			} else if ((lhsType.type == AST_TYPE_DOUBLE && !rhsIsLiteral) ||
 					   (rhsType.type == AST_TYPE_DOUBLE && !lhsIsLiteral)) {
 				fputs("Incompatible types for binary operation. ", stderr);
@@ -131,7 +134,7 @@ static analysisResult analyseBinaryExpression(const astBinaryExpression* express
 				return ANALYSIS_WRONG_BINARY_TYPES;
 			}
 			outType->type = AST_TYPE_BOOL;
-			outType->nullable = lhsType.nullable || rhsType.nullable;
+			outType->nullable = false;
 			break;
 		case AST_BINARY_NIL_COAL:
 			if (!lhsType.nullable) {
