@@ -124,3 +124,4 @@ execTest "Equality comparison with nil literal" "input/nil_eq.swift" "output/nil
 execTest "Example - concat" "input/example_concat.swift" "output/example_concat.txt" 0
 execTest "Example - factorial (iterative)" "input/example_factorial_iter.swift" "output/example_factorial_iter.txt" 0
 execTest "Example - factorial (recursive)" "input/example_factorial_rec.swift" "output/example_factorial_rec.txt" 0
+execTest "Create a variable inside while loop" "input/init_inside_while.swift" "output/init_inside_while.txt" 0
