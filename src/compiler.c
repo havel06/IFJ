@@ -38,7 +38,7 @@ static int newLabelName() { return LAST_LABEL_NAME++; }
 // forward decl
 static astDataType compileExpression(const astExpression*);
 static void compileStatement(const astStatement*, bool noDeclareVars);
-static void compileVariableDef(const astVariableDefinition* def, bool assignmentOnly);
+static void compileVariableDef(const astVariableDefinition* def, bool assignmentOnly, bool predefine);
 
 static void emitNewVariableId(const astIdentifier* var) {
 	symbolTable* currentScope = symStackCurrentScope(&VAR_SYM_STACK);
@@ -272,7 +272,7 @@ static void precompileVariableDefs(const astStatementBlock* block) {
 		const astStatement* statement = &block->statements[i];
 		switch (statement->type) {
 			case AST_STATEMENT_VAR_DEF: {
-				compileVariableDef(&statement->variableDef, false);
+				compileVariableDef(&statement->variableDef, false, true);
 				break;
 			}
 
@@ -295,6 +295,7 @@ static void precompileVariableDefs(const astStatementBlock* block) {
 }
 
 static void compileIteration(const astIteration* iteration, bool noDeclareVars) {
+	symStackPush(&VAR_SYM_STACK);  // used for predefined variables
 	if (!noDeclareVars) {
 		precompileVariableDefs(&iteration->body);
 	}
@@ -305,6 +306,7 @@ static void compileIteration(const astIteration* iteration, bool noDeclareVars) 
 	// body
 	compileStatementBlock(&iteration->body, true);
 	// condition
+	symStackPop(&VAR_SYM_STACK);  // used for predefined variables
 	printf("LABEL l%d\n", condLabel);
 	compileExpression(&iteration->condition);
 	puts("PUSHS bool@true");
@@ -484,11 +486,14 @@ static void compileFunctionCall(const astFunctionCall* call, bool newVariable) {
 	puts("CLEARS");
 }
 
-static void compileVariableDef(const astVariableDefinition* def, bool assignmentOnly) {
+static void compileVariableDef(const astVariableDefinition* def, bool assignmentOnly, bool predefine) {
 	if (!assignmentOnly) {
 		printf("DEFVAR ");
 		emitNewVariableId(&def->variableName);
 		puts("");
+	} else {
+		// assignment only - validate in symtable
+		symStackValidate(&VAR_SYM_STACK, def->variableName.name);
 	}
 
 	astDataType variableType = def->variableType;
@@ -527,14 +532,14 @@ static void compileVariableDef(const astVariableDefinition* def, bool assignment
 	if (!assignmentOnly) {
 		// insert into symtable
 		symbolVariable newVar = {variableType, def->immutable, NULL};
-		symTableInsertVar(symStackCurrentScope(&VAR_SYM_STACK), newVar, def->variableName.name);
+		symTableInsertVar(symStackCurrentScope(&VAR_SYM_STACK), newVar, def->variableName.name, !predefine);
 	}
 }
 
 static void compileStatement(const astStatement* statement, bool noDeclareVars) {
 	switch (statement->type) {
 		case AST_STATEMENT_VAR_DEF:
-			compileVariableDef(&statement->variableDef, noDeclareVars);
+			compileVariableDef(&statement->variableDef, noDeclareVars, false);
 			break;
 		case AST_STATEMENT_ASSIGN:
 			compileAssignment(&statement->assignment);
@@ -566,7 +571,7 @@ void compileFunctionDef(const astFunctionDefinition* def) {
 	for (int i = 0; i < def->params.count; i++) {
 		astParameter* param = &def->params.data[i];
 		symbolVariable symbol = {param->dataType, true, symStackCurrentScope(&VAR_SYM_STACK)};
-		symTableInsertVar(symStackCurrentScope(&VAR_SYM_STACK), symbol, param->insideName.name);
+		symTableInsertVar(symStackCurrentScope(&VAR_SYM_STACK), symbol, param->insideName.name, true);
 	}
 	symStackPush(&VAR_SYM_STACK);  // create new symtable scope so variables can shadow params
 	// parameters are read left to right

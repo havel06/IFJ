@@ -35,6 +35,7 @@ typedef struct {
 		symbolVariable variable;
 		symbolFunc function;
 	};
+	bool valid;	 // used in codegen for variable predefinitions
 } symbolTableSlot;
 
 struct symbolTable {
@@ -49,7 +50,7 @@ typedef struct {
 
 void symTableCreate(symbolTable*);
 // void symTableDestroy(symbolTable*);
-bool symTableInsertVar(symbolTable*, symbolVariable, const char* name);
+bool symTableInsertVar(symbolTable*, symbolVariable, const char* name, bool valid);
 bool symTableInsertFunc(symbolTable*, symbolFunc, const char* name);
 symbolTableSlot* symTableLookup(symbolTable*, const char* name);
 
@@ -59,5 +60,6 @@ void symStackPop(symbolTableStack*);
 symbolTable* symStackCurrentScope(symbolTableStack*);
 symbolTable* symStackGlobalScope(symbolTableStack*);
 symbolTableSlot* symStackLookup(symbolTableStack*, const char* name, symbolTable** tablePtr);
+void symStackValidate(symbolTableStack*, const char* name);	 // validate slot in symstack
 
 #endif

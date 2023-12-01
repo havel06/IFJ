@@ -55,11 +55,12 @@ static bool symTableInsertSlot(symbolTable* table, symbolTableSlot slot) {
 	return true;
 }
 
-bool symTableInsertVar(symbolTable* table, symbolVariable var, const char* name) {
+bool symTableInsertVar(symbolTable* table, symbolVariable var, const char* name, bool valid) {
 	symbolTableSlot slot;
 	slot.variable = var;
 	slot.name = name;
 	slot.taken = true;
+	slot.valid = valid;
 	return symTableInsertSlot(table, slot);
 }
 
@@ -68,6 +69,7 @@ bool symTableInsertFunc(symbolTable* table, symbolFunc func, const char* name) {
 	slot.function = func;
 	slot.name = name;
 	slot.taken = true;
+	slot.valid = true;
 	return symTableInsertSlot(table, slot);
 }
 
@@ -117,7 +119,7 @@ symbolTable* symStackGlobalScope(symbolTableStack* stack) {
 symbolTableSlot* symStackLookup(symbolTableStack* stack, const char* name, symbolTable** tablePtr) {
 	for (int i = stack->count - 1; i >= 0; i--) {
 		symbolTableSlot* slot = symTableLookup(&stack->tables[i], name);
-		if (slot) {
+		if (slot && slot->valid) {
 			if (tablePtr) {
 				*tablePtr = &stack->tables[i];
 			}
@@ -126,6 +128,18 @@ symbolTableSlot* symStackLookup(symbolTableStack* stack, const char* name, symbo
 	}
 
 	return NULL;
+}
+
+void symStackValidate(symbolTableStack* stack, const char* name) {
+	for (int i = stack->count - 1; i >= 0; i--) {
+		symbolTableSlot* slot = symTableLookup(&stack->tables[i], name);
+		if (slot) {
+			slot->valid = true;
+			return;
+		}
+	}
+
+	assert(false);
 }
 
 // void symTableDestroy(symbolTable*);

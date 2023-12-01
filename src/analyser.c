@@ -272,7 +272,7 @@ static analysisResult analyseFunctionDef(const astFunctionDefinition* def) {
 	for (int i = 0; i < def->params.count; i++) {
 		astParameter* param = &def->params.data[i];
 		symbolVariable symbol = {param->dataType, true, symStackCurrentScope(&VAR_SYM_STACK)};
-		if (!symTableInsertVar(symStackCurrentScope(&VAR_SYM_STACK), symbol, param->insideName.name)) {
+		if (!symTableInsertVar(symStackCurrentScope(&VAR_SYM_STACK), symbol, param->insideName.name, true)) {
 			return ANALYSIS_INTERNAL_ERROR;
 		}
 	}
@@ -361,7 +361,7 @@ static analysisResult analyseConditional(const astConditional* conditional) {
 		newVar.type = varSlot->variable.type;
 		newVar.type.nullable = false;
 		newVar.initialisedInScope = varSlot->variable.initialisedInScope;
-		if (!symTableInsertVar(symStackCurrentScope(&VAR_SYM_STACK), newVar, varName)) {
+		if (!symTableInsertVar(symStackCurrentScope(&VAR_SYM_STACK), newVar, varName, true)) {
 			return ANALYSIS_INTERNAL_ERROR;
 		}
 
@@ -559,7 +559,7 @@ static analysisResult analyseVariableDef(const astVariableDefinition* definition
 	// insert into symtable
 	symbolVariable newVar = {variableType, definition->immutable,
 							 initialised ? symStackCurrentScope(&VAR_SYM_STACK) : NULL};
-	if (!symTableInsertVar(symStackCurrentScope(&VAR_SYM_STACK), newVar, definition->variableName.name)) {
+	if (!symTableInsertVar(symStackCurrentScope(&VAR_SYM_STACK), newVar, definition->variableName.name, true)) {
 		return ANALYSIS_INTERNAL_ERROR;
 	}
 
