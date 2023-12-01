@@ -242,6 +242,53 @@ void leftShiftStringBy(char* string, int start, int len, int count) {
 	}
 }
 
+static lexerResult lexEscapedChar(char* outChar) {
+	int c = getchar();
+	if (c == '\\') {
+		*outChar = '\\';
+	} else if (c == '"') {
+		*outChar = '\"';
+	} else if (c == 'n') {
+		*outChar = '\n';
+	} else if (c == 'r') {
+		*outChar = '\r';
+	} else if (c == 't') {
+		*outChar = '\t';
+	} else if (c == 'u') {
+		// numbered ascii escape sequence
+		char charCode[9];
+		int charCodeLen = 0;
+
+		int braceChar = getchar();
+		if (braceChar != '{') {
+			return LEXER_ERROR;
+		}
+
+		while (true) {
+			int numChar = getchar();
+			if (numChar == '}') {
+				charCode[charCodeLen + 1] = 0;
+				break;
+			} else if (isHexDigit(numChar)) {
+				charCode[charCodeLen++] = numChar;
+			} else {
+				return LEXER_ERROR;
+			}
+
+			if (charCodeLen > 8) {
+				return LEXER_ERROR;
+			}
+		}
+
+		int code = strtol(charCode, NULL, 16);
+		*outChar = code;
+	} else {
+		return LEXER_ERROR;
+	}
+
+	return LEXER_OK;
+}
+
 static lexerResult lexMultiLineStringToken(token* newToken) {
 	int len = 0;
 	while (true) {
@@ -261,9 +308,15 @@ static lexerResult lexMultiLineStringToken(token* newToken) {
 				ungetc(c2, stdin);
 				ungetc(c1, stdin);
 			}
+		} else if (c == '\\') {
+			int ret = lexEscapedChar(&(newToken->content[len++]));
+			if (ret == LEXER_ERROR) {
+				return LEXER_ERROR;
+			}
+		} else {
+			newToken->content[len++] = c;
 		}
 
-		newToken->content[len++] = c;
 		if (len > 2047) {
 			// TODO - emit warning
 			return LEXER_INTERNAL_ERROR;
@@ -344,38 +397,12 @@ static lexerResult lexStringToken(token* newToken) {
 		} else if (c == '"') {
 			break;
 		} else if (c == '\\') {
-			int c2 = getchar();
-			if (c2 == '\\') {
-				newToken->content[len++] = '\\';
-			} else if (c2 == '"') {
-				newToken->content[len++] = '\"';
-			} else if (c2 == 'n') {
-				newToken->content[len++] = '\n';
-			} else if (c2 == 'r') {
-				newToken->content[len++] = '\r';
-			} else if (c2 == 't') {
-				newToken->content[len++] = '\t';
-			} else if (c2 == 'u') {
-				// numbered ascii escape sequence
-				char charCode[8];
-				int charCodeLen = 0;
+			int ret = lexEscapedChar(&(newToken->content[len++]));
 
-				while (charCodeLen < 8) {
-					int numChar = getchar();
-					if (isHexDigit(numChar)) {
-						charCode[charCodeLen++] = numChar;
-					} else {
-						charCode[charCodeLen] = '\0';
-						ungetc(numChar, stdin);
-						break;
-					}
-				}
-
-				int code = strtol(charCode, NULL, 16);
-				newToken->content[len++] = code;
-			} else {
+			if (ret == LEXER_ERROR) {
 				return LEXER_ERROR;
 			}
+
 		} else {
 			newToken->content[len++] = c;
 		}

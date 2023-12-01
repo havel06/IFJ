@@ -130,3 +130,4 @@ execTest "Implicit conversions in variable declarations" "input/var_init_implici
 execTest "Illegal implicit conversions in variable declarations" "input/var_init_implicit_convert_bad.swift" "output/empty.txt" 7
 execTest "Implicit conversions in variable assignment" "input/assignment_implicit_convert.swift" "output/empty.txt" 0
 execTest "Illegal implicit conversions in variable assignment" "input/assignment_implicit_convert_wrong.swift" "output/empty.txt" 7
+execTest "Escaping characters in strings" "input/escaped_strings.swift" "output/escaped_strings.txt" 0
