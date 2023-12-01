@@ -301,7 +301,13 @@ static analysisResult analyseAssignment(const astAssignment* assignment) {
 
 	astDataType valueType;
 	ANALYSE(analyseExpression(&assignment->value, &valueType), {});
-	if (!isTriviallyConvertible(slot->variable.type, valueType)) {
+
+	if (isTriviallyConvertible(slot->variable.type, valueType)) {
+		// OK
+	} else if (slot->variable.type.type == AST_TYPE_DOUBLE && valueType.type == AST_TYPE_INT &&
+			   !containsVariable(&assignment->value)) {
+		// convert int to double, ok
+	} else {
 		fprintf(stderr, "Wrong type in assignment to variable %s\n", slot->name);
 		return ANALYSIS_WRONG_BINARY_TYPES;
 	}
@@ -530,8 +536,8 @@ static analysisResult analyseVariableDef(const astVariableDefinition* definition
 			if (isTriviallyConvertible(definition->variableType, initValueType)) {
 				// OK
 			} else if (definition->variableType.type == AST_TYPE_DOUBLE &&
-					   definition->value.type == AST_VAR_INIT_EXPR && definition->value.expr.type == AST_EXPR_TERM &&
-					   definition->value.expr.term.type == AST_TERM_INT) {
+					   definition->value.type == AST_VAR_INIT_EXPR && initValueType.type == AST_TYPE_INT &&
+					   !containsVariable(&definition->value.expr)) {
 				// OK - convert from int to double
 			} else {
 				fprintf(stderr, "Wrong type in initialisation of variable %s\n", definition->variableName.name);

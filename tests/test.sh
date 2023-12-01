@@ -125,3 +125,8 @@ execTest "Example - concat" "input/example_concat.swift" "output/example_concat.
 execTest "Example - factorial (iterative)" "input/example_factorial_iter.swift" "output/example_factorial_iter.txt" 0
 execTest "Example - factorial (recursive)" "input/example_factorial_rec.swift" "output/example_factorial_rec.txt" 0
 execTest "Create a variable inside while loop" "input/init_inside_while.swift" "output/init_inside_while.txt" 0
+execTest "Shadowing a variable inside if-let statement" "input/if_let_shadowing.swift" "output/if_let_shadowing.txt" 0
+execTest "Implicit conversions in variable declarations" "input/var_init_implicit_convert.swift" "output/empty.txt" 0
+execTest "Illegal implicit conversions in variable declarations" "input/var_init_implicit_convert_bad.swift" "output/empty.txt" 7
+execTest "Implicit conversions in variable assignment" "input/assignment_implicit_convert.swift" "output/empty.txt" 0
+execTest "Illegal implicit conversions in variable assignment" "input/assignment_implicit_convert_wrong.swift" "output/empty.txt" 7
