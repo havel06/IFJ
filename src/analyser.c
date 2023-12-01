@@ -492,7 +492,7 @@ static analysisResult analyseReturn(const astReturnStatement* ret) {
 
 		if (!isTriviallyConvertible(CURRENT_FUNCTION->returnType, returnType)) {
 			fputs("Incompatible return type.\n", stderr);
-			return ANALYSIS_WRONG_RETURN;
+			return ANALYSIS_WRONG_FUNC_TYPE;
 		}
 	}
 

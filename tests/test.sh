@@ -64,7 +64,7 @@ execTest "Modify function parameter" "input/func_call_modify_param.swift" "outpu
 execTest "Eearly return from procedure" "input/proc_return.swift" "output/empty.txt" 0
 execTest "Try to return value from procedure" "input/proc_return_with_type.swift" "output/empty.txt" 2
 execTest "Try to return without value from function" "input/func_return_without_value.swift" "output/empty.txt" 2
-execTest "Return wrong type from function" "input/func_wrong_return_type.swift" "output/empty.txt" 6
+execTest "Return wrong type from function" "input/func_wrong_return_type.swift" "output/empty.txt" 4
 execTest "Return statement in global scope" "input/return_in_global_scope.swift" "output/empty.txt" 2
 execTest "Return statement in global scope" "input/return_in_global_scope_with_value.swift" "output/empty.txt" 2
 execTest "Modify constant" "input/modify_const_variable.swift" "output/empty.txt" 9
