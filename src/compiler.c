@@ -385,25 +385,28 @@ static void compileBuiltInSubstring() {
 	// end < 0
 	puts("LT TF@error_temp TF@end int@0");
 	printf("JUMPIFEQ l%d TF@error_temp bool@true\n", errorLabel);
-	// start >= end
-	puts("LT TF@error_temp TF@start TF@end");  // !(start < end)
-	printf("JUMPIFEQ l%d TF@error_temp bool@false\n", errorLabel);
+	// start > end
+	puts("GT TF@error_temp TF@start TF@end");
+	printf("JUMPIFEQ l%d TF@error_temp bool@true\n", errorLabel);
 	// start >= length
 	puts("LT TF@error_temp TF@start TF@len");  // !(start < length)
 	printf("JUMPIFEQ l%d TF@error_temp bool@false\n", errorLabel);
 
-	// create string of final length
+	// create string
 	puts("DEFVAR TF@result");
 	puts("MOVE TF@result string@");
 	puts("DEFVAR TF@index");
 	puts("MOVE TF@index TF@start");
 	puts("DEFVAR TF@char");
 	// loop
+	int loop0 = newLabelName();
 	int loop1 = newLabelName();
+	printf("JUMP l%d\n", loop0);
 	printf("LABEL l%d\n", loop1);
 	puts("GETCHAR TF@char TF@str TF@index");
 	puts("CONCAT TF@result TF@result TF@char");
 	puts("ADD TF@index TF@index int@1");
+	printf("LABEL l%d\n", loop0);
 	printf("JUMPIFNEQ l%d TF@index TF@end\n", loop1);
 
 	// return value
