@@ -337,6 +337,7 @@ static lexerResult lexMultiLineStringToken(token* newToken) {
 
 	// remove whitespace and newline before closing quotes
 	len -= ignoredSpaces + 1;
+	newToken->content[len] = 0;
 
 	// remove ignored spaces from each line
 	if (ignoredSpaces > 0) {
