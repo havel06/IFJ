@@ -141,3 +141,4 @@ execTest "Ord function with empty string" "input/ord_empty.swift" "output/empty.
 execTest "Substring end out of bounds" "input/substring_oob.swift" "output/empty.txt" 0
 execTest "Implicit cast in nil coalescence" "input/implicit_cast_coal.swift" "output/empty.txt" 0
 execTest "Wrong argument name" "input/func_wrong_arg_name.swift" "output/empty.txt" 9
+execTest "Unused param" "input/unused_param.swift" "output/empty.txt" 0

@@ -533,6 +533,7 @@ lexerResult getNextToken(token* newToken) {
 		case '_': {
 			int c2 = getchar();
 			if (!isalnum(c2)) {
+				ungetc(c2, stdin);
 				newToken->type = TOKEN_UNDERSCORE;
 			} else {
 				ungetc(c2, stdin);

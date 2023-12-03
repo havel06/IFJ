@@ -616,12 +616,16 @@ void compileFunctionDef(const astFunctionDefinition* def) {
 	// parameters are read left to right
 	for (int i = 0; i < def->params.count; i++) {
 		astParameter* param = &def->params.data[i];
-		printf("DEFVAR ");
-		emitVariableId(&(param->insideName));
-		puts("");
-		printf("POPS ");
-		emitVariableId(&(param->insideName));
-		puts("");
+		if (param->used) {
+			printf("DEFVAR ");
+			emitVariableId(&(param->insideName));
+			puts("");
+			printf("POPS ");
+			emitVariableId(&(param->insideName));
+			puts("");
+		} else {
+			puts("POPS GF@$rubbish");
+		}
 	}
 	compileStatementBlock(&def->body, false);
 	symStackPop(&VAR_SYM_STACK);
@@ -634,7 +638,8 @@ void compileProgram(const astProgram* program, const symbolTable* functionTable)
 	FUNC_SYM_TABLE = functionTable;
 	symStackCreate(&VAR_SYM_STACK);
 	puts(".IFJcode23");
-	PUSH_FRAME();  // global scope + frame for local variables that are not in functions
+	puts("DEFVAR GF@$rubbish");	 // for removing rubbish from stack
+	PUSH_FRAME();				 // global scope + frame for local variables that are not in functions
 	for (int i = 0; i < program->count; i++) {
 		const astTopLevelStatement* topStatement = &program->statements[i];
 		if (topStatement->type == AST_TOP_STATEMENT) {

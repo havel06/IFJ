@@ -285,9 +285,11 @@ static analysisResult analyseFunctionDef(const astFunctionDefinition* def) {
 	// add params to scope
 	for (int i = 0; i < def->params.count; i++) {
 		astParameter* param = &def->params.data[i];
-		symbolVariable symbol = {param->dataType, true, symStackCurrentScope(&VAR_SYM_STACK)};
-		if (!symTableInsertVar(symStackCurrentScope(&VAR_SYM_STACK), symbol, param->insideName.name, true)) {
-			return ANALYSIS_INTERNAL_ERROR;
+		if (param->used) {
+			symbolVariable symbol = {param->dataType, true, symStackCurrentScope(&VAR_SYM_STACK)};
+			if (!symTableInsertVar(symStackCurrentScope(&VAR_SYM_STACK), symbol, param->insideName.name, true)) {
+				return ANALYSIS_INTERNAL_ERROR;
+			}
 		}
 	}
 	ANALYSE(analyseStatementBlock(&def->body), {});
@@ -672,6 +674,7 @@ static bool registerInt2Double() {
 	term.requiresName = false;
 	term.outsideName.name = NULL;
 	term.insideName.name = NULL;
+	term.used = true;
 	if (astParameterListAdd(&INT2DOUBLE_PARAMS, term)) {
 		return false;
 	}
@@ -689,6 +692,7 @@ static bool registerDouble2Int() {
 	term.requiresName = false;
 	term.outsideName.name = NULL;
 	term.insideName.name = NULL;
+	term.used = true;
 	if (astParameterListAdd(&DOUBLE2INT_PARAMS, term)) {
 		return false;
 	}
@@ -706,6 +710,7 @@ static bool registerLength() {
 	s.requiresName = false;
 	s.outsideName.name = NULL;
 	s.insideName.name = NULL;
+	s.used = true;
 	if (astParameterListAdd(&LENGTH_PARAMS, s)) {
 		return false;
 	}
@@ -724,6 +729,7 @@ static bool registerSubstring() {
 	of.requiresName = true;
 	of.outsideName.name = "of";
 	of.insideName.name = NULL;
+	of.used = true;
 	if (astParameterListAdd(&SUBSTRING_PARAMS, of)) {
 		return false;
 	}
@@ -734,6 +740,7 @@ static bool registerSubstring() {
 	startingAt.requiresName = true;
 	startingAt.outsideName.name = "startingAt";
 	startingAt.insideName.name = NULL;
+	startingAt.used = true;
 	if (astParameterListAdd(&SUBSTRING_PARAMS, startingAt)) {
 		return false;
 	}
@@ -744,6 +751,7 @@ static bool registerSubstring() {
 	endingBefore.requiresName = true;
 	endingBefore.outsideName.name = "endingBefore";
 	endingBefore.insideName.name = NULL;
+	endingBefore.used = true;
 	if (astParameterListAdd(&SUBSTRING_PARAMS, endingBefore)) {
 		return false;
 	}
@@ -761,6 +769,7 @@ static bool registerOrd() {
 	c.requiresName = false;
 	c.outsideName.name = NULL;
 	c.insideName.name = NULL;
+	c.used = true;
 	if (astParameterListAdd(&ORD_PARAMS, c)) {
 		return false;
 	}
@@ -778,6 +787,7 @@ static analysisResult registerChr() {
 	i.requiresName = false;
 	i.outsideName.name = NULL;
 	i.insideName.name = NULL;
+	i.used = true;
 	if (astParameterListAdd(&CHR_PARAMS, i)) {
 		return false;
 	}

@@ -208,6 +208,7 @@ struct astStatement {
 
 typedef struct {
 	bool requiresName;
+	bool used;
 	astIdentifier outsideName;
 	astIdentifier insideName;
 	astDataType dataType;

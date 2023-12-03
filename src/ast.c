@@ -261,7 +261,9 @@ void astParameterListDestroy(astParameterList* list) {
 		if (param->requiresName) {
 			astIdentifierDestroy(&param->outsideName);
 		}
-		astIdentifierDestroy(&param->insideName);
+		if (param->used) {
+			astIdentifierDestroy(&param->insideName);
+		}
 	}
 
 	astParameterListDestroyNoRecurse(list);

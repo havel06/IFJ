@@ -681,6 +681,7 @@ static parseResult parseParameter(astParameter* param) {
 	GET_TOKEN(outsideNameToken, {});
 	if (outsideNameToken.type == TOKEN_UNDERSCORE) {
 		param->requiresName = false;
+		param->outsideName.name = "UNNAMED";
 	} else if (outsideNameToken.type == TOKEN_IDENTIFIER) {
 		param->requiresName = true;
 		TRY_PARSE(parseIdentifier(&outsideNameToken, &(param->outsideName)), { tokenDestroy(&outsideNameToken); });
@@ -692,8 +693,17 @@ static parseResult parseParameter(astParameter* param) {
 
 	// parse inside name
 	token insideNameToken;
-	GET_TOKEN_ASSUME_TYPE(insideNameToken, TOKEN_IDENTIFIER, {});
-	TRY_PARSE(parseIdentifier(&insideNameToken, &(param->insideName)), { tokenDestroy(&insideNameToken); });
+	GET_TOKEN(insideNameToken, {});
+	if (insideNameToken.type == TOKEN_UNDERSCORE) {
+		param->used = false;
+		param->insideName.name = "UNUSED";
+	} else if (insideNameToken.type == TOKEN_IDENTIFIER) {
+		param->used = true;
+		TRY_PARSE(parseIdentifier(&insideNameToken, &(param->insideName)), { tokenDestroy(&insideNameToken); });
+	} else {
+		tokenDestroy(&insideNameToken);
+		return PARSE_ERROR;
+	}
 	tokenDestroy(&insideNameToken);
 
 	CONSUME_TOKEN_ASSUME_TYPE(TOKEN_COLON, {});
