@@ -137,3 +137,4 @@ execTest "Example - ifj projekt je moc hard" "input/example_moc_hard.swift" "out
 execTest "Example - cycles" "input/example_cycles.swift" "output/empty.txt" 0
 execTest "Bogus input (func !)" "input/bogus_func.swift" "output/empty.txt" 2
 execTest "Escape sequence + ord" "input/escape_ord.swift" "output/escape_ord.txt" 0
+execTest "Ord function with empty string" "input/ord_empty.swift" "output/empty.txt" 0

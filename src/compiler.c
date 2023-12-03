@@ -429,7 +429,25 @@ static void compileBuiltInOrd() {
 	puts("DEFVAR TF@res");
 	puts("DEFVAR TF@str");
 	puts("POPS TF@str");
-	puts("STRI2INT TF@res TF@str INT@0");
+	puts("DEFVAR TF@len");
+	puts("STRLEN TF@len TF@str");
+
+	int errorLabel = newLabelName();
+	int endLabel = newLabelName();
+
+	// error check
+	printf("JUMPIFEQ l%d TF@len int@0\n", errorLabel);
+
+	// normal path
+	puts("STRI2INT TF@res TF@str int@0");
+	printf("JUMP l%d\n", endLabel);
+
+	// error path
+	printf("LABEL l%d\n", errorLabel);
+	puts("MOVE TF@res int@0");
+
+	// common path
+	printf("LABEL l%d\n", endLabel);
 	puts("PUSHS TF@res");
 }
 
