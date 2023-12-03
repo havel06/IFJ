@@ -737,7 +737,7 @@ static parseResult parseParameterList(astParameterList* list) {
 static parseResult parseFunctionDefinition(astFunctionDefinition* def) {
 	// parse name
 	token idToken;
-	GET_TOKEN(idToken, {});
+	GET_TOKEN_ASSUME_TYPE(idToken, TOKEN_IDENTIFIER, {});
 	TRY_PARSE(parseIdentifier(&idToken, &(def->name)), { tokenDestroy(&idToken); });
 	tokenDestroy(&idToken);
 
