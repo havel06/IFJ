@@ -87,7 +87,7 @@ static astDataType compileTerm(const astTerm* term) {
 			for (size_t i = 0; i < strlen(term->string.content); i++) {
 				char c = term->string.content[i];
 				if (isspace(c) || !isprint(c) || c == '#' || c == '\\') {
-					printf("\\%03d", (int)c);
+					printf("\\%03d", (int)*((unsigned char*)(&c)));
 				} else {
 					putchar(c);
 				}

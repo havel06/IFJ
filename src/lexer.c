@@ -264,7 +264,7 @@ static lexerResult lexEscapedChar(char* outChar) {
 		while (true) {
 			int numChar = getchar();
 			if (numChar == '}') {
-				charCode[charCodeLen + 1] = 0;
+				charCode[charCodeLen] = 0;
 				break;
 			} else if (isHexDigit(numChar)) {
 				charCode[charCodeLen++] = numChar;

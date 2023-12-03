@@ -136,3 +136,4 @@ execTest "Coalescence with nil on lhs" "input/coal_nil.swift" "output/coal_nil.t
 execTest "Example - ifj projekt je moc hard" "input/example_moc_hard.swift" "output/example_moc_hard.txt" 0
 execTest "Example - cycles" "input/example_cycles.swift" "output/empty.txt" 0
 execTest "Bogus input (func !)" "input/bogus_func.swift" "output/empty.txt" 2
+execTest "Escape sequence + ord" "input/escape_ord.swift" "output/escape_ord.txt" 0
