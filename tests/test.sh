@@ -143,3 +143,4 @@ execTest "Implicit cast in nil coalescence" "input/implicit_cast_coal.swift" "ou
 execTest "Wrong argument name" "input/func_wrong_arg_name.swift" "output/empty.txt" 9
 execTest "Unused param" "input/unused_param.swift" "output/empty.txt" 0
 execTest "Function param with same name" "input/func_param_same_name.swift" "output/empty.txt" 9
+execTest "Implicit conversion when assigning" "input/assign_convert.swift" "output/assign_convert.txt" 0

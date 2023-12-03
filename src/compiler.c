@@ -217,7 +217,15 @@ static astDataType compileExpression(const astExpression* expr) {
 }
 
 static void compileAssignment(const astAssignment* assignment) {
-	compileExpression(&assignment->value);
+	astDataType exprType = compileExpression(&assignment->value);
+
+	symbolTableSlot* slot = symStackLookup(&VAR_SYM_STACK, assignment->variableName.name, NULL);
+	assert(slot);
+	if (exprType.type == AST_TYPE_INT && slot->variable.type.type == AST_TYPE_DOUBLE) {
+		// implicit conversion
+		puts("INT2FLOATS");
+	}
+
 	printf("POPS ");
 	emitVariableId(&assignment->variableName);
 	puts("");
