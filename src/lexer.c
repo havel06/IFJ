@@ -184,8 +184,6 @@ static lexerResult lexNumberToken(token* newToken) {
 		switch (c) {
 			case '.':
 				if (numberPart != INT_PART) {
-					ungetc(c, stdin);
-					printf("dot\n");
 					return LEXER_ERROR;
 				}
 				numberPart = DEC_PART;
@@ -194,7 +192,6 @@ static lexerResult lexNumberToken(token* newToken) {
 			case 'e':
 			case 'E':
 				if (numberPart == EXP_PART) {
-					ungetc(c, stdin);
 					return LEXER_ERROR;
 				}
 				numberPart = EXP_PART;
@@ -202,7 +199,7 @@ static lexerResult lexNumberToken(token* newToken) {
 			default:
 				if (!isdigit(c)) {
 					ungetc(c, stdin);
-					return 0;
+					return LEXER_OK;
 				}
 		}
 
