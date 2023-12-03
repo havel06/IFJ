@@ -6,7 +6,9 @@ CC=gcc $(CFLAGS)
 
 OBJS=$(patsubst $(SRC)/%.c,$(BIN)/%.o,$(wildcard $(SRC)/*.c))
 
-.PHONY: all clean
+.PHONY: all clean docs
+
+all: $(BIN)/compiler docs
 
 $(BIN)/compiler: $(OBJS)
 	$(CC) -o $@ $^
@@ -25,3 +27,6 @@ testClang:
 
 clean:
 	rm -rf $(BIN)/*
+
+docs:
+	make -C docs

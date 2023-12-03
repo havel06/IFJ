@@ -1,0 +1,77 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[czech]{babel}
+\usepackage[T1]{fontenc}
+\usepackage[margin=2.9cm]{geometry}
+\usepackage{hyperref}
+\usepackage{paralist}
+\usepackage{graphicx}
+\usepackage{krskasugar}
+\usepackage[export]{adjustbox}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{lmodern}
+
+\lstset{
+	language=C++,
+	basicstyle=\footnotesize\ttfamily,
+	keywordstyle=\bfseries\color{green!40!black},
+	commentstyle=\itshape\color{purple!40!black},
+	identifierstyle=\color{blue},
+	backgroundcolor=\color{gray!10!white},
+	numberstyle=\footnotesize,
+	frame=single,
+	tabsize=2,
+	backgroundcolor=\color{gray!10},
+	rulecolor=\color{black!30},
+	title=\lstname,
+	escapeinside={\%*}{*)},
+	breaklines=true,
+	breakatwhitespace=true,
+	framextopmargin=2pt,
+	framexbottommargin=2pt,
+	inputencoding=utf8,
+	extendedchars=true,
+	literate={á}{{\'a}}1 {é}{{\'e}}1 {í}{{\'i}}1 {ó}{{\'o}}1 {ú}{{\'u}}1 {ř}{{\v{r}}}1,
+}
+
+\graphicspath{{graphics}}
+
+\author{Michal Havlíček, Adam Krška, Tomáš Sitarčík, Jan Šemora}
+\title{IFJ23}
+
+\begin{document}
+\makeatletter
+\begin{titlepage}
+\begin{center}
+	{\Huge\textsc{Vysoké učení technické v~Brně}\\[0.4em]
+	\LARGE\textsc{Fakulta informačních technologií}}
+
+	\vspace{\stretch{0.382}}
+
+	{\bfseries\LARGE Implementace překladače imperativního jazyka IFJ23}
+
+	\vspace{1cm}
+
+	{\LARGE Tým xhavli06, varianta TRP-izp}
+	\vspace{1cm}
+
+	{\large Implementované varianty: TODO}
+
+	\vspace{\stretch{0.618}}
+	{
+		\large
+		\textbf{Michal Havlíček (xhavli06)}, vedoucí\\
+		Adam Krška (xkrska08)\\
+		Tomáš Sitarčík (xlogin00)\\
+		Jan Šemora (xlogin00)
+	}
+\end{center}
+\end{titlepage}
+\makeatother
+
+\tableofcontents
+
+\end{document}
