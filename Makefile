@@ -8,7 +8,7 @@ OBJS=$(patsubst $(SRC)/%.c,$(BIN)/%.o,$(wildcard $(SRC)/*.c))
 
 .PHONY: all clean docs
 
-all: $(BIN)/compiler docs
+all: $(BIN)/compiler
 
 $(BIN)/compiler: $(OBJS)
 	$(CC) -o $@ $^
