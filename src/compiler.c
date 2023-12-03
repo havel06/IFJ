@@ -127,8 +127,10 @@ static astDataType compileBinaryExpression(const astBinaryExpression* expr) {
 			// do nothing (for equality comparisons)
 		} else if (lhsType.type == AST_TYPE_INT) {
 			puts("INT2FLOAT TF@lhs TF@lhs");
+			lhsType.type = AST_TYPE_DOUBLE;
 		} else if (rhsType.type == AST_TYPE_INT) {
 			puts("INT2FLOAT TF@rhs TF@rhs");
+			rhsType.type = AST_TYPE_DOUBLE;
 		}
 	}
 

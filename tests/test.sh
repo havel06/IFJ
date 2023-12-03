@@ -134,3 +134,4 @@ execTest "Escaping characters in strings" "input/escaped_strings.swift" "output/
 execTest "Example - redefinition inside while" "input/example_while_redef.swift" "output/example_while_redef.txt" 0
 execTest "Coalescence with nil on lhs" "input/coal_nil.swift" "output/coal_nil.txt" 0
 execTest "Example - ifj projekt je moc hard" "input/example_moc_hard.swift" "output/example_moc_hard.txt" 0
+execTest "Example - cycles" "input/example_cycles.swift" "output/empty.txt" 0
