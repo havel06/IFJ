@@ -160,17 +160,25 @@ static analysisResult analyseBinaryExpression(const astBinaryExpression* express
 			if (lhsType.type == AST_TYPE_NIL) {
 				// special case - nil on lhs
 				// OK
+				outType->type = rhsType.type;
 			} else {
 				if (!lhsType.nullable) {
 					fputs("Left side of nil coalescing operator must be nullable.", stderr);
 					return ANALYSIS_WRONG_BINARY_TYPES;
 				}
-				if (lhsType.type != rhsType.type) {
+				if (lhsType.type == rhsType.type) {
+					// ok
+					outType->type = rhsType.type;
+				} else if ((lhsType.type == AST_TYPE_DOUBLE && rhsType.type == AST_TYPE_INT && rhsIsLiteral) ||
+						   (rhsType.type == AST_TYPE_DOUBLE && lhsType.type == AST_TYPE_INT && lhsIsLiteral)) {
+					// conversion, ok
+					outType->type = AST_TYPE_DOUBLE;
+				} else {
+					fputs("Incompatible types for binary operation. ", stderr);
 					return ANALYSIS_WRONG_BINARY_TYPES;
 				}
 			}
 
-			outType->type = rhsType.type;
 			outType->nullable = rhsType.nullable;
 			break;
 	}
