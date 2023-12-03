@@ -394,6 +394,9 @@ static void compileBuiltInSubstring() {
 	// start >= length
 	puts("LT TF@error_temp TF@start TF@len");  // !(start < length)
 	printf("JUMPIFEQ l%d TF@error_temp bool@false\n", errorLabel);
+	// end > length
+	puts("GT TF@error_temp TF@end TF@len");
+	printf("JUMPIFEQ l%d TF@error_temp bool@true\n", errorLabel);
 
 	// create string
 	puts("DEFVAR TF@result");

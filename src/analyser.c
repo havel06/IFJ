@@ -411,7 +411,7 @@ static analysisResult analyseInputParameterList(const astParameterList* list, co
 		if (param->requiresName) {
 			if (!inParam->hasName) {
 				fprintf(stderr, "Parameter %s requires to be called explicitely.\n", param->outsideName.name);
-				return ANALYSIS_WRONG_FUNC_TYPE;  // TODO - is this correct?
+				return ANALYSIS_OTHER_ERROR;  // TODO - is this correct?
 			}
 
 			if (strcmp(param->outsideName.name, inParam->name.name) != 0) {

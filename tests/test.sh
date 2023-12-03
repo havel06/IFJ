@@ -57,7 +57,7 @@ execTest "Function call with arguments" "input/function_call_args.swift" "output
 execTest "Function with wrong parameter id" "input/funct_param_wrong_id.swift" "output/empty.txt" 5
 execTest "Function call with wrong parameter name" "input/func_param_wrong_name.swift" "output/empty.txt" 4
 execTest "Function call with omitted name" "input/func_param_omit_name.swift" "output/function_call_args.txt" 0
-execTest "Function call with illegaly omitted name" "input/func_param_omit_name_illegal.swift" "output/empty.txt" 4
+execTest "Function call with illegaly omitted name" "input/func_param_omit_name_illegal.swift" "output/empty.txt" 9
 execTest "Function call with wrong parameter type" "input/func_call_wrong_type.swift" "output/empty.txt" 4
 execTest "Function call with wrong number of params" "input/func_call_wrong_param_count.swift" "output/empty.txt" 4
 execTest "Modify function parameter" "input/func_call_modify_param.swift" "output/empty.txt" 9
@@ -138,3 +138,4 @@ execTest "Example - cycles" "input/example_cycles.swift" "output/empty.txt" 0
 execTest "Bogus input (func !)" "input/bogus_func.swift" "output/empty.txt" 2
 execTest "Escape sequence + ord" "input/escape_ord.swift" "output/escape_ord.txt" 0
 execTest "Ord function with empty string" "input/ord_empty.swift" "output/empty.txt" 0
+execTest "Substring end out of bounds" "input/substring_oob.swift" "output/empty.txt" 0
