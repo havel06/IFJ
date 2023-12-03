@@ -50,8 +50,9 @@ static void emitNewVariableId(const astIdentifier* var) {
 }
 
 static void emitVariableId(const astIdentifier* var) {
-	symbolTable* scope;
+	symbolTable* scope = NULL;
 	symStackLookup(&VAR_SYM_STACK, var->name, &scope);
+	assert(scope);
 	if (scope == symStackGlobalScope(&VAR_SYM_STACK)) {
 		printf("GF@%s", var->name);
 	} else {
@@ -142,7 +143,7 @@ static astDataType compileBinaryExpression(const astBinaryExpression* expr) {
 			} else {
 				puts("DIV TF@res TF@lhs TF@rhs");
 			}
-			resultType.type = AST_TYPE_DOUBLE;
+			resultType.type = lhsType.type;
 			break;
 		case AST_BINARY_PLUS:
 			if (lhsType.type == AST_TYPE_STRING) {
@@ -501,29 +502,41 @@ static void compileVariableDef(const astVariableDefinition* def, bool assignment
 
 	astDataType variableType = def->variableType;
 	if (def->hasInitValue) {
-		if (def->value.type == AST_VAR_INIT_EXPR) {
-			astDataType expressionType = compileExpression(&def->value.expr);
-			if (!def->hasExplicitType) {
-				variableType = expressionType;
-			}
-			// convert int to double if needed
-			if (def->hasExplicitType && def->variableType.type == AST_TYPE_DOUBLE &&
-				expressionType.type == AST_TYPE_INT) {
-				puts("INT2FLOATS");
-			}
-			printf("POPS ");
-			if (assignmentOnly) {
-				emitVariableId(&def->variableName);
+		if (!predefine) {
+			if (def->value.type == AST_VAR_INIT_EXPR) {
+				// compile initialiser
+				astDataType expressionType = compileExpression(&def->value.expr);
+				if (!def->hasExplicitType) {
+					if (assignmentOnly) {
+						symStackSetVarType(&VAR_SYM_STACK, def->variableName.name, expressionType);
+					} else {
+						variableType = expressionType;
+					}
+				}
+				// convert int to double if needed
+				if (def->hasExplicitType && def->variableType.type == AST_TYPE_DOUBLE &&
+					expressionType.type == AST_TYPE_INT) {
+					puts("INT2FLOATS");
+				}
+				printf("POPS ");
+				if (assignmentOnly) {
+					emitVariableId(&def->variableName);
+				} else {
+					emitNewVariableId(&def->variableName);
+				}
+				puts("");
 			} else {
-				emitNewVariableId(&def->variableName);
+				// copmpile initialiser
+				const symbolTableSlot* funcSlot =
+					symTableLookup((symbolTable*)FUNC_SYM_TABLE, def->value.call.funcName.name);
+				assert(funcSlot);
+				if (assignmentOnly) {
+					symStackSetVarType(&VAR_SYM_STACK, def->variableName.name, funcSlot->function.returnType);
+				} else {
+					variableType = funcSlot->function.returnType;
+				}
+				compileFunctionCall(&def->value.call, !assignmentOnly);
 			}
-			puts("");
-		} else {
-			const symbolTableSlot* funcSlot =
-				symTableLookup((symbolTable*)FUNC_SYM_TABLE, def->value.call.funcName.name);
-			assert(funcSlot);
-			variableType = funcSlot->function.returnType;
-			compileFunctionCall(&def->value.call, !assignmentOnly);
 		}
 	} else if (def->variableType.nullable) {
 		// default nil init
@@ -535,7 +548,7 @@ static void compileVariableDef(const astVariableDefinition* def, bool assignment
 	if (!assignmentOnly) {
 		// insert into symtable
 		symbolVariable newVar = {variableType, def->immutable, NULL};
-		symTableInsertVar(symStackCurrentScope(&VAR_SYM_STACK), newVar, def->variableName.name, !predefine);
+		assert(symTableInsertVar(symStackCurrentScope(&VAR_SYM_STACK), newVar, def->variableName.name, !predefine));
 	}
 }
 
@@ -574,7 +587,7 @@ void compileFunctionDef(const astFunctionDefinition* def) {
 	for (int i = 0; i < def->params.count; i++) {
 		astParameter* param = &def->params.data[i];
 		symbolVariable symbol = {param->dataType, true, symStackCurrentScope(&VAR_SYM_STACK)};
-		symTableInsertVar(symStackCurrentScope(&VAR_SYM_STACK), symbol, param->insideName.name, true);
+		assert(symTableInsertVar(symStackCurrentScope(&VAR_SYM_STACK), symbol, param->insideName.name, true));
 	}
 	symStackPush(&VAR_SYM_STACK);  // create new symtable scope so variables can shadow params
 	// parameters are read left to right

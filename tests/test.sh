@@ -133,3 +133,4 @@ execTest "Illegal implicit conversions in variable assignment" "input/assignment
 execTest "Escaping characters in strings" "input/escaped_strings.swift" "output/escaped_strings.txt" 0
 execTest "Example - redefinition inside while" "input/example_while_redef.swift" "output/example_while_redef.txt" 0
 execTest "Coalescence with nil on lhs" "input/coal_nil.swift" "output/coal_nil.txt" 0
+execTest "Example - ifj projekt je moc hard" "input/example_moc_hard.swift" "output/example_moc_hard.txt" 0

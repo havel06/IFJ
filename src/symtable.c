@@ -142,4 +142,10 @@ void symStackValidate(symbolTableStack* stack, const char* name) {
 	assert(false);
 }
 
+void symStackSetVarType(symbolTableStack* stack, const char* name, astDataType type) {
+	symbolTableSlot* slot = symStackLookup(stack, name, NULL);
+	assert(slot);
+	slot->variable.type = type;
+}
+
 // void symTableDestroy(symbolTable*);

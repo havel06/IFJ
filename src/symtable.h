@@ -61,5 +61,6 @@ symbolTable* symStackCurrentScope(symbolTableStack*);
 symbolTable* symStackGlobalScope(symbolTableStack*);
 symbolTableSlot* symStackLookup(symbolTableStack*, const char* name, symbolTable** tablePtr);
 void symStackValidate(symbolTableStack*, const char* name);	 // validate slot in symstack
+void symStackSetVarType(symbolTableStack*, const char* name, astDataType type);
 
 #endif
