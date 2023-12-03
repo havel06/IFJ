@@ -291,6 +291,11 @@ static analysisResult analyseFunctionDef(const astFunctionDefinition* def) {
 				return ANALYSIS_INTERNAL_ERROR;
 			}
 		}
+		if (strcmp(param->insideName.name, param->outsideName.name) == 0) {
+			printf("parameter %s of function %s cannot have same name and id.\n", param->outsideName.name,
+				   def->name.name);
+			return ANALYSIS_OTHER_ERROR;
+		}
 	}
 	ANALYSE(analyseStatementBlock(&def->body), {});
 	if (def->hasReturnValue && !returnsInAllPaths(&def->body)) {

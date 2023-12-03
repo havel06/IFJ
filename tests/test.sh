@@ -142,3 +142,4 @@ execTest "Substring end out of bounds" "input/substring_oob.swift" "output/empty
 execTest "Implicit cast in nil coalescence" "input/implicit_cast_coal.swift" "output/empty.txt" 0
 execTest "Wrong argument name" "input/func_wrong_arg_name.swift" "output/empty.txt" 9
 execTest "Unused param" "input/unused_param.swift" "output/empty.txt" 0
+execTest "Function param with same name" "input/func_param_same_name.swift" "output/empty.txt" 9
