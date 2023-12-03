@@ -140,3 +140,4 @@ execTest "Escape sequence + ord" "input/escape_ord.swift" "output/escape_ord.txt
 execTest "Ord function with empty string" "input/ord_empty.swift" "output/empty.txt" 0
 execTest "Substring end out of bounds" "input/substring_oob.swift" "output/empty.txt" 0
 execTest "Implicit cast in nil coalescence" "input/implicit_cast_coal.swift" "output/empty.txt" 0
+execTest "Wrong argument name" "input/func_wrong_arg_name.swift" "output/empty.txt" 9

@@ -293,7 +293,7 @@ static analysisResult analyseFunctionDef(const astFunctionDefinition* def) {
 	ANALYSE(analyseStatementBlock(&def->body), {});
 	if (def->hasReturnValue && !returnsInAllPaths(&def->body)) {
 		fputs("Function does not return in all paths.\n", stderr);
-		return ANALYSIS_WRONG_RETURN;
+		return ANALYSIS_OTHER_ERROR;
 	}
 	symStackPop(&VAR_SYM_STACK);
 	CURRENT_FUNCTION = NULL;
@@ -429,7 +429,7 @@ static analysisResult analyseInputParameterList(const astParameterList* list, co
 			}
 		} else if (inParam->hasName) {
 			fputs("Parameter does not require a name in function call.\n", stderr);
-			return ANALYSIS_WRONG_FUNC_TYPE;  // TODO - is this correct?
+			return ANALYSIS_OTHER_ERROR;  // TODO - is this correct?
 		}
 
 		astDataType inParamType;
