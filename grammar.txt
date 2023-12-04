@@ -34,16 +34,15 @@
 
 
 // yacc-like
-%token lcb rcb lrb rrb id int_lit dec_lit kdouble kint 
+%token lcb rcb lrb rrb id int_lit dec_lit kdouble kint expression
 %token kstring quest klet kvar assign comma colon knil str_lit bin_op
 %token kif kelse unwrap coal kwhile kreturn underscore kfunc
 %%
+program : top_level_statement | top_level_statement program | ;
 term : id | knil | int_lit | dec_lit | str_lit;
-expression : term | lrb expression rrb;
-program : top_level_statement | top_level_statement program;
 top_level_statement : statement | function_definition;
 statement : variable_definition | assignment | conditional | iteration | function_call | call | return;
-statements : statement | statement statements;
+statements : statement | statement statements |;
 statement_block : lcb statements rcb;
 typekword : kdouble | kint | kstring;
 type : typekword quest;
