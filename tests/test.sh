@@ -1,6 +1,6 @@
 #!/bin/bash
 
-testNum=1
+testNum=0
 compilerPath="../bin/compiler"
 
 # arguments:
@@ -9,6 +9,7 @@ compilerPath="../bin/compiler"
 # 3. expected output file
 # 4. expected return code
 execTest () {
+	testNum=$((testNum+1))
 	echo -e "\e[33m--------------------------------\e[0m"
 	bash -c "$compilerPath < $2 > tmp_output.txt 2>&1"
 	returnCode=$?
@@ -26,7 +27,6 @@ execTest () {
 		printf "\e[1m\e[31mFailed\e[0m Test %02d: $1\n" $testNum
 		diff tmp_output2.txt $3 | colordiff
 	fi
-	testNum=$((testNum+1))
 	rm -f tmp_output.txt tmp_output2.txt
 }
 
@@ -118,7 +118,9 @@ execTest "Init variable in while loop" "input/while_init.swift" "output/empty.tx
 execTest "Init variable in while loop - nested" "input/while_init_nested.swift" "output/while_init_nested.txt" 0
 execTest "Illegal token instead of data type" "input/illegal_typename.swift" "output/empty.txt" 2
 execTest "String with escape sequences" "input/string_valid.swift" "output/string_valid.txt" 0
-execTest "String with escape sequences" "input/string_invalid_escape.swift" "output/empty.txt" 1
+execTest "String with invalid escape sequence" "input/string_invalid_escape.swift" "output/empty.txt" 1
+execTest "String with ascii escape sequence" "input/string_ascii.swift" "output/string_ascii.txt" 0
+execTest "String with invalid ascii" "input/string_ascii_invalid.swift" "output/empty.txt" 1
 execTest "String literal with newline character" "input/string_literal_newline.swift" "output/empty.txt" 1
 execTest "Init Double variable with int literal" "input/double_int_init.swift" "output/empty.txt" 0
 execTest "Basic multiline string" "input/multiline_string.swift" "output/multiline_string.txt" 0
@@ -128,6 +130,7 @@ execTest "Multiline string with empty line" "input/multiline_string_empty_line.s
 execTest "Multiline string with indent and empty line" "input/multiline_string_indent_empty_line.swift" "output/multiline_string_indent_empty_line.txt" 0
 execTest "Multiline string with bad indent" "input/multiline_string_indent_illegal.swift" "output/empty.txt" 1
 execTest "Multiline string with closing quotes not on unique line" "input/multiline_string_wrong_close.swift" "output/empty.txt" 1
+execTest "Multiline string with quotation marks" "input/multiline_string_quotation_mark.swift" "output/multiline_string_quotation_mark.txt" 0
 execTest "Equality comparison with nil literal" "input/nil_eq.swift" "output/nil_eq.txt" 0
 execTest "Example - concat" "input/example_concat.swift" "output/example_concat.txt" 0
 execTest "Example - factorial (iterative)" "input/example_factorial_iter.swift" "output/example_factorial_iter.txt" 0

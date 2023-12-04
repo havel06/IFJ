@@ -317,12 +317,12 @@ static lexerResult lexMultiLineStringToken(token* newToken) {
 			// check for string end
 			int c1 = getchar();
 			int c2 = getchar();
-			if (c1 == '\"' && c2 == '\"') {
+			if (c1 == '"' && c2 == '"') {
 				break;
-			} else {
-				ungetc(c2, stdin);
-				ungetc(c1, stdin);
 			}
+			ungetc(c2, stdin);
+			ungetc(c1, stdin);
+			newToken->content[len++] = c;
 		} else if (c == '\\') {
 			int ret = lexEscapedChar(&(newToken->content[len++]));
 			if (ret == LEXER_ERROR) {
