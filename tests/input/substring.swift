@@ -35,7 +35,7 @@ else { }
 
 if let b7
 {
-    write("WRONG6!\n")
+    write("WRONG7!\n")
 }
 else { }
 

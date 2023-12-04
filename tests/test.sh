@@ -19,7 +19,7 @@ execTest () {
 	printf "\n" >> tmp_output2.txt
 	if [ $returnCode -ne $4 ]; then
 		printf "\e[1m\e[31mFailed\e[0m Test %02d: $1:\n" $testNum
-		printf "\tWrong return code, expected $4, got $returnCode"
+		printf "\tWrong return code, expected $4, got $returnCode\n"
 	elif [ -z "$(diff --ignore-trailing-space --ignore-blank-lines tmp_output2.txt $3)" ]; then
 		printf "\e[1m\e[32mPassed\e[0m Test %02d: $1\n" $testNum
 	else
@@ -37,6 +37,12 @@ execTest "Variable names starting with numbers" "input/variable_name_number.swif
 execTest "Variable name as single underscore" "input/variable_name_underscore.swift" "output/empty.txt" 2
 execTest "Variable name as keyword" "input/variable_name_keyword.swift" "output/empty.txt" 2
 execTest "Legal nil initialization" "input/nil_init.swift" "output/empty.txt" 0
+execTest "Decimal literals" "input/decimal_literals.swift" "output/empty.txt" 0
+execTest "Decimal literals with empty whole part" "input/decimal_literal_empty_whole_part.swift" "output/empty.txt" 1
+execTest "Decimal literals with empty decimal part" "input/decimal_literal_empty_decimal_part.swift" "output/empty.txt" 1
+execTest "Decimal literals with empty exponent" "input/decimal_literal_empty_exponent.swift" "output/empty.txt" 1
+execTest "Decimal literals with decimal exponent" "input/decimal_literal_decimal_exponent.swift" "output/empty.txt" 1
+execTest "Decimal literals with other chars" "input/decimal_literal_other_char.swift" "output/empty.txt" 1
 execTest "Illegal nil initialization" "input/nil_init_illegal.swift" "output/empty.txt" 7
 execTest "Type deduction" "input/type_deduction.swift" "output/empty.txt" 0
 execTest "Nil type deduction" "input/nil_type_deduction.swift" "output/empty.txt" 8

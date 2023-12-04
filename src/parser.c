@@ -98,7 +98,6 @@ static parseResult keywordToDataType(tokenType type, astBasicDataType* output) {
 static void parseIntLiteral(const token* tok, astTerm* term) {
 	term->type = AST_TERM_INT;
 	term->integer.value = atoi(tok->content);
-	// TODO - parse exponent notation correctly
 }
 
 static void parseDecimalLiteral(const token* tok, astTerm* term) {

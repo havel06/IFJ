@@ -15,6 +15,12 @@ let db = 25 / 6
 
 write(da, "\n", db, "\n")
 
+let ea = 1e2 - 11
+let eb = 1.1e2 + 9
+let ec = 25e-2 + 0.5
+
+write(ea, "\n", eb, "\n", ec, "\n")
+
 // automatic conversion
 let ac = 1 + 2.0
 let bc = 4 * 3.0
