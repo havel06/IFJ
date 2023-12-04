@@ -1,5 +1,8 @@
 #!/bin/bash
 
+testToRun=$1
+numberOfArgs=$#
+
 testNum=0
 compilerPath="../bin/compiler"
 
@@ -10,6 +13,11 @@ compilerPath="../bin/compiler"
 # 4. expected return code
 execTest () {
 	testNum=$((testNum+1))
+	if (( numberOfArgs > 0 )); then
+		if (( $testToRun != $testNum )); then
+			return;
+		fi
+	fi
 	echo -e "\e[33m--------------------------------\e[0m"
 	bash -c "$compilerPath < $2 > tmp_output.txt 2>&1"
 	returnCode=$?
