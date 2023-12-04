@@ -111,6 +111,7 @@ static int skipWhiteSpace() {
 	return skipped;
 }
 
+// sets token to correct type if content matches keyword
 static void checkForKeyword(token* newToken) {
 	assert(newToken);
 	assert(newToken->content);
@@ -243,6 +244,7 @@ static lexerResult lexNumberToken(token* newToken) {
 
 bool isHexDigit(char c) { return isdigit(c) || ((c >= 'a') && (c <= 'f')) || ((c >= 'A') && (c <= 'F')); }
 
+// shifts content of string (starting at position 'start', of length 'len') to the left
 void leftShiftString(char* string, int start, int len) {
 	for (int i = start; i < start + len - 1; i++) {
 		string[i] = string[i + 1];
@@ -250,6 +252,7 @@ void leftShiftString(char* string, int start, int len) {
 	string[start + len - 1] = 0;
 }
 
+// shifts content of string 'count' times
 void leftShiftStringBy(char* string, int start, int len, int count) {
 	for (int i = 0; i < count; i++) {
 		leftShiftString(string, start, len);

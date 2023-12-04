@@ -57,16 +57,16 @@ typedef struct {
 	char* content;
 } token;
 
-// Returns 0 on success
-// int tokenCreate(token*, tokenType type, const char* str);
 void tokenDestroy(token*);
 
-// Returns 0 on success
 typedef enum { LEXER_OK, LEXER_ERROR, LEXER_INTERNAL_ERROR } lexerResult;
 
+// returns next token in stream
 lexerResult getNextToken(token*);
+
+// Returns token to internal buffer.
 // dont't destroy token after returning!
-// only return multiple tokens at once
+// don't return a token when there is something in buffer
 void unGetToken(const token*);
 
 #endif

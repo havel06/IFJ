@@ -23,6 +23,8 @@
 static parseResult parseStatement(astStatement* statement, const token* firstToken, bool insideFunction);
 static parseResult parseExpression(astExpression* expression, const token* firstToken);
 
+// gets token from lexer to variable 'tokenVar'.
+// If lexer returns an error, the macro calls return with an error value and calls 'onError' block
 #define GET_TOKEN(tokenVar, onError)         \
 	do {                                     \
 		switch (getNextToken(&tokenVar)) {   \
@@ -37,6 +39,8 @@ static parseResult parseExpression(astExpression* expression, const token* first
 		}                                    \
 	} while (0)
 
+// gets token type from lexer to variable 'typeVar'.
+// If lexer returns an error, the macro calls return with an error value and calls 'onError' block
 #define GET_TOKEN_TYPE(typeVar, onError) \
 	do {                                 \
 		token testedToken;               \
@@ -45,6 +49,9 @@ static parseResult parseExpression(astExpression* expression, const token* first
 		tokenDestroy(&testedToken);      \
 	} while (0)
 
+// gets token from lexer to variable 'typeVar'.
+// If the token type does not match 'assumedType', the macro calls return with an error value.
+// If lexer returns an error, the macro calls return with an error value and calls 'onError' block
 #define GET_TOKEN_ASSUME_TYPE(tokenVar, assumedType, onError) \
 	do {                                                      \
 		GET_TOKEN(tokenVar, onError);                         \
@@ -54,6 +61,7 @@ static parseResult parseExpression(astExpression* expression, const token* first
 		}                                                     \
 	} while (0)
 
+// Consumes a token from lexer, calling 'onError' if an error occurs.
 #define CONSUME_TOKEN(onError)             \
 	do {                                   \
 		token consumedToken;               \
@@ -61,6 +69,8 @@ static parseResult parseExpression(astExpression* expression, const token* first
 		tokenDestroy(&consumedToken);      \
 	} while (0)
 
+// Consumes a token from lexer, calling 'onError' if an error occurs.
+// If the token type does not match 'assumedType', the macro calls return with an error value.
 #define CONSUME_TOKEN_ASSUME_TYPE(assumedType, onError)             \
 	do {                                                            \
 		token consumedToken;                                        \
@@ -68,6 +78,8 @@ static parseResult parseExpression(astExpression* expression, const token* first
 		tokenDestroy(&consumedToken);                               \
 	} while (0)
 
+// Calls 'function' (must be of return type 'parseResult').
+// If the called function returns with an error, the macro calls return with the respective error value and calls 'onError'.
 #define TRY_PARSE(function, onError) \
 	do {                             \
 		int retval = function;       \
@@ -77,6 +89,7 @@ static parseResult parseExpression(astExpression* expression, const token* first
 		}                            \
 	} while (0)
 
+// Converts token type to its corresponding AST data type.
 static parseResult keywordToDataType(tokenType type, astBasicDataType* output) {
 	switch (type) {
 		case TOKEN_KEYWORD_INT:
@@ -95,16 +108,19 @@ static parseResult keywordToDataType(tokenType type, astBasicDataType* output) {
 	}
 }
 
+// tok = first token
 static void parseIntLiteral(const token* tok, astTerm* term) {
 	term->type = AST_TERM_INT;
 	term->integer.value = atoi(tok->content);
 }
 
+// tok = first token
 static void parseDecimalLiteral(const token* tok, astTerm* term) {
 	term->type = AST_TERM_DECIMAL;
 	term->decimal.value = atof(tok->content);
 }
 
+// tok = first token
 static parseResult parseStringLiteral(const token* tok, astTerm* term) {
 	term->type = AST_TERM_STRING;
 	term->string.content = malloc(strlen(tok->content) * sizeof(char) + 1);
@@ -116,6 +132,7 @@ static parseResult parseStringLiteral(const token* tok, astTerm* term) {
 	return PARSE_OK;
 }
 
+// tok = first token
 static parseResult parseIdentifier(const token* tok, astIdentifier* identifier) {
 	identifier->name = malloc(strlen(tok->content) + 1);
 	if (!identifier->name) {
@@ -125,6 +142,7 @@ static parseResult parseIdentifier(const token* tok, astIdentifier* identifier) 
 	return PARSE_OK;
 }
 
+// tok = first token
 static parseResult parseIdentifierTerm(const token* tok, astTerm* term) {
 	term->type = AST_TERM_ID;
 	TRY_PARSE(parseIdentifier(tok, &(term->identifier)), {});
@@ -158,6 +176,7 @@ static parseResult parseTerm(astTerm* term, const token* firstToken) {
 	return PARSE_OK;
 }
 
+// Primary expression = (expression) | term | unwrap expression
 static parseResult parsePrimaryExpression(astExpression* expression, const token* firstToken) {
 	switch (firstToken->type) {
 		case TOKEN_BRACKET_ROUND_LEFT: {
@@ -242,6 +261,7 @@ static astBinaryOperator parseBinaryOperator(tokenType type) {
 	}
 }
 
+// Higher number = higher precedence
 static int operatorPrecedence(astBinaryOperator op) {
 	switch (op) {
 		case AST_BINARY_MUL:
@@ -329,7 +349,7 @@ static parseResult parseExpression(astExpression* expression, const token* exprF
 static parseResult parseDataType(astDataType* dataType) {
 	token tok;
 	GET_TOKEN(tok, {});
-	TRY_PARSE(keywordToDataType(tok.type, &(dataType->type)), {});
+	TRY_PARSE(keywordToDataType(tok.type, &(dataType->type)), { tokenDestroy(&tok); });
 	tokenDestroy(&tok);
 
 	token optToken;
@@ -397,6 +417,7 @@ static parseResult parseFunctionCallParameter(astInputParameter* param) {
 	return PARSE_OK;
 }
 
+// Starting left bracket is assumed to be consumed
 static parseResult parseFunctionCallParams(astInputParameterList* params) {
 	astInputParameterListCreate(params);
 
@@ -435,6 +456,7 @@ static parseResult parseFunctionCallParams(astInputParameterList* params) {
 	return PARSE_OK;
 }
 
+// Opening left bracket of parameter list is assumed to be consumed
 static parseResult parseFunctionCall(astFunctionCall* call, const token* varName, const token* funcName) {
 	TRY_PARSE(parseIdentifier(varName, &(call->varName)), {});
 	TRY_PARSE(parseIdentifier(funcName, &(call->funcName)), {});
@@ -444,6 +466,7 @@ static parseResult parseFunctionCall(astFunctionCall* call, const token* varName
 	return PARSE_OK;
 }
 
+// Opening left bracket of parameter list is assumed to be consumed
 static parseResult parseProcedureCall(astStatement* statement, const token* funcName) {
 	statement->type = AST_STATEMENT_PROC_CALL;
 
@@ -454,6 +477,7 @@ static parseResult parseProcedureCall(astStatement* statement, const token* func
 	return PARSE_OK;
 }
 
+// '=' has already been consumed
 static parseResult parseAssignment(astStatement* statement, const token* varName, token* exprFirstToken) {
 	statement->type = AST_STATEMENT_ASSIGN;
 	TRY_PARSE(parseIdentifier(varName, &(statement->assignment.variableName)), {});
@@ -461,6 +485,7 @@ static parseResult parseAssignment(astStatement* statement, const token* varName
 	return PARSE_OK;
 }
 
+// Founc and identifier (varName), now we must determine whether it is an assignment or a function call
 static parseResult parseAssignmentOrFunctionCall(astStatement* statement, const token* varName) {
 	token firstToken;
 	GET_TOKEN(firstToken, {});
@@ -487,6 +512,7 @@ static parseResult parseAssignmentOrFunctionCall(astStatement* statement, const 
 	return PARSE_OK;
 }
 
+// Variable initialiser = function call or an expression
 static parseResult parseVarInit(astVariableInitialiser* initialiser, const char* varName) {
 	token firstToken;
 	GET_TOKEN(firstToken, {});
@@ -674,6 +700,7 @@ static parseResult parseStatement(astStatement* statement, const token* firstTok
 	return PARSE_OK;
 }
 
+// parameter inside function declaration
 static parseResult parseParameter(astParameter* param) {
 	// parse outside name
 	token outsideNameToken;
@@ -713,6 +740,8 @@ static parseResult parseParameter(astParameter* param) {
 	return PARSE_OK;
 }
 
+// parameter list of function declaration
+// opening left bracket has already been consumed
 static parseResult parseParameterList(astParameterList* list) {
 	astParameterListCreate(list);
 
@@ -743,6 +772,7 @@ static parseResult parseParameterList(astParameterList* list) {
 	return PARSE_OK;
 }
 
+// func keyword has already been consumed
 static parseResult parseFunctionDefinition(astFunctionDefinition* def) {
 	// parse name
 	token idToken;
