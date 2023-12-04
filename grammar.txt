@@ -36,8 +36,15 @@
 // yacc-like
 %token int_lit dec_lit str_lit expression call_parameter id
 %%
-statement : variable_decl | assignment | return; // TEMPORARY
-variable_decl : variable_decl_keyword id opt_var_type "=" opt_init;
+program : top_level_statement program | ;
+top_level_statement : statement | function_definition;
+iteration : "while" expression statement_block;
+conditional : "if" expression statement_block "else" statement_block;
+function_definition : "func" id "(" function_opt_param_list ")" return_type statement_block;
+statement_block : "{" statements "}";
+statements : statement statements | ;
+statement : variable_decl | assignment | conditional | iteration | return;
+variable_decl : variable_decl_keyword id opt_var_type opt_init;
 opt_var_type : ":" type | ;
 variable_decl_keyword : "let" | "var";
 return_type : "->" type | ;
@@ -46,7 +53,7 @@ function_param_list : function_param_def function_param_list_tail;
 function_param_list_tail : "," function_param_list | ;
 function_param_def : function_param_name function_param_name ":" type;
 function_param_name : id | "_";
-opt_init : initialiser | /*epsilon*/;
+opt_init : "=" initialiser | /*epsilon*/;
 return : "return" opt_expr;
 opt_expr : expression | ;
 type : type_key_word opt_question;
@@ -61,12 +68,5 @@ opt_call_param_list : call_parameter_list | ;
 call_parameter_list : call_parameter call_parameter_list_tail;
 call_parameter_list_tail : "," call_parameter_list | ;
 
-
 //call_parameter : term | id ":" term; //NELZE
-program : top_level_statement | top_level_statement program | ;
-top_level_statement : statement | function_definition;
 //statement : variable_definition | assignment | conditional | iteration | function_call | call | return;
-statement_block : lcb statements rcb;
-conditional : "if" expression statement_block "else" statement_block;
-iteration : "while" expression statement_block;
-function_definition : "func" id "(" function_opt_param_list ")" return_type statement_block;
