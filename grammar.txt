@@ -29,3 +29,43 @@
 <function_parameter_definition> ::= " (<id> | "_") <id> ":" <type>;
 <function_parameter_list> ::= <function_parameter_definition> ("," <function_parameter_definition>)*
 <function_definition> ::= func <id> "(" <function_call_parameter_list> ")" <statement_block>
+
+
+
+
+// yacc-like
+%token lcb rcb lrb rrb id int_lit dec_lit kdouble kint 
+%token kstring quest klet kvar assign comma colon knil str_lit bin_op
+%token kif kelse unwrap coal kwhile kreturn underscore kfunc
+%%
+term : id | knil | int_lit | dec_lit | str_lit;
+expression : term | lrb expression rrb;
+program : top_level_statement | top_level_statement program;
+top_level_statement : statement | function_definition;
+statement : variable_definition | assignment | conditional | iteration | function_call | call | return;
+statements : statement | statement statements;
+statement_block : lcb statements rcb;
+typekword : kdouble | kint | kstring;
+type : typekword quest;
+variable_definition_kword : klet kvar;
+opt_type : type | /*epsilon*/;
+initialiser : expression | call;
+opt_init : initialiser | /*epsilon*/;
+variable_definition : variable_definition_kword id opt_type assign opt_init;
+call : id lrb opt_call_param_list rrb;
+opt_call_param_list : call_parameter_list | /*epsilon*/;
+call_parameter_list_tail : comma call_parameter_list;
+opt_call_param_list_tail : call_parameter_list_tail | /*epsilon*/;
+call_parameter_list : call_parameter opt_call_param_list_tail;
+call_parameter : term | id colon term;
+assignment : id assign expression;
+conditional : kif expression statement_block kelse statement_block;
+iteration : kwhile expression statement_block;
+function_call : id assign call;
+return : kreturn | kreturn expression;
+function_param_outside_name : id | underscore;
+function_parameter_definition : function_param_outside_name id colon type;
+function_parameter_list_tail : comma function_parameter_list | /*epsilon*/;
+function_parameter_list : function_parameter_definition function_parameter_list_tail;
+function_header : kfunc id lrb function_parameter_list rrb "->" type | kfunc id lrb function_parameter_list rrb;
+function_definition : function_header statement_block;
