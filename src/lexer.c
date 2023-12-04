@@ -174,7 +174,7 @@ static lexerResult lexIdentifierToken(token* newToken) {
 static lexerResult lexNumberToken(token* newToken) {
 	assert(newToken);
 
-	enum { INT_PART, DEC_PART, EXP_PART, DEC_CHAR, EXP_CHAR} numberPart;
+	enum { INT_PART, DEC_PART, EXP_PART, DEC_CHAR, EXP_CHAR } numberPart;
 	numberPart = INT_PART;
 	newToken->type = TOKEN_INT_LITERAL;
 
