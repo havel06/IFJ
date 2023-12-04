@@ -198,6 +198,9 @@ static lexerResult lexNumberToken(token* newToken) {
 				newToken->type = TOKEN_DEC_LITERAL;
 				break;
 			default:
+				if (isalpha(c) || c == '_') {
+					return LEXER_ERROR;
+				}
 				if (!isdigit(c)) {
 					if ((c == '+' || c == '-') && numberPart == EXP_CHAR) {
 						break;
