@@ -35,7 +35,7 @@
 
 int main() {
 #ifdef TEST_LEXER
-	while (1) {
+	while (true) {
 		token tok;
 		int status = getNextToken(&tok);
 		if (status != LEXER_OK) {

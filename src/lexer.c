@@ -39,7 +39,7 @@ static int skipComments() {
 	int skipped = 0;
 	int counter = 0;
 	// single line comment
-	while (1) {
+	while (true) {
 		int slash1 = getchar();
 		int slash2 = getchar();
 		if (slash1 != '/' || slash2 != '/') {
@@ -49,7 +49,7 @@ static int skipComments() {
 		}
 
 		// skip the comment
-		while (1) {
+		while (true) {
 			int c = getchar();
 			if (c == '\n' || c == EOF) {
 				break;
@@ -59,7 +59,7 @@ static int skipComments() {
 		}
 	}
 	// mulitline comment
-	while (1) {
+	while (true) {
 		int slash = getchar();
 		int asterisk = getchar();
 		if (slash != '/' || asterisk != '*') {
@@ -69,7 +69,7 @@ static int skipComments() {
 		}
 		int nextC = getchar();
 		counter++;
-		while (1) {	 // find matching
+		while (true) { // find matching
 			int c = nextC;
 			nextC = getchar();
 			if (c == EOF || nextC == EOF) {
@@ -93,11 +93,11 @@ static int skipComments() {
 	return skipped;
 }
 
-// Returns 0 if no whitespace was skipped
+// Returns the number of skipped spaces, 0 when none skipped, positive otherwise
 static int skipWhiteSpace() {
 	int skipped = 0;
 
-	while (1) {
+	while (true) {
 		int c = getchar();
 
 		if (isspace(c)) {
@@ -111,40 +111,40 @@ static int skipWhiteSpace() {
 	return skipped;
 }
 
-// sets token to correct type if content matches keyword
+// Sets token to correct type if content matches keyword
 static void checkForKeyword(token* newToken) {
 	assert(newToken);
 	assert(newToken->content);
 
-	if (strcmp(newToken->content, "Double") == 0) {
-		newToken->type = TOKEN_KEYWORD_DOUBLE;
-	} else if (strcmp(newToken->content, "else") == 0) {
-		newToken->type = TOKEN_KEYWORD_ELSE;
-	} else if (strcmp(newToken->content, "func") == 0) {
-		newToken->type = TOKEN_KEYWORD_FUNC;
-	} else if (strcmp(newToken->content, "if") == 0) {
-		newToken->type = TOKEN_KEYWORD_IF;
-	} else if (strcmp(newToken->content, "Int") == 0) {
+	if (strcmp(newToken->content, "Int") == 0) {
 		newToken->type = TOKEN_KEYWORD_INT;
-	} else if (strcmp(newToken->content, "let") == 0) {
-		newToken->type = TOKEN_KEYWORD_LET;
-	} else if (strcmp(newToken->content, "nil") == 0) {
-		newToken->type = TOKEN_KEYWORD_NIL;
-	} else if (strcmp(newToken->content, "return") == 0) {
-		newToken->type = TOKEN_KEYWORD_RETURN;
+	} else if (strcmp(newToken->content, "Double") == 0) {
+		newToken->type = TOKEN_KEYWORD_DOUBLE;
 	} else if (strcmp(newToken->content, "String") == 0) {
 		newToken->type = TOKEN_KEYWORD_STRING;
+	} else if (strcmp(newToken->content, "nil") == 0) {
+		newToken->type = TOKEN_KEYWORD_NIL;
 	} else if (strcmp(newToken->content, "var") == 0) {
 		newToken->type = TOKEN_KEYWORD_VAR;
+	} else if (strcmp(newToken->content, "let") == 0) {
+		newToken->type = TOKEN_KEYWORD_LET;
+	} else if (strcmp(newToken->content, "if") == 0) {
+		newToken->type = TOKEN_KEYWORD_IF;
+	} else if (strcmp(newToken->content, "else") == 0) {
+		newToken->type = TOKEN_KEYWORD_ELSE;
 	} else if (strcmp(newToken->content, "while") == 0) {
 		newToken->type = TOKEN_KEYWORD_WHILE;
+	} else if (strcmp(newToken->content, "func") == 0) {
+		newToken->type = TOKEN_KEYWORD_FUNC;
+	} else if (strcmp(newToken->content, "return") == 0) {
+		newToken->type = TOKEN_KEYWORD_RETURN;
 	}
 }
 
 static lexerResult lexIdentifierToken(token* newToken) {
 	assert(newToken);
 	newToken->type = TOKEN_IDENTIFIER;
-	while (1) {
+	while (true) {
 		int c = getchar();
 		if (!isalnum(c) && c != '_') {
 			ungetc(c, stdin);
@@ -179,7 +179,7 @@ static lexerResult lexNumberToken(token* newToken) {
 	numberPart = INT_PART;
 	newToken->type = TOKEN_INT_LITERAL;
 
-	while (1) {
+	while (true) {
 		int c = getchar();
 
 		switch (c) {
@@ -244,7 +244,7 @@ static lexerResult lexNumberToken(token* newToken) {
 
 bool isHexDigit(char c) { return isdigit(c) || ((c >= 'a') && (c <= 'f')) || ((c >= 'A') && (c <= 'F')); }
 
-// shifts content of string (starting at position 'start', of length 'len') to the left
+// Shifts content of string (starting at position 'start', of length 'len') to the left by 1
 void leftShiftString(char* string, int start, int len) {
 	for (int i = start; i < start + len - 1; i++) {
 		string[i] = string[i + 1];
@@ -252,7 +252,7 @@ void leftShiftString(char* string, int start, int len) {
 	string[start + len - 1] = 0;
 }
 
-// shifts content of string 'count' times
+// Shifts content of string 'count' times
 void leftShiftStringBy(char* string, int start, int len, int count) {
 	for (int i = 0; i < count; i++) {
 		leftShiftString(string, start, len);
@@ -307,6 +307,7 @@ static lexerResult lexEscapedChar(char* outChar) {
 	return LEXER_OK;
 }
 
+// Lexes mulitline strings that start and end with """
 static lexerResult lexMultiLineStringToken(token* newToken) {
 	int len = 0;
 	while (true) {
@@ -397,7 +398,7 @@ static lexerResult lexStringToken(token* newToken) {
 	int cq2 = getchar();
 	int cq3 = getchar();
 
-	if (cq1 == '\"' && cq2 == '\"' && cq3 == '\n') {
+	if (cq1 == '"' && cq2 == '"' && cq3 == '\n') {
 		return lexMultiLineStringToken(newToken);
 	} else {
 		ungetc(cq3, stdin);
@@ -406,7 +407,7 @@ static lexerResult lexStringToken(token* newToken) {
 	}
 
 	int len = 0;
-	while (1) {
+	while (true) {
 		if (len >= 2047) {
 			// TODO - emit warning
 			return LEXER_INTERNAL_ERROR;

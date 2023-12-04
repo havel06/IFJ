@@ -263,7 +263,7 @@ static analysisResult analyseExpression(const astExpression* expression, astData
 	return ANALYSIS_OK;
 }
 
-// returns true if the given block returns in all control paths
+// Returns true if the given block returns in all control paths
 static bool returnsInAllPaths(const astStatementBlock* body) {
 	for (int i = 0; i < body->count; i++) {
 		const astStatement* statement = &body->statements[i];

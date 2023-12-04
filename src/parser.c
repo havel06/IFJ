@@ -293,7 +293,7 @@ static parseResult parseExpression(astExpression* expression, const token* exprF
 	// TODO - error when array overflows
 	TRY_PARSE(parsePrimaryExpression(&subExpressions[subExpressionsCount++], exprFirstToken), {});
 
-	while (1) {
+	while (true) {
 		token firstToken;
 		GET_TOKEN(firstToken, {});
 
@@ -371,7 +371,7 @@ static parseResult parseDataType(astDataType* dataType) {
 static parseResult parseStatementBlock(astStatementBlock* block, bool insideFunction) {
 	astStatementBlockCreate(block);
 	CONSUME_TOKEN_ASSUME_TYPE(TOKEN_BRACKET_CURLY_LEFT, {});
-	while (1) {
+	while (true) {
 		token nextToken;
 		GET_TOKEN(nextToken, {});
 
@@ -436,7 +436,7 @@ static parseResult parseFunctionCallParams(astInputParameterList* params) {
 		return PARSE_INTERNAL_ERROR;
 	}
 
-	while (1) {
+	while (true) {
 		// check for comma
 		token nextToken;
 		GET_TOKEN(nextToken, {});
@@ -752,7 +752,7 @@ static parseResult parseParameterList(astParameterList* list) {
 		return PARSE_INTERNAL_ERROR;
 	}
 
-	while (1) {
+	while (true) {
 		// check for comma
 		token nextToken;
 		GET_TOKEN(nextToken, {});
@@ -815,7 +815,7 @@ static parseResult parseFunctionDefinition(astFunctionDefinition* def) {
 parseResult parseProgram(astProgram* program) {
 	token nextToken;
 
-	while (1) {
+	while (true) {
 		GET_TOKEN(nextToken, {});
 		astTopLevelStatement topStatement;
 
