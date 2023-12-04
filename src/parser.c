@@ -79,7 +79,8 @@ static parseResult parseExpression(astExpression* expression, const token* first
 	} while (0)
 
 // Calls 'function' (must be of return type 'parseResult').
-// If the called function returns with an error, the macro calls return with the respective error value and calls 'onError'.
+// If the called function returns with an error, the macro calls return with the respective error value and calls
+// 'onError'.
 #define TRY_PARSE(function, onError) \
 	do {                             \
 		int retval = function;       \

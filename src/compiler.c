@@ -33,6 +33,7 @@ static const symbolTable* FUNC_SYM_TABLE;
 // used for compiler-generated labes (in conditionals etc)
 static int LAST_LABEL_NAME = 0;
 
+// returns a new, unique id for a label
 static int newLabelName() { return LAST_LABEL_NAME++; }
 
 // forward decl
@@ -40,6 +41,7 @@ static astDataType compileExpression(const astExpression*);
 static void compileStatement(const astStatement*, bool noDeclareVars);
 static void compileVariableDef(const astVariableDefinition* def, bool assignmentOnly, bool predefine);
 
+// adds correct frame and decorates name to avoid collisions (assumes that the variable IS NOT in symtable yet)
 static void emitNewVariableId(const astIdentifier* var) {
 	symbolTable* currentScope = symStackCurrentScope(&VAR_SYM_STACK);
 	if (currentScope == symStackGlobalScope(&VAR_SYM_STACK)) {
@@ -49,6 +51,7 @@ static void emitNewVariableId(const astIdentifier* var) {
 	}
 }
 
+// adds correct frame and decorates name to avoid collisions (assumes that the variable IS in symtable)
 static void emitVariableId(const astIdentifier* var) {
 	symbolTable* scope = NULL;
 	symStackLookup(&VAR_SYM_STACK, var->name, &scope);
@@ -60,6 +63,7 @@ static void emitVariableId(const astIdentifier* var) {
 	}
 }
 
+// result will be on top of stack
 static astDataType compileTerm(const astTerm* term) {
 	astDataType dataType;
 	dataType.nullable = false;
@@ -104,6 +108,7 @@ static astDataType compileTerm(const astTerm* term) {
 	return dataType;
 }
 
+// result will be on top of stack
 static astDataType compileBinaryExpression(const astBinaryExpression* expr) {
 	astDataType lhsType = compileExpression(expr->lhs);
 	astDataType rhsType = compileExpression(expr->rhs);
@@ -118,7 +123,7 @@ static astDataType compileBinaryExpression(const astBinaryExpression* expr) {
 	resultType.nullable = false;
 
 	if (expr->op != AST_BINARY_NIL_COAL) {
-		// perform conversion
+		// perform implicit conversion
 		if (lhsType.type == rhsType.type) {
 			// do nothing
 		} else if (lhsType.nullable && rhsType.type == AST_TYPE_NIL) {
@@ -231,6 +236,7 @@ static void compileAssignment(const astAssignment* assignment) {
 	puts("");
 }
 
+// noDeclareVars = turn variable declarations into assignments
 static void compileStatementBlock(const astStatementBlock* block, bool noDeclareVars) {
 	symStackPush(&VAR_SYM_STACK);
 	for (int i = 0; i < block->count; i++) {
@@ -248,6 +254,7 @@ static void compileOptionalBinding(const astOptionalBinding* binding) {
 	puts("NOTS");
 }
 
+// noDeclareVars = turn variable declarations into assignments
 static void compileConditional(const astConditional* conditional, bool noDeclareVars) {
 	astConditionType conditionType = conditional->condition.type;
 	if (conditionType == AST_CONDITION_EXPRESSION) {
@@ -278,6 +285,8 @@ static void compileConditional(const astConditional* conditional, bool noDeclare
 	puts("CLEARS");
 }
 
+// Recursively goes through the AST.
+// All variables declared inside while-loops will be created in the current scope to avoid redefinition.
 static void precompileVariableDefs(const astStatementBlock* block) {
 	for (int i = 0; i < block->count; i++) {
 		const astStatement* statement = &block->statements[i];
@@ -305,6 +314,7 @@ static void precompileVariableDefs(const astStatementBlock* block) {
 	}
 }
 
+// noDeclareVars = turn variable declarations into assignments
 static void compileIteration(const astIteration* iteration, bool noDeclareVars) {
 	symStackPush(&VAR_SYM_STACK);  // used for predefined variables
 	if (!noDeclareVars) {
@@ -483,10 +493,11 @@ static void compileProcedureCall(const astProcedureCall* call) {
 	puts("CLEARS");
 }
 
+// newVariable = function call is used inside variable declaration, so the variable hasn't been added to the symtable
+// yet.
 static void compileFunctionCall(const astFunctionCall* call, bool newVariable) {
 	compileInputParamList(&call->params);
 
-	// TODO - use a more effective way
 	if (strcmp(call->funcName.name, "readString") == 0) {
 		compileBuiltInReadString();
 	} else if (strcmp(call->funcName.name, "readInt") == 0) {
@@ -521,6 +532,8 @@ static void compileFunctionCall(const astFunctionCall* call, bool newVariable) {
 	puts("CLEARS");
 }
 
+// assignmentOnly = compile variable declaration as assignment
+// predefine = this declaration is a part of while-loop variable predifinition
 static void compileVariableDef(const astVariableDefinition* def, bool assignmentOnly, bool predefine) {
 	if (!assignmentOnly) {
 		printf("DEFVAR ");
@@ -583,6 +596,7 @@ static void compileVariableDef(const astVariableDefinition* def, bool assignment
 	}
 }
 
+// noDeclareVars = turn variable declarations into assignments
 static void compileStatement(const astStatement* statement, bool noDeclareVars) {
 	switch (statement->type) {
 		case AST_STATEMENT_VAR_DEF:

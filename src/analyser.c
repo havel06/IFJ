@@ -61,6 +61,7 @@ bool isTriviallyConvertible(astDataType to, astDataType from) {
 	return to.type == from.type;
 }
 
+// recursively check if an expression contains a variable inside
 bool containsVariable(const astExpression* expr) {
 	switch (expr->type) {
 		case AST_EXPR_TERM:
@@ -262,6 +263,7 @@ static analysisResult analyseExpression(const astExpression* expression, astData
 	return ANALYSIS_OK;
 }
 
+// returns true if the given block returns in all control paths
 static bool returnsInAllPaths(const astStatementBlock* body) {
 	for (int i = 0; i < body->count; i++) {
 		const astStatement* statement = &body->statements[i];
@@ -636,6 +638,7 @@ static analysisResult analyseStatementBlock(const astStatementBlock* block) {
 	return ANALYSIS_OK;
 }
 
+// tries to register the function to the function symtable
 static analysisResult registerFunction(const astFunctionDefinition* def) {
 	// check if function of same name is defined
 	symbolTableSlot* slot = symTableLookup(FUNC_SYM_TABLE, def->name.name);
@@ -652,6 +655,8 @@ static analysisResult registerFunction(const astFunctionDefinition* def) {
 	}
 	return ANALYSIS_OK;
 }
+
+// BUILTIN FUNCTIONS
 
 static bool registerReadString() {
 	astDataType returnType = {AST_TYPE_STRING, true};
