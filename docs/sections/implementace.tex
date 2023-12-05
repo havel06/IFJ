@@ -19,7 +19,11 @@ jehož implementaci lze nalézt v souborech \texttt{AST.h} a \texttt{AST.c}.
 V souborech \texttt{printAST.h} a \texttt{printAST.c} se nachází pomocné funkce pro výpis struktury syntaktického sromu.
 Pro jednodušší ošetření chyb lexeru používáme makra (např. \texttt{GET\_TOKEN}),
 která při chybě lexeru automaticky vracejí z aktuální funkce a propagují chybovou hodnotu.
-%TODO - expression parser
+
+\subsubsection{Zpracování výrazů}
+Pro zpracování výrazů se správnou precedencí používáme metodu zvanou \textit{Pratt parsing}.
+Důvodem je hlavně jednoduchá integrace s metodou rekurzivního sestupu, bez přidávání dalších gramatických pravidel.
+Algoritmus jsme navíc už jednou implementovali v projektu do předmětu IVS.
 
 \subsection{Sémantická analýza}
 Sémantický analyzátor je implementován v souborech \texttt{analyser.h} a \texttt{analyser.c}.
@@ -32,7 +36,10 @@ Pro jednodušší přístup z funkcí analyzátoru jsou všechny tabulky statick
 Výstupem analyzátoru je zmíněná tabulka funkcí, kterou dále používá generátor cílového kódu.
 
 \subsubsection{Implementace tabulky symbolů}
-%TODO
+Tabulka symbolů je implementována jako hashovací tabulka s implicitním řetězením.
+Tabulka je univerzální; dokáže v sobě uchovávat jak funkce, tak proměnné.
+V souboru \texttt{symtable.h} je také definovaný zásobník tabulek (struktura \texttt{symbolTableStack}),
+který používáme pro organizaci tabulek pro jednotlivé programové bloky.
 
 \subsection{Generátor cílového kódu}
 Generátor kódu je implementován v souborech \texttt{compiler.h} a \texttt{compiler.c}.
