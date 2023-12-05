@@ -835,7 +835,7 @@ analysisResult analyseProgram(const astProgram* program, symbolTable* functionTa
 	for (int i = 0; i < program->count; i++) {
 		const astTopLevelStatement* topStatement = &program->statements[i];
 		if (topStatement->type == AST_TOP_FUNCTION) {
-			ANALYSE(registerFunction(&topStatement->functionDef), {});
+			ANALYSE(registerFunction(&topStatement->functionDef), { cleanUpBuiltinFunctions(); });
 		}
 	}
 
@@ -843,9 +843,9 @@ analysisResult analyseProgram(const astProgram* program, symbolTable* functionTa
 	for (int i = 0; i < program->count; i++) {
 		const astTopLevelStatement* topStatement = &program->statements[i];
 		if (topStatement->type == AST_TOP_STATEMENT) {
-			ANALYSE(analyseStatement(&topStatement->statement), {});
+			ANALYSE(analyseStatement(&topStatement->statement), { cleanUpBuiltinFunctions(); });
 		} else {
-			ANALYSE(analyseFunctionDef(&topStatement->functionDef), {});
+			ANALYSE(analyseFunctionDef(&topStatement->functionDef), { cleanUpBuiltinFunctions(); });
 		}
 	}
 

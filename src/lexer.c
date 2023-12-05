@@ -69,7 +69,7 @@ static int skipComments() {
 		}
 		int nextC = getchar();
 		counter++;
-		while (true) { // find matching
+		while (true) {	// find matching
 			int c = nextC;
 			nextC = getchar();
 			if (c == EOF || nextC == EOF) {
