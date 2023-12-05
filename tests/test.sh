@@ -4,7 +4,10 @@ testToRun=$1
 numberOfArgs=$#
 
 testNum=0
-compilerPath="../bin/compiler"
+#compilerPath="../bin/compiler"
+
+compilerPath="/tmp/ifj23/compiler"
+
 
 # arguments:
 # 1. name of test
