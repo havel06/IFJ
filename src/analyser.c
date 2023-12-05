@@ -319,7 +319,7 @@ static analysisResult analyseAssignment(const astAssignment* assignment) {
 	// check if variable is mutable
 	if (slot->variable.immutable && slot->variable.initialisedInScope) {
 		fprintf(stderr, "Modification of immutable variable %s\n", assignment->variableName.name);
-		return ANALYSIS_OTHER_ERROR;  // TODO - is this correct?
+		return ANALYSIS_OTHER_ERROR;
 	}
 
 	astDataType valueType;
@@ -419,7 +419,7 @@ static analysisResult analyseIteration(const astIteration* iteration) {
 static analysisResult analyseInputParameterList(const astParameterList* list, const astInputParameterList* input) {
 	if (list->count != input->count) {
 		fputs("Wrong number of parameters.\n", stderr);
-		return ANALYSIS_WRONG_FUNC_TYPE;  // TODO - is this correct?
+		return ANALYSIS_WRONG_FUNC_TYPE;
 	}
 
 	for (int i = 0; i < list->count; i++) {
@@ -644,7 +644,7 @@ static analysisResult registerFunction(const astFunctionDefinition* def) {
 	symbolTableSlot* slot = symTableLookup(FUNC_SYM_TABLE, def->name.name);
 	if (slot) {
 		fprintf(stderr, "Redefinition of function %s\n", def->name.name);
-		return ANALYSIS_UNDEFINED_FUNC;	 // TODO - is this the correct error value?
+		return ANALYSIS_OTHER_ERROR;
 	}
 
 	// add function to symbol table
