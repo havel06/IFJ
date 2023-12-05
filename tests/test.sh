@@ -51,6 +51,7 @@ execTest "Decimal literals with empty decimal part" "input/decimal_literal_empty
 execTest "Decimal literals with empty exponent" "input/decimal_literal_empty_exponent.swift" "output/empty.txt" 1
 execTest "Decimal literals with decimal exponent" "input/decimal_literal_decimal_exponent.swift" "output/empty.txt" 1
 execTest "Decimal literals with other chars" "input/decimal_literal_other_char.swift" "output/empty.txt" 1
+execTest "Decimal literals with multiple valid chars" "input/decimal_literal_multiple_pm.swift" "output/empty.txt" 1
 execTest "Illegal nil initialization" "input/nil_init_illegal.swift" "output/empty.txt" 7
 execTest "Nil reassignment" "input/nil_reassign.swift" "output/nil_reassign.txt" 0
 execTest "Type deduction" "input/type_deduction.swift" "output/empty.txt" 0

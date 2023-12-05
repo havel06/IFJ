@@ -175,7 +175,7 @@ static lexerResult lexIdentifierToken(token* newToken) {
 static lexerResult lexNumberToken(token* newToken) {
 	assert(newToken);
 
-	enum { INT_PART, DEC_PART, EXP_PART, DEC_CHAR, EXP_CHAR } numberPart;
+	enum { INT_PART, DEC_PART, EXP_PART, DEC_CHAR, EXP_CHAR, PM_CHAR } numberPart;
 	numberPart = INT_PART;
 	newToken->type = TOKEN_INT_LITERAL;
 
@@ -204,10 +204,11 @@ static lexerResult lexNumberToken(token* newToken) {
 				}
 				if (!isdigit(c)) {
 					if ((c == '+' || c == '-') && numberPart == EXP_CHAR) {
+						numberPart = PM_CHAR;
 						break;
 					}
 					ungetc(c, stdin);
-					if (numberPart == DEC_CHAR || numberPart == EXP_CHAR) {
+					if (!(numberPart == INT_PART || numberPart == DEC_PART || numberPart == EXP_PART)) {
 						return LEXER_ERROR;
 					}
 					return LEXER_OK;
@@ -215,6 +216,10 @@ static lexerResult lexNumberToken(token* newToken) {
 
 				if (numberPart == DEC_CHAR) {
 					numberPart = DEC_PART;
+				}
+
+				if (numberPart == PM_CHAR) {
+					numberPart = EXP_PART;
 				}
 
 				if (numberPart == EXP_CHAR) {

@@ -644,7 +644,7 @@ static analysisResult registerFunction(const astFunctionDefinition* def) {
 	symbolTableSlot* slot = symTableLookup(FUNC_SYM_TABLE, def->name.name);
 	if (slot) {
 		fprintf(stderr, "Redefinition of function %s\n", def->name.name);
-		return ANALYSIS_OTHER_ERROR;
+		return ANALYSIS_UNDEFINED_FUNC;
 	}
 
 	// add function to symbol table
