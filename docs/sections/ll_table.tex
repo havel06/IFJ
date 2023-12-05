@@ -1,0 +1,46 @@
+\newcommand{\rotatedlabel}[1]{\rotatebox[origin=c]{-90}{#1}}
+
+\begin{table}[htbp]
+\centering
+\small
+\begin{tabular}{l|ccccccccccccccccccccccc}
+\toprule
+	& \rotatedlabel{int\_lit} & \rotatedlabel{dec\_lit} & \rotatedlabel{str\_lit} & \rotatedlabel{expr} & \rotatedlabel{id} & \rotatedlabel{"var"} & \rotatedlabel{"let"} & \rotatedlabel{"while"} & \rotatedlabel{"if"}
+	& \rotatedlabel{"return"} & \rotatedlabel{"func"} & \rotatedlabel{"\{"} & \rotatedlabel{":"} & \rotatedlabel{"-\textgreater{}"} & \rotatedlabel{"\_"} & \rotatedlabel{","} & \rotatedlabel{"="} & \rotatedlabel{"Int"}
+	& \rotatedlabel{"Double"} & \rotatedlabel{"String"} & \rotatedlabel{"?"} & \rotatedlabel{"nil"} & \rotatedlabel{$\varepsilon$} \\
+\midrule
+program                     &                   &          &          &      & 1  & 1     & 1     & 1       & 1    & 1        & 1      &      &     &                    &      &     &     &       &          &          &     &       & 2       \\
+top\_level\_statement       &                   &          &          &      & 3  & 3     & 3     & 3       & 3    & 3        & 4      &      &     &                    &      &     &     &       &          &          &     &       &         \\
+iteration                   &                   &          &          &      &    &       &       & 5       &      &          &        &      &     &                    &      &     &     &       &          &          &     &       &         \\
+conditional                 &                   &          &          &      &    &       &       &         & 6    &          &        &      &     &                    &      &     &     &       &          &          &     &       &         \\
+function\_definition        &                   &          &          &      &    &       &       &         &      &          & 7      &      &     &                    &      &     &     &       &          &          &     &       &         \\
+statement\_block            &                   &          &          &      &    &       &       &         &      &          &        & 8    &     &                    &      &     &     &       &          &          &     &       &         \\
+statements                  &                   &          &          &      & 9  & 9     & 9     & 9       & 9    & 9        &        &      &     &                    &      &     &     &       &          &          &     &       & 10      \\
+statement                   &                   &          &          &      & 12 & 11    & 11    & 14      & 13   & 15       &        &      &     &                    &      &     &     &       &          &          &     &       &         \\
+variable\_decl              &                   &          &          &      &    & 16    & 16    &         &      &          &        &      &     &                    &      &     &     &       &          &          &     &       &         \\
+opt\_var\_type              &                   &          &          &      &    &       &       &         &      &          &        &      & 17  &                    &      &     &     &       &          &          &     &       & 18      \\
+variable\_decl\_keyword     &                   &          &          &      &    & 20    & 19    &         &      &          &        &      &     &                    &      &     &     &       &          &          &     &       &         \\
+return\_type                &                   &          &          &      &    &       &       &         &      &          &        &      &     & 21                 &      &     &     &       &          &          &     &       & 22      \\
+function\_opt\_param\_list  &                   &          &          &      & 23 &       &       &         &      &          &        &      &     &                    & 23   &     &     &       &          &          &     &       & 24      \\
+function\_param\_list       &                   &          &          &      & 25 &       &       &         &      &          &        &      &     &                    & 25   &     &     &       &          &          &     &       &         \\
+function\_param\_list\_tail &                   &          &          &      &    &       &       &         &      &          &        &      &     &                    &      & 26  &     &       &          &          &     &       & 27      \\
+function\_param\_def        &                   &          &          &      & 28 &       &       &         &      &          &        &      &     &                    & 28   &     &     &       &          &          &     &       &         \\
+function\_param\_name       &                   &          &          &      & 29 &       &       &         &      &          &        &      &     &                    & 30   &     &     &       &          &          &     &       &         \\
+opt\_init                   &                   &          &          &      &    &       &       &         &      &          &        &      &     &                    &      &     & 31  &       &          &          &     &       & 32      \\
+return                      &                   &          &          &      &    &       &       &         &      & 33       &        &      &     &                    &      &     &     &       &          &          &     &       &         \\
+opt\_expr                   &                   &          &          & 34   &    &       &       &         &      &          &        &      &     &                    &      &     &     &       &          &          &     &       & 35      \\
+type                        &                   &          &          &      &    &       &       &         &      &          &        &      &     &                    &      &     &     & 36    & 36       & 36       &     &       &         \\
+opt\_question               &                   &          &          &      &    &       &       &         &      &          &        &      &     &                    &      &     &     &       &          &          & 37  &       & 38      \\
+type\_key\_word             &                   &          &          &      &    &       &       &         &      &          &        &      &     &                    &      &     &     & 40    & 39       & 41       &     &       &         \\
+initialiser                 &                   &          &          & 42   & 43 &       &       &         &      &          &        &      &     &                    &      &     &     &       &          &          &     &       &         \\
+assignment                  &                   &          &          &      & 44 &       &       &         &      &          &        &      &     &                    &      &     &     &       &          &          &     &       &         \\
+term                        & 48                & 49       & 50       &      & 46 &       &       &         &      &          &        &      &     &                    &      &     &     &       &          &          &     & 47    &         \\
+call                        &                   &          &          &      & 51 &       &       &         &      &          &        &      &     &                    &      &     &     &       &          &          &     &       &         \\
+opt\_call\_param\_list      &                   &          &          & 52   & 52 &       &       &         &      &          &        &      &     &                    &      &     &     &       &          &          &     &       & 53      \\
+call\_parameter\_list       &                   &          &          & 54   & 54 &       &       &         &      &          &        &      &     &                    &      &     &     &       &          &          &     &       &         \\
+call\_parameter\_list\_tail &                   &          &          &      &    &       &       &         &      &          &        &      &     &                    &      & 55  &     &       &          &          &     &       & 56      \\
+call\_parameter             &                   &          &          & 58   & 57 &       &       &         &      &          &        &      &     &                    &      &     &     &       &          &          &     &       &        \\
+\bottomrule
+\end{tabular}
+\caption{Tabulka LL(1) gramatiky}
+\end{table}

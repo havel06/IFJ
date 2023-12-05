@@ -2,7 +2,6 @@
 \usepackage[utf8]{inputenc}
 \usepackage[czech]{babel}
 \usepackage[T1]{fontenc}
-\usepackage[margin=2.9cm]{geometry}
 \usepackage{hyperref}
 \usepackage{paralist}
 \usepackage{graphicx}
@@ -13,6 +12,31 @@
 \usepackage{listings}
 \usepackage{xcolor}
 \usepackage{lmodern}
+
+% sideways pdfpage
+\usepackage[usegeometry]{typearea}% before geometry!
+\usepackage{geometry}
+\geometry{
+	margin=2.9cm
+}
+\newcommand*{\useportrait}{%
+  \clearpage
+  \KOMAoptions{paper=portrait,DIV=current}%switch to portrait
+  \newgeometry{% geometry settings for portrait
+	margin=2.9cm
+  }%
+  %\fancyhfoffset{0pt}% <- recalculate head and foot width for fancyhdr
+}
+\newcommand*{\uselandscape}{%
+  \clearpage
+  \KOMAoptions{paper=landscape,DIV=current}%switch to landscape
+  \newgeometry{% geometry settings for landscap
+    margin=1cm, bottom=2.5cm
+  }%
+  %\fancyhfoffset{0pt}% recalculate head and foot width for fancyhdr
+}
+
+
 
 \lstset{
 	language=C++,
@@ -76,5 +100,8 @@
 
 \input{sections/teamwork.tex}
 \input{sections/implementace.tex}
+
+\uselandscape
+\input{sections/ll_table.tex}
 
 \end{document}
