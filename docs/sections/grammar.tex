@@ -1,0 +1,61 @@
+Terminály: \lstinline{int_lit dec_lit str_lit expression id}
+
+\begin{lstlisting}
+program : top_level_statement program;
+program : epsilon;
+top_level_statement : statement;
+top_level_statement : function_definition;
+iteration : "while" expression statement_block;
+conditional : "if" expression statement_block "else" statement_block;
+function_definition : "func" id "(" function_opt_param_list ")" return_type statement_block;
+statement_block : "{" statements "}";
+statements : statement statements;
+statements : epsilon;
+statement : variable_decl;
+statement : assignment;
+statement : conditional;
+statement : iteration;
+statement : return;
+variable_decl : variable_decl_keyword id opt_var_type opt_init;
+opt_var_type : ":" type;
+opt_var_type : epsilon;
+variable_decl_keyword : "let";
+variable_decl_keyword : "var";
+return_type : "->" type;
+return_type : epsilon;
+function_opt_param_list : function_param_list;
+function_opt_param_list : epsilon;
+function_param_list : function_param_def function_param_list_tail;
+function_param_list_tail : "," function_param_list;
+function_param_list_tail : epsilon;
+function_param_def : function_param_name function_param_name ":" type;
+function_param_name : id;
+function_param_name : "_";
+opt_init : "=" initialiser;
+opt_init : epsilon;
+return : "return" opt_expr;
+opt_expr : expression;
+opt_expr : epsilon;
+type : type_key_word opt_question;
+opt_question : "?";
+opt_question : epsilon;
+type_key_word : "Double";
+type_key_word : "Int";
+type_key_word : "String";
+initialiser : expression;
+initialiser : call;
+assignment : id "=" expression;
+term : id;
+term : "nil";
+term : int_lit;
+term : dec_lit;
+term : str_lit;
+call : id "(" opt_call_param_list ")";
+opt_call_param_list : call_parameter_list;
+opt_call_param_list : epsilon;
+call_parameter_list : call_parameter call_parameter_list_tail;
+call_parameter_list_tail : "," call_parameter_list;
+call_parameter_list_tail : epsilon;
+call_parameter : id ":" expression
+call_parameter : expression
+\end{lstlisting}
