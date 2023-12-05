@@ -1,0 +1,46 @@
+\section{Implementace}
+Překladač je implementovaný jako víceprůchodový.
+Zvolili jsme tento typ implementace kvůli jednoduššímu členení kódu a možnosti ladit jednotlivé fáze nezávisle na sobě.
+Víceprůchodový překladač se také osvědčil pro implementaci volání funkcí před jejich deklaracemi.
+
+\subsection{Lexer}
+Implementace lexeru se nachází v souborech \texttt{lexer.h} a \texttt{lexer.c}.
+Primární funkcí veřejného rozhraní lexeru je funkce \texttt{getNextToken}, která zpracuje jeden token ze vstupu.
+Token je struktura zestávající z typu tokenu a obsahu, reprezentovaného textovým řetězcem.
+Kvůli možnosti nahlížet za následující token obsahuje lexer také buffer na jeden token, do kterého lze token vložit pomocí
+funkce \texttt{unGetToken}. Při následném volání funkce \texttt{getNextToken} lexer místo zpracování vstupu vrátí token z bufferu.
+Pro ladění lexeru jsme napsali pomocné funkce pro tištění tokenů, nacházející se v souborech \texttt{printToken.h} a \texttt{printToken.c}.
+
+\subsection{Parser}
+Parser je implementován v souborech \texttt{parser.h} a \texttt{parser.c}.
+Používá metodu rekurzivního sestupu.
+Jako vstup bere tokeny přímo z lexeru, a jako výstup sestavuje \textit{abstraktní syntaktický strom},
+jehož implementaci lze nalézt v souborech \texttt{AST.h} a \texttt{AST.c}.
+V souborech \texttt{printAST.h} a \texttt{printAST.c} se nachází pomocné funkce pro výpis struktury syntaktického sromu.
+Pro jednodušší ošetření chyb lexeru používáme makra (např. \texttt{GET\_TOKEN}),
+která při chybě lexeru automaticky vracejí z aktuální funkce a propagují chybovou hodnotu.
+%TODO - expression parser
+
+\subsection{Sémantická analýza}
+Sémantický analyzátor je implementován v souborech \texttt{analyser.h} a \texttt{analyser.c}.
+Na vstup bere sestavený syntaktický strom, a rekurzivním průchodem kontroluje platnost sémantických pravidel.
+Syntaktický strom nijak nemodifikuje.
+Nad stromem vykoná celkem dva průchody; v prvním jen zaregistruje deklarace funkcí (kvůli možnosti jejich volání před deklarací),
+zatímco v druhém průchodu kontroluje vše ostatní.
+Analyzátor používá tabulku symbolů pro funkce a zásobník tabulek symbolů pro proměnné.
+Pro jednodušší přístup z funkcí analyzátoru jsou všechny tabulky statické globální proměnné.
+Výstupem analyzátoru je zmíněná tabulka funkcí, kterou dále používá generátor cílového kódu.
+
+\subsubsection{Implementace tabulky symbolů}
+%TODO
+
+\subsection{Generátor cílového kódu}
+Generátor kódu je implementován v souborech \texttt{compiler.h} a \texttt{compiler.c}.
+Na vstup bere syntaktický strom, u kterého očekává, že je sémanticky platný, a tabulku funkcí vygenerovanou analyzátorem.
+Vyhodnocování složitých výrazů probíhá za pomoci zásobníku; výsledky podvýrazů vždy skončí na vrcholu zásobníku, odkud je zpracuje nadřazený výraz.
+Pomocí zásobníku také předáváme parametry funkcím.
+Zavolání funkce také vždy vytvoří nový rámec, díky čemuž nedochází k redeklaraci lokálních proměnných při rekurzi.
+Jedním z problémů při překladu byly proměnné uvnitř cyklů, což způsobovalo redeklaraci a následně chybu interpretu.
+Překladač tento problém reší deklarací proměnných před cyklem, a přeměnou všech deklarací uvnitř cyklu na jednoduchá přiřazení.
+Vestavěné funkce jsou pro jednoduchost generované až v místě použití.
+Díky tomu také lze jednoduše řešit volání vestavěné funkce \texttt{write}, která může přijmout libovolný počet parametrů.
