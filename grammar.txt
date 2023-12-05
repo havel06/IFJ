@@ -1,72 +1,64 @@
-<program> ::= (<statement> | <function_definition>)*
-<statement> ::= <variable_definition> | <assignment> | <conditional> | <iteration> | <function_call> | <procedure_call> | <return>
-<statement_block> ::= "{" <statement>* "}"
-<variable_definition> ::= ("let" | "var") <id> [":" <type>] "=" (<expression> | <call>)
-<letter> ::= /[a-z]/ | /[A-Z]/
-<digit> ::= /[0-9]/
-<alphanumeric> ::= <letter> | <digit>
-<id> ::= ("_" | <letter>) (<alphanumeric>)+
-<type> ::= ("Double" | "Int" | "String") ["?"]
-<call> ::= <id> "(" [ <call_parameter_list> ] ")"
-<call_parameter_list> ::= <call_parameter> ("," <call_parameter>)*
-<call_parameter> ::= [<id> ":"] <term>
-<term> ::= <id> | "nil" | <int_literal> | <double_literal> | <string_literal>
-<int_literal> ::= (<digit>)+
-<double_literal> ::= (<digit>)+ "." (<digit>)+ [ ("e" | "E") [ "+" | "-" ] (<digit>)+ ]
-<string_literal> ::= ('"' .* '"') | ('"""' .* '"""')
-<expression> ::= <term> | <binary_epxpression> | <unwrap_expression> | "(" <expression> ")"
-<binary_operator> ::= "*" | "/" | "+" | "-" | "==" | "!=" | "<" | ">" | "<=" | ">=" | "??"
-<binary_epxpression> ::= <expression> <binary_operator> <expression>
-<unwrap_expression> ::= <expression> "!"
-<assignment> ::= <id> "=" <expression>
-<conditional> ::= "if" <expression> "{" <statement>* "}" "else" "{" <statement>* "}"
-<iteration> ::= "while" <expression> "{" <statement>* "}"
-<function_call_parameter> ::= [<id> ":"] <term>
-<function_call_parameter_list> ::= <function_call_parameter> ("," <function_call_parameter>)*
-<function_call> ::= <id> "=" <procedure_call>
-<procedure_call> ::= <id> "(" <function_call_parameter_list> ")"
-<return> ::= "return" [<expression>]
-<function_parameter_definition> ::= " (<id> | "_") <id> ":" <type>;
-<function_parameter_list> ::= <function_parameter_definition> ("," <function_parameter_definition>)*
-<function_definition> ::= func <id> "(" <function_call_parameter_list> ")" <statement_block>
+TERMINALY: int_lit dec_lit str_lit expression id
 
+1   program : top_level_statement program;
+2   program : epsilon;
+3   top_level_statement : statement;
+4   top_level_statement : function_definition;
+5   iteration : "while" expression statement_block;
+6   conditional : "if" expression statement_block "else" statement_block;
+7   function_definition : "func" id "(" function_opt_param_list ")" return_type statement_block;
+8   statement_block : "{" statements "}";
+9   statements : statement statements;
+10  statements : epsilon;
+11  statement : variable_decl;
+12  statement : assignment;
+13  statement : conditional;
+14  statement : iteration;
+15  statement : return;
+16  variable_decl : variable_decl_keyword id opt_var_type opt_init;
+17  opt_var_type : ":" type;
+18  opt_var_type : epsilon;
+19  variable_decl_keyword : "let";
+20  variable_decl_keyword : "var";
+21  return_type : "->" type;
+22  return_type : epsilon;
+23  function_opt_param_list : function_param_list;
+24  function_opt_param_list : epsilon;
+25  function_param_list : function_param_def function_param_list_tail;
+26  function_param_list_tail : "," function_param_list;
+27  function_param_list_tail : epsilon;
+28  function_param_def : function_param_name function_param_name ":" type;
+29  function_param_name : id;
+30  function_param_name : "_";
+31  opt_init : "=" initialiser;
+32  opt_init : epsilon;
+33  return : "return" opt_expr;
+34  opt_expr : expression;
+35  opt_expr : epsilon;
+36  type : type_key_word opt_question;
+37  opt_question : "?";
+38  opt_question : epsilon;
+39  type_key_word : "Double";
+40  type_key_word : "Int";
+41  type_key_word : "String";
+42  initialiser : expression;
+43  initialiser : call;
+44  assignment : id "=" expression;
+46  term : id;
+47  term : "nil";
+48  term : int_lit;
+49  term : dec_lit;
+50  term : str_lit;
+51  call : id "(" opt_call_param_list ")";
+52  opt_call_param_list : call_parameter_list;
+53  opt_call_param_list : epsilon;
+54  call_parameter_list : call_parameter call_parameter_list_tail;
+55  call_parameter_list_tail : "," call_parameter_list;
+56  call_parameter_list_tail : epsilon;
+57  call_parameter : id ":" expression
+58  call_parameter : expression
 
-
-
-// yacc-like
-%token int_lit dec_lit str_lit expression call_parameter id
-%%
-program : top_level_statement program | ;
-top_level_statement : statement | function_definition;
-iteration : "while" expression statement_block;
-conditional : "if" expression statement_block "else" statement_block;
-function_definition : "func" id "(" function_opt_param_list ")" return_type statement_block;
-statement_block : "{" statements "}";
-statements : statement statements | ;
-statement : variable_decl | assignment | conditional | iteration | return;
-variable_decl : variable_decl_keyword id opt_var_type opt_init;
-opt_var_type : ":" type | ;
-variable_decl_keyword : "let" | "var";
-return_type : "->" type | ;
-function_opt_param_list : function_param_list | ;
-function_param_list : function_param_def function_param_list_tail;
-function_param_list_tail : "," function_param_list | ;
-function_param_def : function_param_name function_param_name ":" type;
-function_param_name : id | "_";
-opt_init : "=" initialiser | /*epsilon*/;
-return : "return" opt_expr;
-opt_expr : expression | ;
-type : type_key_word opt_question;
-opt_question : "?" | ;
-type_key_word : "Double" | "Int" | "String";
-initialiser : expression | call;
-assignment : id "=" expression;
-function_call : id "=" call;
-term : id | "nil" | int_lit | dec_lit | str_lit;
-call : id "(" opt_call_param_list ")";
-opt_call_param_list : call_parameter_list | ;
-call_parameter_list : call_parameter call_parameter_list_tail;
-call_parameter_list_tail : "," call_parameter_list | ;
-
+// NELZE
+//function_call : id "=" call;
 //call_parameter : term | id ":" term; //NELZE
 //statement : variable_definition | assignment | conditional | iteration | function_call | call | return;
