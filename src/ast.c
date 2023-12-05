@@ -151,6 +151,7 @@ static void astExpressionDestroy(astExpression* expr) {
 			break;
 		case AST_EXPR_UNWRAP:
 			astExpressionDestroy(expr->unwrap.innerExpr);
+			free(expr->unwrap.innerExpr);
 			expr->unwrap.innerExpr = NULL;
 			break;
 	}
