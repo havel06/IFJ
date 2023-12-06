@@ -13,16 +13,18 @@
 
 #include "ast.h"
 
-#define SYM_TABLE_CAPACITY 1024
+#define SYM_TABLE_CAPACITY 2048
 
 typedef struct symbolTable symbolTable;	 // fwd
 
+// Slot for variables
 typedef struct {
 	astDataType type;
 	bool immutable;
 	symbolTable* initialisedInScope;
 } symbolVariable;
 
+// Slot for functions
 typedef struct {
 	const astParameterList* params;	 // non-owning
 	astDataType returnType;
@@ -49,7 +51,6 @@ typedef struct {
 } symbolTableStack;
 
 void symTableCreate(symbolTable*);
-// void symTableDestroy(symbolTable*);
 bool symTableInsertVar(symbolTable*, symbolVariable, const char* name, bool valid);
 bool symTableInsertFunc(symbolTable*, symbolFunc, const char* name);
 symbolTableSlot* symTableLookup(symbolTable*, const char* name);

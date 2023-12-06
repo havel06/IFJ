@@ -86,7 +86,6 @@ static astDataType compileTerm(const astTerm* term) {
 			dataType.type = AST_TYPE_DOUBLE;
 			break;
 		case AST_TERM_STRING:
-			// TODO - escape sequences, control characters
 			printf("PUSHS string@");
 			for (size_t i = 0; i < strlen(term->string.content); i++) {
 				char c = term->string.content[i];
