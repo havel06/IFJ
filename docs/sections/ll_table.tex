@@ -1,8 +1,10 @@
 \newcommand{\rotatedlabel}[1]{\rotatebox[origin=c]{-90}{#1}}
 
 \begin{table}[htbp]
+\rowcolors{1}{white}{gray!20!white}
 \centering
 \small
+\caption{Tabulka LL(1) gramatiky}
 \begin{tabular}{l|ccccccccccccccccccccccc}
 \toprule
 	& \rotatedlabel{int\_lit} & \rotatedlabel{dec\_lit} & \rotatedlabel{str\_lit} & \rotatedlabel{expr} & \rotatedlabel{id} & \rotatedlabel{"var"} & \rotatedlabel{"let"} & \rotatedlabel{"while"} & \rotatedlabel{"if"}
@@ -42,5 +44,4 @@ call\_parameter\_list\_tail &                   &          &          &      &  
 call\_parameter             &                   &          &          & 58   & 57 &       &       &         &      &          &        &      &     &                    &      &     &     &       &          &          &     &       &        \\
 \bottomrule
 \end{tabular}
-\caption{Tabulka LL(1) gramatiky}
 \end{table}

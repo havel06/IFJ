@@ -1,6 +1,4 @@
-\noindent Terminály: \lstinline{int_lit dec_lit str_lit expression id}
-
-\begin{lstlisting}[escapeinside={(*}{*)}]
+\begin{lstlisting}[escapeinside={(*}{*)}, caption={Popis LL gramatiky}]
 program : top_level_statement program;
 program : (*$\varepsilon$*);
 top_level_statement : statement;
@@ -59,3 +57,4 @@ call_parameter_list_tail : (*$\varepsilon$*);
 call_parameter : id ":" expression
 call_parameter : expression
 \end{lstlisting}
+\noindent Terminály: \lstinline{int_lit dec_lit str_lit expression id}

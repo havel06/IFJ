@@ -10,8 +10,9 @@
 \usepackage{booktabs}
 \usepackage{multirow}
 \usepackage{listings}
-\usepackage{xcolor}
+\usepackage[table]{xcolor}
 \usepackage{lmodern}
+\usepackage{anyfontsize}
 
 % sideways pdfpage
 \usepackage[usegeometry]{typearea}% before geometry!
@@ -37,16 +38,16 @@
 }
 
 
-
+\renewcommand\lstlistingname{Kód}
 \lstset{
     morestring=*[d]{"},
-	basicstyle=\footnotesize\ttfamily,
+	basicstyle=\fontsize{9}{10}\selectfont\ttfamily,
 	keywordstyle=\bfseries\color{green!40!black},
 	stringstyle=\bfseries\color{green!40!black},
 	commentstyle=\itshape\color{purple!40!black},
 	identifierstyle=\color{blue},
 	backgroundcolor=\color{gray!10!white},
-	numberstyle=\footnotesize,
+	numberstyle=\scriptsize,
 	frame=single,
 	tabsize=2,
 	backgroundcolor=\color{gray!10},
@@ -104,6 +105,7 @@
 \input{sections/implementace.tex}
 
 \input{sections/gramatika.tex}
+
 \newpage
 \input{sections/grammar.tex}
 \uselandscape
