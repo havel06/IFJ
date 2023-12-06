@@ -1,6 +1,6 @@
 \section{Implementace}
 Překladač je implementovaný jako víceprůchodový.
-Zvolili jsme tento typ implementace kvůli jednoduššímu členení kódu a možnosti ladit jednotlivé fáze nezávisle na sobě.
+Zvolili jsme tento typ implementace kvůli jednoduššímu členení kódu a možnosti testovat jednotlivé fáze nezávisle na sobě.
 Víceprůchodový překladač se také osvědčil pro implementaci volání funkcí před jejich deklaracemi.
 
 \subsection{Lexer}
@@ -42,11 +42,11 @@ Pro jednodušší přístup z funkcí analyzátoru jsou všechny tabulky statick
 Výstupem analyzátoru je kromě případného chybového kódu i zmíněná tabulka funkcí, kterou dále používá generátor cílového kódu.
 
 \subsubsection{Implementace tabulky symbolů}
-Tabulka symbolů je implementována jako hashovací tabulka s implicitním řetězením.
+Tabulka symbolů (struktura \texttt{symbolTable}) je implementována jako hashovací tabulka s implicitním řetězením.
 Tabulka je univerzální; dokáže v sobě uchovávat jak funkce, tak proměnné.
-Sloty pro proměnné společně s názvem obsahují také datový typ proměnné,
+Sloty pro proměnné (struktura \texttt{symbolVariable}) společně s názvem obsahují také datový typ proměnné,
 jestli je modifikovatelná a kde dochází k její inicializaci.
-Sloty pro funkce obsahují názvy a typy parametrů a typ návratové hodnoty.
+Sloty pro funkce (struktura \texttt{symbolFunc}) obsahují názvy a typy parametrů a typ návratové hodnoty.
 V souboru \texttt{symtable.h} je také definovaný zásobník tabulek (struktura \texttt{symbolTableStack}),
 který používáme pro organizaci tabulek pro jednotlivé programové bloky.
 V zásobníku má každá tabulka unikátní identifikátor,

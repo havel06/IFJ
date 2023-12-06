@@ -290,7 +290,6 @@ static parseResult parseExpression(astExpression* expression, const token* exprF
 	astBinaryOperator operators[512];
 	int operatorCount = 0;
 
-	// TODO - error when array overflows
 	TRY_PARSE(parsePrimaryExpression(&subExpressions[subExpressionsCount++], exprFirstToken), {});
 
 	while (true) {
@@ -302,7 +301,6 @@ static parseResult parseExpression(astExpression* expression, const token* exprF
 			break;
 		}
 
-		// TODO - error when array overflows
 		operators[operatorCount++] = parseBinaryOperator(firstToken.type);
 		tokenDestroy(&firstToken);
 
@@ -716,7 +714,6 @@ static parseResult parseParameter(astParameter* param) {
 		param->requiresName = true;
 		TRY_PARSE(parseIdentifier(&outsideNameToken, &(param->outsideName)), { tokenDestroy(&outsideNameToken); });
 	} else {
-		// TODO - emit message
 		return PARSE_ERROR;
 	}
 	tokenDestroy(&outsideNameToken);

@@ -161,7 +161,6 @@ static lexerResult lexIdentifierToken(token* newToken) {
 		} else {
 			int len = strlen(newToken->content);
 			if (len >= 63) {
-				// TODO - log warning
 				return LEXER_INTERNAL_ERROR;
 			}
 			newToken->content[len] = c;
@@ -238,7 +237,6 @@ static lexerResult lexNumberToken(token* newToken) {
 		// add char to token
 		int len = strlen(newToken->content);
 		if (len >= 1023) {
-			// TODO - log warning
 			return LEXER_INTERNAL_ERROR;
 		}
 		newToken->content[len] = c;
@@ -342,7 +340,6 @@ static lexerResult lexMultiLineStringToken(token* newToken) {
 		}
 
 		if (len > 2047) {
-			// TODO - emit warning
 			return LEXER_INTERNAL_ERROR;
 		}
 	}
@@ -393,7 +390,6 @@ static lexerResult lexMultiLineStringToken(token* newToken) {
 
 static lexerResult lexStringToken(token* newToken) {
 	newToken->type = TOKEN_STR_LITERAL;
-	// TODO - unlimited size
 	newToken->content = calloc(2048, sizeof(char));
 	if (!newToken->content) {
 		return 1;
@@ -414,12 +410,10 @@ static lexerResult lexStringToken(token* newToken) {
 	int len = 0;
 	while (true) {
 		if (len >= 2047) {
-			// TODO - emit warning
 			return LEXER_INTERNAL_ERROR;
 		}
 		int c = getchar();
 		if (c == EOF || c <= 31 || c >= 127) {
-			// TODO - emit warning
 			return LEXER_ERROR;
 		} else if (c == '"') {
 			break;
@@ -452,7 +446,6 @@ lexerResult getNextToken(token* newToken) {
 	while (true) {
 		if (skipWhiteSpace()) {
 			continue;
-			;
 		}
 
 		int skipCommentsResult = skipComments();

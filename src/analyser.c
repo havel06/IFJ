@@ -347,7 +347,7 @@ static analysisResult analyseOptionalBinding(const astOptionalBinding* binding) 
 	ANALYSE(analyseVariableId(&binding->identifier, &variableType), {});
 	if (!variableType.nullable) {
 		fputs("Variable used in optional binding must be nullable.\n", stderr);
-		return ANALYSIS_OTHER_ERROR;  // TODO - is this correct?
+		return ANALYSIS_OTHER_ERROR;  // NOTE - is this correct?
 	}
 	return ANALYSIS_OK;
 }
@@ -428,7 +428,7 @@ static analysisResult analyseInputParameterList(const astParameterList* list, co
 		if (param->requiresName) {
 			if (!inParam->hasName) {
 				fprintf(stderr, "Parameter %s requires to be called explicitely.\n", param->outsideName.name);
-				return ANALYSIS_OTHER_ERROR;  // TODO - is this correct?
+				return ANALYSIS_OTHER_ERROR;  // NOTE - is this correct?
 			}
 
 			if (strcmp(param->outsideName.name, inParam->name.name) != 0) {
@@ -438,7 +438,7 @@ static analysisResult analyseInputParameterList(const astParameterList* list, co
 			}
 		} else if (inParam->hasName) {
 			fputs("Parameter does not require a name in function call.\n", stderr);
-			return ANALYSIS_OTHER_ERROR;  // TODO - is this correct?
+			return ANALYSIS_OTHER_ERROR;  // NOTE - is this correct?
 		}
 
 		astDataType inParamType;
