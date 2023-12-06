@@ -19,7 +19,7 @@ Parser je implementován v souborech \texttt{parser.h} a \texttt{parser.c}.
 Používá metodu rekurzivního sestupu.
 Jako vstup bere tokeny přímo z lexeru, a jako výstup sestavuje \textit{abstraktní syntaktický strom},
 jehož implementaci lze nalézt v souborech \texttt{AST.h} a \texttt{AST.c}.
-V souborech \texttt{printAST.h} a \texttt{printAST.c} se nachází pomocné funkce pro výpis struktury syntaktického sromu.
+V souborech \texttt{printAST.h} a \texttt{printAST.c} se nachází pomocné funkce pro výpis struktury syntaktického stromu.
 Pro jednodušší ošetření chyb lexeru používáme makra (např. \texttt{GET\_TOKEN}),
 která při chybě lexeru automaticky vracejí z aktuální funkce a propagují chybový kód.
 Parser je kontextový; za běhu bere ohled na to, jestli se nachází mimo funkci,
@@ -62,6 +62,6 @@ Vyhodnocování složitých výrazů probíhá za pomoci zásobníku; výsledky 
 Pomocí zásobníku také probíhá předávání parametrů funkcím a předávání návratových hodnot z funkcí.
 Zavolání funkce vždy vytvoří nový rámec, díky čemuž nedochází k redeklaraci lokálních proměnných při rekurzi.
 Jedním z problémů při překladu byly deklarace proměnných uvnitř cyklů, což způsobovalo redeklaraci a následně chybu interpretu.
-Překladač tento problém reší deklarací proměnných před cyklem, a přeměnou všech deklarací uvnitř cyklu na jednoduchá přiřazení.
+Překladač tento problém řeší deklarací proměnných před cyklem, a přeměnou všech deklarací uvnitř cyklu na jednoduchá přiřazení.
 Vestavěné funkce jsou pro jednoduchost generované až v místě použití.
 Díky tomu také lze jednoduše řešit volání vestavěné funkce \texttt{write}, která může přijmout libovolný počet parametrů.
