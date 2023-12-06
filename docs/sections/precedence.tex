@@ -1,22 +1,26 @@
 \begin{table}[p]
+\centering
 \caption{Precedenční tabulka}
-\begin{tabular}{c|cccccccccccccccccc}
+\begin{tabular}{c|cccccccccccccccc}
 \toprule
-&&id&!&*&/&+&-&==&!=&$<$&$>$&$<$=&$>$=&??&&&&\\
+ & id & ! & * & / & + & - & == & != & \textless{} & \textgreater{} & \textless{}= & \textgreater{}= & ?? & ( & ) & \$ \\
 \midrule
-id &\_&$>$&$>$&$>$&$>$&$>$&$>$&&$>$&&$>$&$>$&$>$&&$>$&&$>$&\\
-$!$     &&$<$&$=$&$>$&$>$&$>$&$>$&$>$&&$>$&&$>$&$>$&$>$&&$>$&&$>$\\
-*       &&$<$&$<$&$=$&$=$&$>$&$>$&$>$&&$>$&&$>$&$>$&$>$&&$>$&&$>$\\
-$/$     &&$<$&$<$&$=$&$=$&$>$&$>$&$>$&&$>$&&$>$&$>$&$>$&&$>$&&$>$\\
-$+$     &&$<$&$<$&$<$&$<$&$=$&$=$&$>$&&$>$&&$>$&$>$&$>$&&$>$&&$>$\\
-$-$     &&$<$&$<$&$<$&$<$&$=$&$=$&$>$&&$>$&&$>$&$>$&$>$&&&&$>$\\
-$==$ &$<$&$<$&$<$&$<$&$<$&$<$&$=$&&$=$&&$=$&$=$&$=$&&$=$&&$>$&\\
-$!=$ &$<$&$<$&$<$&$<$&$<$&$<$&$=$&&$=$&&$=$&$=$&$=$&&$=$&&$>$&\\
-$<$     &&$<$&$<$&$<$&$<$&$<$&$<$&$=$&&$=$&&$=$&$=$&$=$&&$=$&&$>$\\
-$>$     &&$<$&$<$&$<$&$<$&$<$&$<$&$=$&&$=$&&$=$&$=$&$=$&&$=$&&$>$\\
-$<=$ &$<$&$<$&$<$&$<$&$<$&$<$&$=$&&$=$&&$=$&$=$&$=$&&$=$&&$>$&\\
-$>=$ &$<$&$<$&$<$&$<$&$<$&$<$&$=$&&$=$&&$=$&$=$&$=$&&$=$&&$>$&\\
-??   &$<$&$<$&$<$&$<$&$<$&$<$&$<$&&$<$&&$<$&$<$&$<$&&$<$&&$=$&\\
+id & \_ & \textgreater{} & \textgreater{} & \textgreater{} & \textgreater{} & \textgreater{} & \textgreater{} & \textgreater{} & \textgreater{} & \textgreater{} & \textgreater{} & \textgreater{} & \textgreater{} & \textgreater{} & \textgreater{} & \textgreater{} \\
+! & \textless{} & \_ & \textgreater{} & \textgreater{} & \textgreater{} & \textgreater{} & \textgreater{} & \textgreater{} & \textgreater{} & \textgreater{} & \textgreater{} & \textgreater{} & \textgreater{} & \textless{} & \textgreater{} & \textgreater{} \\
+* & \textless{} & \textless{} & = & = & \textgreater{} & \textgreater{} & \textgreater{} & \textgreater{} & \textgreater{} & \textgreater{} & \textgreater{} & \textgreater{} & \textgreater{} & \textless{} & \textgreater{} & \textgreater{} \\
+/ & \textless{} & \textless{} & = & = & \textgreater{} & \textgreater{} & \textgreater{} & \textgreater{} & \textgreater{} & \textgreater{} & \textgreater{} & \textgreater{} & \textgreater{} & \textless{} & \textgreater{} & \textgreater{} \\
++ & \textless{} & \textless{} & \textless{} & \textless{} & = & = & \textgreater{} & \textgreater{} & \textgreater{} & \textgreater{} & \textgreater{} & \textgreater{} & \textgreater{} & \textless{} & \textgreater{} & \textgreater{} \\
+- & \textless{} & \textless{} & \textless{} & \textless{} & = & = & \textgreater{} & \textgreater{} & \textgreater{} & \textgreater{} & \textgreater{} & \textgreater{} & \textgreater{} & \textless{} & \textgreater{} & \textgreater{} \\
+== & \textless{} & \textless{} & \textless{} & \textless{} & \textless{} & \textless{} & = & = & = & = & = & = & \textgreater{} & \textless{} & \textgreater{} & \textgreater{} \\
+!= & \textless{} & \textless{} & \textless{} & \textless{} & \textless{} & \textless{} & = & = & = & = & = & = & \textgreater{} & \textless{} & \textgreater{} & \textgreater{} \\
+\textless{} & \textless{} & \textless{} & \textless{} & \textless{} & \textless{} & \textless{} & = & = & = & = & = & = & \textgreater{} & \textless{} & \textgreater{} & \textgreater{} \\
+\textgreater{} & \textless{} & \textless{} & \textless{} & \textless{} & \textless{} & \textless{} & = & = & = & = & = & = & \textgreater{} & \textless{} & \textgreater{} & \textgreater{} \\
+\textless{}= & \textless{} & \textless{} & \textless{} & \textless{} & \textless{} & \textless{} & = & = & = & = & = & = & \textgreater{} & \textless{} & \textgreater{} & \textgreater{} \\
+\textgreater{}= & \textless{} & \textless{} & \textless{} & \textless{} & \textless{} & \textless{} & = & = & = & = & = & = & \textgreater{} & \textless{} & \textgreater{} & \textgreater{} \\
+?? & \textless{} & \textless{} & \textless{} & \textless{} & \textless{} & \textless{} & \textless{} & \textless{} & \textless{} & \textless{} & \textless{} & \textless{} & = & \textless{} & \textgreater{} & \textgreater{} \\
+( & \textless{} & \textless{} & \textless{} & \textless{} & \textless{} & \textless{} & \textless{} & \textless{} & \textless{} & \textless{} & \textless{} & \textless{} & \textless{} & \textless{} & = & \_ \\
+) & \_ & \textgreater{} & \textgreater{} & \textgreater{} & \textgreater{} & \textgreater{} & \textgreater{} & \textgreater{} & \textgreater{} & \textgreater{} & \textgreater{} & \textgreater{} & \textgreater{} & \_ & \textgreater{} & \textgreater{} \\
+\$ & \textless{} & \textless{} & \textless{} & \textless{} & \textless{} & \textless{} & \textless{} & \textless{} & \textless{} & \textless{} & \textless{} & \textless{} & \textless{} & \textless{} & \_ & \_\\
 \bottomrule
 \end{tabular}
 \end{table}
