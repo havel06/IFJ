@@ -1,5 +1,6 @@
 #!/bin/sh
 
+make docs
 mkdir -p /tmp/ifj_odevzdani
 cp -r src/. /tmp/ifj_odevzdani/
 cp makefile_odevzdani /tmp/ifj_odevzdani/Makefile
