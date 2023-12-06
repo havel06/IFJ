@@ -167,3 +167,4 @@ execTest "Unused param" "input/unused_param.swift" "output/empty.txt" 0
 execTest "Function param with same name" "input/func_param_same_name.swift" "output/empty.txt" 9
 execTest "Implicit conversion when assigning" "input/assign_convert.swift" "output/assign_convert.txt" 0
 execTest "Write nil" "input/print_nil.swift" "output/empty.txt" 0
+execTest "nil == nil" "input/nil_eq_nil.swift" "output/empty.txt" 0
