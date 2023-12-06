@@ -19,9 +19,18 @@ Parser je implementován v souborech \texttt{parser.h} a \texttt{parser.c}.
 Používá metodu rekurzivního sestupu.
 Jako vstup bere tokeny přímo z lexeru, a jako výstup sestavuje \textit{abstraktní syntaktický strom},
 jehož implementaci lze nalézt v souborech \texttt{AST.h} a \texttt{AST.c}.
+Rozdělení parseru do jednotlivých funkcí přibližně odpovídá struktře syntaktického stromu.
 V souborech \texttt{printAST.h} a \texttt{printAST.c} se nachází pomocné funkce pro výpis struktury syntaktického stromu.
-Pro jednodušší ošetření chyb lexeru používáme makra (např. \texttt{GET\_TOKEN}),
-která při chybě lexeru automaticky vracejí z aktuální funkce a propagují chybový kód.
+Pro zjednodušení kódu řešícího chyby používáme makra,
+která při chybě lexeru automaticky vracejí z aktuální funkce a propagují chybový kód. Tato makra jsou:
+
+\begin{description}
+\item[\texttt{GET\_TOKEN}] - Načte token z lexeru a případně vrátí z aktuální funkce chybovou hodnotu.
+\item[\texttt{GET\_TOKEN\_TYPE}] - Podobné jako \texttt{GET\_TOKEN}, ale místo celého tokenu získá jen typ bez obsahu.
+\item[\texttt{GET\_TOKEN\_ASSUME\_TYPE}] - Podobné jako \texttt{GET\_TOKEN}. Pokud typ tokenu nesouhlasí se specifikovaným typem, vrátí chybu parseru.
+\item[\texttt{TRY\_PARSE}] - Vykoná předanou funkci. V případě chyby vrátí správný chybový kód z aktuální funkce.
+\end{description}
+
 Parser je kontextový; za běhu bere ohled na to, jestli se nachází mimo funkci,
 ve funkci s návratovou hodnotou nebo ve funkci bez návratové hodnoty,
 následně podle toho různě zpracovává příkaz \texttt{return}.
