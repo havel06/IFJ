@@ -263,6 +263,8 @@ void astStatementBlockCreate(astStatementBlock*);
 // Returns 0 on success
 int astStatementBlockAdd(astStatementBlock*, astStatement);
 void astStatementBlockDestroy(astStatementBlock*);
+void astStatementDestroy(astStatement* statement);
+void astFunctionDefinitionDestroy(astFunctionDefinition* def);
 
 // void astParameterDestroy();
 

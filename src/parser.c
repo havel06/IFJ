@@ -550,7 +550,8 @@ static parseResult parseVarDef(astStatement* statement, bool immutable) {
 
 	token variableNameToken;
 	GET_TOKEN_ASSUME_TYPE(variableNameToken, TOKEN_IDENTIFIER, {});
-	TRY_PARSE(parseIdentifier(&variableNameToken, &(statement->variableDef.variableName)), {});
+	TRY_PARSE(parseIdentifier(&variableNameToken, &(statement->variableDef.variableName)),
+			  { tokenDestroy(&variableNameToken); });
 	tokenDestroy(&variableNameToken);
 
 	// parse variable type
@@ -559,7 +560,8 @@ static parseResult parseVarDef(astStatement* statement, bool immutable) {
 	if (maybeColonToken.type == TOKEN_COLON) {
 		statement->variableDef.hasExplicitType = true;
 		tokenDestroy(&maybeColonToken);
-		TRY_PARSE(parseDataType(&(statement->variableDef.variableType)), {});
+		TRY_PARSE(parseDataType(&(statement->variableDef.variableType)),
+				  { free(statement->variableDef.variableName.name); });
 	} else {
 		statement->variableDef.hasExplicitType = false;
 		unGetToken(&maybeColonToken);
@@ -580,7 +582,8 @@ static parseResult parseVarDef(astStatement* statement, bool immutable) {
 	// parse init value
 	CONSUME_TOKEN_ASSUME_TYPE(TOKEN_ASSIGN, {});
 	statement->variableDef.hasInitValue = true;
-	TRY_PARSE(parseVarInit(&statement->variableDef.value, statement->variableDef.variableName.name), {});
+	TRY_PARSE(parseVarInit(&statement->variableDef.value, statement->variableDef.variableName.name),
+			  { free(statement->variableDef.variableName.name); });
 
 	return PARSE_OK;
 }

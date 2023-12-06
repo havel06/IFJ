@@ -211,7 +211,7 @@ static void astVariableDefinitionDestroy(astVariableDefinition* def) {
 	}
 }
 
-static void astStatementDestroy(astStatement* statement) {
+void astStatementDestroy(astStatement* statement) {
 	switch (statement->type) {
 		case AST_STATEMENT_ASSIGN:
 			astAssignmentDestroy(&statement->assignment);
@@ -270,7 +270,7 @@ void astParameterListDestroy(astParameterList* list) {
 	astParameterListDestroyNoRecurse(list);
 }
 
-static void astFunctionDefinitionDestroy(astFunctionDefinition* def) {
+void astFunctionDefinitionDestroy(astFunctionDefinition* def) {
 	astIdentifierDestroy(&def->name);
 	astParameterListDestroy(&def->params);
 	astStatementBlockDestroy(&def->body);
